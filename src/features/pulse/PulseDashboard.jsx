@@ -13,18 +13,11 @@ const PulseDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [familyInfo, setFamilyInfo] = useState(null);
     const [showSettings, setShowSettings] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
 
-    console.log('PulseDashboard: user =', user);
+    const fetchFamilyInfo = async () => {
+        if (!user?.family_id) return;
 
-    const fetchPulses = async () => {
-        console.log('Fetching pulses for family:', user?.family_id);
-        if (!user?.family_id) {
-            console.log('No family_id, skipping fetch');
-            setLoading(false);
-            return;
-        }
-
-        // Get family info
         const { data: family } = await supabase
             .from('families')
             .select('*')
@@ -34,8 +27,15 @@ const PulseDashboard = () => {
         if (family) {
             setFamilyInfo(family);
         }
+    };
 
-        // Get profiles in this family to map names
+    const fetchPulses = async () => {
+        if (!user?.family_id) {
+            setLoading(false);
+            return;
+        }
+
+        // Get profiles in this family
         const { data: profileData } = await supabase
             .from('profiles')
             .select('*')
@@ -45,7 +45,7 @@ const PulseDashboard = () => {
         profileData?.forEach(p => profileMap[p.id] = p);
         setProfiles(profileMap);
 
-        // Get latest pulses for this family
+        // Get latest pulses
         const { data } = await supabase
             .from('pulses')
             .select('*')
@@ -54,7 +54,6 @@ const PulseDashboard = () => {
             .limit(20);
 
         if (data) {
-            // Deduplicate: show only latest per user
             const latestByUser = {};
             data.forEach(p => {
                 if (!latestByUser[p.user_id]) latestByUser[p.user_id] = p;
@@ -66,15 +65,17 @@ const PulseDashboard = () => {
                 setMyPulse(latestByUser[user.id]);
             }
         }
+        setLoading(false);
     };
 
     useEffect(() => {
         fetchPulses();
+        fetchFamilyInfo();
 
         const subscription = supabase
             .channel('public:pulses')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pulses' }, payload => {
-                fetchPulses(); // Refresh on new pulse
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pulses' }, () => {
+                fetchPulses();
             })
             .subscribe();
 
@@ -82,7 +83,6 @@ const PulseDashboard = () => {
     }, []);
 
     const handlePulseSubmit = async (pulseData) => {
-        // Optimistic update
         const newPulse = {
             user_id: user.id,
             family_id: user.family_id,
@@ -102,8 +102,17 @@ const PulseDashboard = () => {
         if (error) {
             console.error("Pulse submit error:", error);
             alert("Failed to save pulse: " + error.message);
-            setMyPulse(null); // Revert optimistic update
+            setMyPulse(null);
         }
+    };
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        await Promise.all([
+            fetchPulses(),
+            fetchFamilyInfo()
+        ]);
+        setTimeout(() => setRefreshing(false), 500);
     };
 
     return (
@@ -113,8 +122,10 @@ const PulseDashboard = () => {
                     <h1>KinPulse</h1>
                     <button
                         className="refresh-btn"
-                        onClick={fetchPulses}
+                        onClick={handleRefresh}
+                        disabled={refreshing}
                         aria-label="Refresh"
+                        style={{ transform: refreshing ? 'rotate(360deg)' : 'rotate(0deg)', transition: 'transform 0.5s ease' }}
                     >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
@@ -156,6 +167,9 @@ const PulseDashboard = () => {
                 <div className="family-list">
                     {pulses.map(pulse => {
                         const isMe = pulse.user_id === user.id;
+                        const profile = profiles[pulse.user_id];
+                        const displayName = isMe ? 'You' : (profile?.name || profile?.email?.split('@')[0] || 'Family Member');
+
                         return (
                             <div
                                 key={pulse.id}
@@ -166,9 +180,7 @@ const PulseDashboard = () => {
                                 } : {}}
                             >
                                 <div className="member-info">
-                                    <span className="name">
-                                        {isMe ? 'You' : (profiles[pulse.user_id]?.name || profiles[pulse.user_id]?.email?.split('@')[0] || 'Family Member')}
-                                    </span>
+                                    <span className="name">{displayName}</span>
                                     <span className="time">
                                         {new Date(pulse.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </span>

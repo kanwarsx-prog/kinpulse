@@ -1,0 +1,8 @@
+                {showSettings && (
+                    <ProfileSettings onClose={() => setShowSettings(false)} />
+                )}
+            </div>
+        );
+};
+
+export default PulseDashboard;
