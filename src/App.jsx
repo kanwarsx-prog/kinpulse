@@ -4,6 +4,7 @@ import MobileLayout from './components/layout/MobileLayout';
 import PulseDashboard from './features/pulse/PulseDashboard';
 import RitualsList from './features/rituals/RitualsList';
 import RitualDetail from './features/rituals/RitualDetail';
+import FamilyChat from './features/chat/FamilyChat';
 
 import { SupabaseProvider, useSupabase } from './contexts/SupabaseContext';
 import LoginScreen from './features/auth/LoginScreen';
@@ -35,6 +36,7 @@ const AppRoutes = () => {
         <Route index element={<PulseDashboard />} />
         <Route path="rituals" element={<RitualsList />} />
         <Route path="rituals/:id" element={<RitualDetail />} />
+        <Route path="chat" element={<FamilyChat />} />
       </Route>
     </Routes>
   );
