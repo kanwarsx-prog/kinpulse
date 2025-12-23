@@ -5,6 +5,19 @@ import './NotificationSettings.css';
 const NotificationSettings = () => {
     const { permission, subscription, isSupported, requestPermission, unsubscribe } = usePushNotifications();
 
+    const testNotification = () => {
+        if ('serviceWorker' in navigator && 'Notification' in window) {
+            navigator.serviceWorker.ready.then(registration => {
+                registration.showNotification('KinPulse Test', {
+                    body: 'Push notifications are working! 🎉',
+                    icon: '/vite.svg',
+                    tag: 'test',
+                    requireInteraction: false
+                });
+            });
+        }
+    };
+
     if (!isSupported) {
         return (
             <div className="notification-settings">
@@ -42,9 +55,14 @@ const NotificationSettings = () => {
                         </svg>
                         <span>Notifications enabled</span>
                     </div>
-                    <button className="disable-btn" onClick={unsubscribe}>
-                        Disable
-                    </button>
+                    <div className="actions">
+                        <button className="test-btn" onClick={testNotification}>
+                            Test
+                        </button>
+                        <button className="disable-btn" onClick={unsubscribe}>
+                            Disable
+                        </button>
+                    </div>
                 </div>
             )}
 
