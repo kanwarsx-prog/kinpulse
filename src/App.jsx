@@ -7,6 +7,7 @@ import RitualsList from './features/rituals/RitualsList';
 import RitualDetail from './features/rituals/RitualDetail';
 import FamilyChat from './features/chat/FamilyChat';
 import DirectMessage from './features/chat/DirectMessage';
+import JoinFamily from './features/family/JoinFamily';
 
 import { SupabaseProvider, useSupabase } from './contexts/SupabaseContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -21,14 +22,20 @@ const AppRoutes = () => {
     return <LoadingSpinner size="lg" message="Loading KinPulse..." />;
   }
 
-  if (!session) {
-    return <LoginScreen />;
-  }
+  // Allow access to join page without authentication
+  return (
+    <Routes>
+      <Route path="/join/:inviteCode" element={<JoinFamily />} />
+      <Route path="/*" element={
+        !session ? <LoginScreen /> :
+          !user?.family_id ? <FamilyOnboarding /> :
+            <AuthenticatedRoutes />
+      } />
+    </Routes>
+  );
+};
 
-  if (!user?.family_id) {
-    return <FamilyOnboarding />;
-  }
-
+const AuthenticatedRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<MobileLayout />}>

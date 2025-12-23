@@ -7,6 +7,7 @@ import PulseInput from './PulseInput';
 import StatusBadge from '../../components/ui/StatusBadge';
 import OnlineIndicator from '../../components/ui/OnlineIndicator';
 import ProfileSettings from '../profile/ProfileSettings';
+import ShareInvite from '../family/ShareInvite';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import './PulseDashboard.css';
 
@@ -21,6 +22,7 @@ const PulseDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [familyInfo, setFamilyInfo] = useState(null);
     const [showSettings, setShowSettings] = useState(false);
+    const [showInvite, setShowInvite] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
 
     const fetchFamilyInfo = async () => {
@@ -172,6 +174,19 @@ const PulseDashboard = () => {
                         </button>
                         <button
                             className="refresh-btn"
+                            onClick={() => setShowInvite(true)}
+                            aria-label="Invite Family"
+                            title="Invite family members"
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                <circle cx="8.5" cy="7" r="4" />
+                                <line x1="20" y1="8" x2="20" y2="14" />
+                                <line x1="23" y1="11" x2="17" y2="11" />
+                            </svg>
+                        </button>
+                        <button
+                            className="refresh-btn"
                             onClick={() => setShowSettings(true)}
                             aria-label="Settings"
                         >
@@ -293,6 +308,13 @@ const PulseDashboard = () => {
 
             {showSettings && (
                 <ProfileSettings onClose={() => setShowSettings(false)} />
+            )}
+
+            {showInvite && (
+                <ShareInvite
+                    isOpen={showInvite}
+                    onClose={() => setShowInvite(false)}
+                />
             )}
         </div>
     );
