@@ -20,20 +20,24 @@
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    color: hsl(var(--color-text-secondary));
+    color: #6b7280;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    width: 50%;
+    flex: 1;
     height: 100%;
+    gap: 2px;
 }
 
 .nav-item .label {
-    font-size: 10px;
-    margin-top: 4px;
-    font-weight: 500;
+    font-size: 11px;
+    font-weight: 600;
+    color: inherit;
+    display: block;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
 }
 
 .nav-item.active {
-    color: hsl(var(--color-accent));
+    color: #6366f1;
 }
 
 .nav-item.active svg {
