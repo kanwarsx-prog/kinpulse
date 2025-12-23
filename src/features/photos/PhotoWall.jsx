@@ -59,10 +59,12 @@ export default function PhotoWall() {
                 .order('created_at', { ascending: false });
 
             // Combine and format photos
+            // Use the URLs directly from the database (they're already signed URLs)
             const allPhotos = [
                 ...(pulsePhotos || []).map(p => ({
                     id: `pulse-${p.id}`,
                     url: p.photo_url,
+                    signedUrl: p.photo_url, // Use the stored URL directly
                     created_at: p.created_at,
                     user_id: p.user_id,
                     source: 'pulse'
@@ -70,6 +72,7 @@ export default function PhotoWall() {
                 ...(chatPhotos || []).map(m => ({
                     id: `chat-${m.id}`,
                     url: m.photo_url,
+                    signedUrl: m.photo_url, // Use the stored URL directly
                     created_at: m.created_at,
                     user_id: m.sender_id,
                     source: 'chat'
@@ -79,20 +82,7 @@ export default function PhotoWall() {
             // Sort by date
             allPhotos.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-            // Get public URLs (much faster than signed URLs)
-            const photosWithUrls = allPhotos.map(photo => {
-                const fileName = photo.url.split('/').pop();
-                const { data } = supabase.storage
-                    .from('pulse-photos')
-                    .getPublicUrl(fileName);
-
-                return {
-                    ...photo,
-                    signedUrl: data.publicUrl
-                };
-            });
-
-            setPhotos(photosWithUrls);
+            setPhotos(allPhotos);
         } catch (error) {
             console.error('Error fetching photos:', error);
         } finally {
