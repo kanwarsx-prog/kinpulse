@@ -163,13 +163,22 @@ export default function PhotoWall() {
                         return (
                             <div
                                 key={photo.id}
-                                className="photo-item"
+                                className="photo-item loading"
                                 onClick={() => handlePhotoClick(photo, index)}
                             >
                                 <img
                                     src={photo.signedUrl}
                                     alt={`Shared by ${displayName}`}
                                     loading="lazy"
+                                    decoding="async"
+                                    onLoad={(e) => {
+                                        e.target.classList.add('loaded');
+                                        e.target.parentElement.classList.remove('loading');
+                                    }}
+                                    onError={(e) => {
+                                        e.target.parentElement.classList.remove('loading');
+                                        console.error('Failed to load image:', photo.signedUrl);
+                                    }}
                                 />
                                 <div className="photo-overlay">
                                     <div className="photo-info">

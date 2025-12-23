@@ -108,7 +108,7 @@
     overflow: hidden;
     cursor: pointer;
     transition: transform 0.2s;
-    background: #f0f0f0;
+    background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
 }
 
 .photo-item:hover {
@@ -120,6 +120,40 @@
     height: 100%;
     object-fit: cover;
     display: block;
+    /* Performance optimizations */
+    will-change: transform;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+/* Skeleton loading animation */
+@keyframes shimmer {
+    0% {
+        background-position: -468px 0;
+    }
+
+    100% {
+        background-position: 468px 0;
+    }
+}
+
+.photo-item.loading {
+    background: linear-gradient(to right,
+            #f0f0f0 0%,
+            #e0e0e0 20%,
+            #f0f0f0 40%,
+            #f0f0f0 100%);
+    background-size: 800px 104px;
+    animation: shimmer 1.5s infinite linear;
+}
+
+.photo-item img[loading="lazy"] {
+    opacity: 0;
+    transition: opacity 0.3s ease-in;
+}
+
+.photo-item img.loaded {
+    opacity: 1;
 }
 
 .photo-overlay {
