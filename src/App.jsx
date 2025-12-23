@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MobileLayout from './components/layout/MobileLayout';
 import PulseDashboard from './features/pulse/PulseDashboard';
+import PulseHistory from './features/pulse/PulseHistory';
 import RitualsList from './features/rituals/RitualsList';
 import RitualDetail from './features/rituals/RitualDetail';
 import FamilyChat from './features/chat/FamilyChat';
@@ -23,7 +24,6 @@ const AppRoutes = () => {
     return <LoginScreen />;
   }
 
-  // If logged in but no family, show onboarding
   if (!user?.family_id) {
     return <FamilyOnboarding />;
   }
@@ -32,6 +32,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<MobileLayout />}>
         <Route index element={<PulseDashboard />} />
+        <Route path="pulse-history" element={<PulseHistory />} />
         <Route path="rituals" element={<RitualsList />} />
         <Route path="rituals/:id" element={<RitualDetail />} />
         <Route path="chat" element={<FamilyChat />} />

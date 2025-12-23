@@ -1,39 +1,124 @@
 import React, { useState } from 'react';
-import { STATUS_CONFIG } from '../../components/ui/StatusBadge';
+import { useSupabase } from '../../contexts/SupabaseContext';
 import './PulseInput.css';
 
 const PulseInput = ({ onSubmit }) => {
     const [selected, setSelected] = useState(null);
+    const [note, setNote] = useState('');
+    const [photo, setPhoto] = useState(null);
+    const [photoPreview, setPhotoPreview] = useState(null);
+    const { supabase, user } = useSupabase();
 
-    const handleSelect = (key) => {
-        setSelected(key);
-        // Simulate submission after brief delay or confirmation
-        // For MVP, just select.
+    const statusOptions = [
+        { value: 'great', emoji: '😊', label: 'Great' },
+        { value: 'good', emoji: '🙂', label: 'Good' },
+        { value: 'okay', emoji: '😐', label: 'Okay' },
+        { value: 'stressed', emoji: '😰', label: 'Stressed' },
+        { value: 'sad', emoji: '😢', label: 'Sad' },
+        { value: 'overwhelmed', emoji: '😵', label: 'Overwhelmed' }
+    ];
+
+    const handlePhotoChange = (e) => {
+        const file = e.target.files[0];
+        if (file && file.size <= 5 * 1024 * 1024) { // 5MB limit
+            setPhoto(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPhotoPreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        } else if (file) {
+            alert('Photo must be less than 5MB');
+        }
     };
 
-    const handleSubmit = () => {
-        if (selected) {
-            onSubmit({ state: selected, note: '', timestamp: new Date() });
+    const uploadPhoto = async () => {
+        if (!photo) return null;
+
+        const fileExt = photo.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+        const { error } = await supabase.storage
+            .from('pulse-photos')
+            .upload(fileName, photo);
+
+        if (error) {
+            console.error('Photo upload error:', error);
+            return null;
         }
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('pulse-photos')
+            .getPublicUrl(fileName);
+
+        return publicUrl;
+    };
+
+    const handleSubmit = async () => {
+        if (!selected) return;
+
+        const photoUrl = await uploadPhoto();
+
+        onSubmit({
+            state: selected,
+            note: note.trim(),
+            photo_url: photoUrl
+        });
+
+        setSelected(null);
+        setNote('');
+        setPhoto(null);
+        setPhotoPreview(null);
     };
 
     return (
         <div className="pulse-input-container">
-            <h2 className="pulse-question">How are you feeling right now?</h2>
+            <h3 className="pulse-question">How are you feeling?</h3>
 
             <div className="status-grid">
-                {Object.entries(STATUS_CONFIG).filter(([key]) => key !== 'none').map(([key, config]) => (
-                    <button
-                        key={key}
-                        className={`status-option ${selected === key ? 'selected' : ''}`}
-                        onClick={() => handleSelect(key)}
-                        style={{ '--status-color': config.color }}
+                {statusOptions.map(option => (
+                    <div
+                        key={option.value}
+                        className={`status-option ${selected === option.value ? 'selected' : ''}`}
+                        onClick={() => setSelected(option.value)}
                     >
-                        <span className="emoji">{config.emoji}</span>
-                        <span className="label">{config.label}</span>
-                    </button>
+                        <span className="emoji">{option.emoji}</span>
+                        <span className="label">{option.label}</span>
+                    </div>
                 ))}
             </div>
+
+            {selected && (
+                <div className="additional-inputs">
+                    <textarea
+                        className="note-input"
+                        placeholder="Add a note (optional)..."
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                        rows={2}
+                        maxLength={200}
+                    />
+
+                    <div className="photo-upload">
+                        <input
+                            type="file"
+                            id="photo-input"
+                            accept="image/*"
+                            onChange={handlePhotoChange}
+                            style={{ display: 'none' }}
+                        />
+                        <label htmlFor="photo-input" className="photo-upload-btn">
+                            📷 Add Photo
+                        </label>
+                        {photoPreview && (
+                            <div className="photo-preview">
+                                <img src={photoPreview} alt="Preview" />
+                                <button onClick={() => { setPhoto(null); setPhotoPreview(null); }}>✕</button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             <div className="action-area">
                 <button
