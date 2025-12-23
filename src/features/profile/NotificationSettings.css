@@ -15,9 +15,19 @@
     margin: 0 0 var(--space-lg) 0;
 }
 
+.not-supported-box {
+    padding: var(--space-md);
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: var(--radius-md);
+    margin-top: var(--space-md);
+}
+
 .not-supported {
     color: var(--color-text-secondary);
     font-size: 0.875rem;
+    margin: 0 0 var(--space-sm) 0;
+    font-weight: 600;
 }
 
 .enable-btn {

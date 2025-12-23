@@ -18,17 +18,6 @@ const NotificationSettings = () => {
         }
     };
 
-    if (!isSupported) {
-        return (
-            <div className="notification-settings">
-                <h3>Push Notifications</h3>
-                <p className="not-supported">
-                    Push notifications are not supported in this browser.
-                </p>
-            </div>
-        );
-    }
-
     return (
         <div className="notification-settings">
             <h3>Push Notifications</h3>
@@ -36,7 +25,18 @@ const NotificationSettings = () => {
                 Get notified about new messages, pulses, and family activity
             </p>
 
-            {permission === 'default' && (
+            {!isSupported && (
+                <div className="not-supported-box">
+                    <p className="not-supported">
+                        ⚠️ Push notifications are not supported on this device.
+                    </p>
+                    <p className="help-text">
+                        iOS Safari doesn't support web push notifications yet. Try using Chrome or Firefox on desktop.
+                    </p>
+                </div>
+            )}
+
+            {isSupported && permission === 'default' && (
                 <button className="enable-btn" onClick={requestPermission}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -46,7 +46,7 @@ const NotificationSettings = () => {
                 </button>
             )}
 
-            {permission === 'granted' && subscription && (
+            {isSupported && permission === 'granted' && subscription && (
                 <div className="enabled-state">
                     <div className="status">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -66,7 +66,7 @@ const NotificationSettings = () => {
                 </div>
             )}
 
-            {permission === 'denied' && (
+            {isSupported && permission === 'denied' && (
                 <div className="denied-state">
                     <p>⚠️ Notifications are blocked</p>
                     <p className="help-text">
