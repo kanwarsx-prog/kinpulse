@@ -53,6 +53,13 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  width: 100%;
+  overflow-x: hidden;
+  position: relative;
+}
+
 body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -60,13 +67,15 @@ body {
   background: var(--color-bg-secondary);
   color: var(--color-text-primary);
   line-height: 1.5;
-  overflow-x: hidden;
 }
 
 #root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 /* Animations */
@@ -86,11 +95,30 @@ body {
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Buttons */
+/* Buttons - FIXED CONTRAST */
 button {
   font-family: var(--font-sans);
-  font-weight: 500;
+  font-weight: 600;
   transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button[type="submit"],
+.primary-btn,
+.update-btn {
+  background: var(--color-primary) !important;
+  color: white !important;
+  border: none !important;
+}
+
+button[type="button"]:not(.toggle-mode) {
+  background: var(--color-bg-tertiary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.toggle-mode {
+  background: transparent !important;
+  color: var(--color-primary) !important;
 }
 
 button:hover:not(:disabled) {
@@ -113,6 +141,7 @@ textarea {
   font-family: var(--font-sans);
   font-size: 16px;
   /* Prevents zoom on iOS */
+  max-width: 100%;
 }
 
 input:focus,
@@ -120,6 +149,11 @@ textarea:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Prevent horizontal scroll */
+* {
+  max-width: 100%;
 }
 
 /* Scrollbar */
