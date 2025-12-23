@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import { useToast } from '../../contexts/ToastContext';
 import PulseInput from './PulseInput';
@@ -8,6 +9,7 @@ import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import './PulseDashboard.css';
 
 const PulseDashboard = () => {
+    const navigate = useNavigate();
     const { supabase, user } = useSupabase();
     const toast = useToast();
     const [pulses, setPulses] = useState([]);
@@ -193,7 +195,7 @@ const PulseDashboard = () => {
                     <div style={{ display: 'flex', gap: '8px' }}>
                         <button
                             className="request-pulse-btn"
-                            onClick={() => window.location.href = '/pulse-history'}
+                            onClick={() => navigate('/pulse-history')}
                         >
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
