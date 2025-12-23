@@ -107,7 +107,18 @@ const PulseDashboard = () => {
     return (
         <div className="pulse-dashboard fade-in">
             <header className="dashboard-header">
-                <h1>KinPulse</h1>
+                <div className="header-content">
+                    <h1>KinPulse</h1>
+                    <button
+                        className="refresh-btn"
+                        onClick={fetchPulses}
+                        aria-label="Refresh"
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
+                        </svg>
+                    </button>
+                </div>
                 <p className="subtitle">{familyInfo?.name || 'Family Sync'}</p>
                 {familyInfo && (
                     <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '4px' }}>

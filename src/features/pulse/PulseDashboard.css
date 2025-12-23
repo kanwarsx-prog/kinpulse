@@ -29,6 +29,37 @@
     font-weight: 500;
 }
 
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xs);
+}
+
+.refresh-btn {
+    background: var(--color-bg-tertiary);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+    background: var(--color-border);
+    transform: rotate(180deg);
+}
+
+.refresh-btn:active {
+    transform: rotate(180deg) scale(0.9);
+}
+
 .my-pulse-section {
     margin-bottom: var(--space-xl);
     width: 100%;
