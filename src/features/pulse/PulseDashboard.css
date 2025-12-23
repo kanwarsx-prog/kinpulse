@@ -62,6 +62,54 @@
 .my-pulse-section {
     margin-bottom: var(--space-xl);
     width: 100%;
+    order: 2;
+}
+
+.my-status-compact {
+    background: var(--color-bg-primary);
+    padding: var(--space-lg);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border-light);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.compact-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm);
+}
+
+.compact-header .label {
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+}
+
+.update-btn-small {
+    padding: 6px 16px;
+    background: var(--color-primary);
+    color: white;
+    border-radius: var(--radius-pill);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+}
+
+.compact-content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.compact-content .time {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
 }
 
 .my-status-card {

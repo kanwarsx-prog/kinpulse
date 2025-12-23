@@ -152,28 +152,6 @@ const PulseDashboard = () => {
                 )}
             </header>
 
-            <section className="my-pulse-section">
-                {myPulse ? (
-                    <div className="my-status-card">
-                        <span className="label">Your Pulse</span>
-                        <div className="current-status">
-                            <StatusBadge status={myPulse.state} size="lg" />
-                        </div>
-                        <p className="time">
-                            {new Date(myPulse.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                        <button
-                            className="update-btn"
-                            onClick={() => setMyPulse(null)}
-                        >
-                            Update
-                        </button>
-                    </div>
-                ) : (
-                    <PulseInput onSubmit={handlePulseSubmit} />
-                )}
-            </section>
-
             <section className="family-stream">
                 <h3 className="section-title">Family Pulse</h3>
                 <div className="family-list">
@@ -203,10 +181,34 @@ const PulseDashboard = () => {
                     })}
                     {pulses.length === 0 && (
                         <p style={{ textAlign: 'center', color: '#888', fontSize: '0.8rem' }}>
-                            No pulses yet. Share your pulse above!
+                            No pulses yet. Share your pulse below!
                         </p>
                     )}
                 </div>
+            </section>
+
+            <section className="my-pulse-section">
+                {myPulse ? (
+                    <div className="my-status-compact">
+                        <div className="compact-header">
+                            <span className="label">Your Pulse</span>
+                            <button
+                                className="update-btn-small"
+                                onClick={() => setMyPulse(null)}
+                            >
+                                Update
+                            </button>
+                        </div>
+                        <div className="compact-content">
+                            <StatusBadge status={myPulse.state} />
+                            <span className="time">
+                                {new Date(myPulse.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                        </div>
+                    </div>
+                ) : (
+                    <PulseInput onSubmit={handlePulseSubmit} />
+                )}
             </section>
 
             {showSettings && (
