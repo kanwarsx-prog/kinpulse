@@ -14,7 +14,35 @@ const FamilyChat = () => {
         if (user?.family_id) {
             fetchMessages();
             fetchProfiles();
-            subscribeToMessages();
+
+            // Subscribe to new messages
+            const channel = supabase
+                .channel('public:messages')
+                .on(
+                    'postgres_changes',
+                    {
+                        event: 'INSERT',
+                        schema: 'public',
+                        table: 'messages',
+                        filter: `family_id=eq.${user.family_id}`
+                    },
+                    (payload) => {
+                        console.log('New message:', payload);
+                        // Only add if not already in list (avoid duplicates from optimistic update)
+                        setMessages(prev => {
+                            const exists = prev.some(m => m.id === payload.new.id);
+                            if (exists) return prev;
+                            return [...prev, payload.new];
+                        });
+                    }
+                )
+                .subscribe((status) => {
+                    console.log('Realtime status:', status);
+                });
+
+            return () => {
+                supabase.removeChannel(channel);
+            };
         }
     }, [user?.family_id]);
 
@@ -51,55 +79,49 @@ const FamilyChat = () => {
         setLoading(false);
     };
 
-    const subscribeToMessages = () => {
-        const channel = supabase
-            .channel('messages')
-            .on(
-                'postgres_changes',
-                {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'messages',
-                    filter: `family_id=eq.${user.family_id}`
-                },
-                (payload) => {
-                    setMessages(prev => [...prev, payload.new]);
-                }
-            )
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    };
-
     const handleSend = async (e) => {
         e.preventDefault();
         if (!newMessage.trim()) return;
 
-        const { error } = await supabase
+        const messageContent = newMessage.trim();
+        const tempId = 'temp-' + Date.now();
+
+        // Optimistic update
+        const tempMessage = {
+            id: tempId,
+            family_id: user.family_id,
+            user_id: user.id,
+            content: messageContent,
+            created_at: new Date().toISOString()
+        };
+
+        setMessages(prev => [...prev, tempMessage]);
+        setNewMessage('');
+
+        const { data, error } = await supabase
             .from('messages')
             .insert([{
                 family_id: user.family_id,
                 user_id: user.id,
-                content: newMessage.trim()
-            }]);
+                content: messageContent
+            }])
+            .select()
+            .single();
 
-        if (!error) {
-            setNewMessage('');
+        if (error) {
+            console.error('Send error:', error);
+            // Remove temp message on error
+            setMessages(prev => prev.filter(m => m.id !== tempId));
+            setNewMessage(messageContent);
+        } else {
+            // Replace temp message with real one
+            setMessages(prev => prev.map(m => m.id === tempId ? data : m));
         }
     };
 
     const formatTime = (timestamp) => {
         const date = new Date(timestamp);
-        const now = new Date();
-        const diffInHours = (now - date) / (1000 * 60 * 60);
-
-        if (diffInHours < 24) {
-            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        } else {
-            return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-        }
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
     if (loading) {
@@ -130,7 +152,7 @@ const FamilyChat = () => {
                             >
                                 {!isMe && (
                                     <div className="message-sender">
-                                        {profile?.name || profile?.email || 'Family Member'}
+                                        {profile?.name || profile?.email?.split('@')[0] || 'Family'}
                                     </div>
                                 )}
                                 <div className="message-bubble">
