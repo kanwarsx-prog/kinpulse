@@ -7,14 +7,16 @@
     max-width: 600px;
     margin: 0 auto;
     height: 64px;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-top: 1px solid rgba(0, 0, 0, 0.05);
     display: flex;
     justify-content: space-around;
     align-items: center;
-    padding-bottom: env(safe-area-inset-bottom);
     z-index: 100;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
 }
 
 .nav-item {
