@@ -53,11 +53,10 @@
 
 .refresh-btn:hover {
     background: var(--color-border);
-    transform: rotate(180deg);
 }
 
 .refresh-btn:active {
-    transform: rotate(180deg) scale(0.9);
+    transform: scale(0.9);
 }
 
 .my-pulse-section {
@@ -140,6 +139,7 @@
     transition: all 0.2s ease;
     width: 100%;
     box-sizing: border-box;
+    gap: 16px;
 }
 
 .family-card:active {
@@ -152,6 +152,7 @@
     gap: var(--space-xs);
     flex: 1;
     min-width: 0;
+    max-width: calc(100% - 120px);
 }
 
 .member-info .name {
