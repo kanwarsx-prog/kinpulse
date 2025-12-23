@@ -79,21 +79,20 @@ export default function PhotoWall() {
             // Sort by date
             allPhotos.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-            // Get signed URLs for all photos
-            const photosWithSignedUrls = await Promise.all(
-                allPhotos.map(async (photo) => {
-                    const { data } = await supabase.storage
-                        .from('pulse-photos')
-                        .createSignedUrl(photo.url.split('/').pop(), 3600);
+            // Get public URLs (much faster than signed URLs)
+            const photosWithUrls = allPhotos.map(photo => {
+                const fileName = photo.url.split('/').pop();
+                const { data } = supabase.storage
+                    .from('pulse-photos')
+                    .getPublicUrl(fileName);
 
-                    return {
-                        ...photo,
-                        signedUrl: data?.signedUrl || photo.url
-                    };
-                })
-            );
+                return {
+                    ...photo,
+                    signedUrl: data.publicUrl
+                };
+            });
 
-            setPhotos(photosWithSignedUrls);
+            setPhotos(photosWithUrls);
         } catch (error) {
             console.error('Error fetching photos:', error);
         } finally {
