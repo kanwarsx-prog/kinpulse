@@ -18,6 +18,14 @@ const NotificationSettings = () => {
         }
     };
 
+    const handleEnableClick = () => {
+        if (!isSupported) {
+            alert('Push notifications are not supported on iOS Safari yet. Please try using Chrome or Firefox on desktop, or wait for Apple to add support in a future iOS update.');
+            return;
+        }
+        requestPermission();
+    };
+
     return (
         <div className="notification-settings">
             <h3>Push Notifications</h3>
@@ -25,19 +33,8 @@ const NotificationSettings = () => {
                 Get notified about new messages, pulses, and family activity
             </p>
 
-            {!isSupported && (
-                <div className="not-supported-box">
-                    <p className="not-supported">
-                        ⚠️ Push notifications are not supported on this device.
-                    </p>
-                    <p className="help-text">
-                        iOS Safari doesn't support web push notifications yet. Try using Chrome or Firefox on desktop.
-                    </p>
-                </div>
-            )}
-
-            {isSupported && permission === 'default' && (
-                <button className="enable-btn" onClick={requestPermission}>
+            {permission === 'default' && (
+                <button className="enable-btn" onClick={handleEnableClick}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                         <path d="M13.73 21a2 2 0 0 1-3.46 0" />
@@ -46,7 +43,7 @@ const NotificationSettings = () => {
                 </button>
             )}
 
-            {isSupported && permission === 'granted' && subscription && (
+            {permission === 'granted' && subscription && (
                 <div className="enabled-state">
                     <div className="status">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -66,7 +63,7 @@ const NotificationSettings = () => {
                 </div>
             )}
 
-            {isSupported && permission === 'denied' && (
+            {permission === 'denied' && (
                 <div className="denied-state">
                     <p>⚠️ Notifications are blocked</p>
                     <p className="help-text">
