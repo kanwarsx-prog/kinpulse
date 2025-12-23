@@ -190,15 +190,23 @@
 }
 
 .message-photo {
-    max-width: 200px;
-    border-radius: 8px;
-    margin-top: 4px;
+    max-width: 250px;
+    width: 100%;
+    border-radius: 12px;
     cursor: pointer;
     transition: transform 0.2s;
+    display: block;
 }
 
 .message-photo:hover {
     transform: scale(1.02);
+}
+
+/* Clean look for photo-only messages */
+.message-bubble:has(img):not(:has(.message-content)) {
+    background: transparent !important;
+    padding: 0 !important;
+    box-shadow: none !important;
 }
 
 .chat-loading {
