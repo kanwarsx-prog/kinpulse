@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSupabase } from '../../contexts/SupabaseContext';
+import NotificationSettings from './NotificationSettings';
 import './ProfileSettings.css';
 
 const ProfileSettings = ({ onClose }) => {
@@ -84,6 +85,10 @@ const ProfileSettings = ({ onClose }) => {
                         </button>
                     </div>
                 </form>
+
+                <div className="divider"></div>
+
+                <NotificationSettings />
 
                 <div className="danger-zone">
                     <button type="button" onClick={handleSignOut} className="sign-out-btn">
