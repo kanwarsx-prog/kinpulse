@@ -1,11 +1,13 @@
 import React from 'react';
 
 const STATUS_CONFIG = {
-    good: { emoji: '🟢', label: 'Good', color: 'var(--color-status-good)' },
-    low: { emoji: '🟡', label: 'Low Energy', color: 'var(--color-status-low)' },
-    quiet: { emoji: '🔵', label: 'Quiet', color: 'var(--color-status-quiet)' },
-    stressed: { emoji: '🔴', label: 'Stressed', color: 'var(--color-status-stressed)' },
-    none: { emoji: '⚪', label: 'No Update', color: 'gray' }
+    great: { emoji: '😊', label: 'Great', color: '#22c55e' },
+    good: { emoji: '🙂', label: 'Good', color: '#3b82f6' },
+    okay: { emoji: '😐', label: 'Okay', color: '#eab308' },
+    stressed: { emoji: '😰', label: 'Stressed', color: '#f97316' },
+    sad: { emoji: '😢', label: 'Sad', color: '#8b5cf6' },
+    overwhelmed: { emoji: '😵', label: 'Overwhelmed', color: '#ef4444' },
+    none: { emoji: '⚪', label: 'No Update', color: '#94a3b8' }
 };
 
 const StatusBadge = ({ status = 'none', showLabel = true, size = 'md' }) => {
