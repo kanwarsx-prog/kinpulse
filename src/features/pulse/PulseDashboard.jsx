@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import PulseInput from './PulseInput';
 import StatusBadge from '../../components/ui/StatusBadge';
+import ProfileSettings from '../profile/ProfileSettings';
 import './PulseDashboard.css';
 
 const PulseDashboard = () => {
@@ -11,6 +12,7 @@ const PulseDashboard = () => {
     const [myPulse, setMyPulse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [familyInfo, setFamilyInfo] = useState(null);
+    const [showSettings, setShowSettings] = useState(false);
 
     console.log('PulseDashboard: user =', user);
 
@@ -165,7 +167,7 @@ const PulseDashboard = () => {
                             >
                                 <div className="member-info">
                                     <span className="name">
-                                        {isMe ? 'You' : (profiles[pulse.user_id]?.name || profiles[pulse.user_id]?.email || 'Family Member')}
+                                        {isMe ? 'You' : (profiles[pulse.user_id]?.name || profiles[pulse.user_id]?.email?.split('@')[0] || 'Family Member')}
                                     </span>
                                     <span className="time">
                                         {new Date(pulse.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -182,6 +184,10 @@ const PulseDashboard = () => {
                     )}
                 </div>
             </section>
+
+            {showSettings && (
+                <ProfileSettings onClose={() => setShowSettings(false)} />
+            )}
         </div>
     );
 };
