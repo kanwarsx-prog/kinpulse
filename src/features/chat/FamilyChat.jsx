@@ -17,8 +17,9 @@ const FamilyChat = () => {
             fetchMessages();
             fetchProfiles();
 
+            // Subscribe to new family messages only (not DMs)
             const channel = supabase
-                .channel('public:messages')
+                .channel('family-messages')
                 .on(
                     'postgres_changes',
                     {
@@ -28,11 +29,14 @@ const FamilyChat = () => {
                         filter: `family_id=eq.${user.family_id}`
                     },
                     (payload) => {
-                        setMessages(prev => {
-                            const exists = prev.some(m => m.id === payload.new.id);
-                            if (exists) return prev;
-                            return [...prev, payload.new];
-                        });
+                        // Only add family messages (recipient_id is null)
+                        if (payload.new.recipient_id === null) {
+                            setMessages(prev => {
+                                const exists = prev.some(m => m.id === payload.new.id);
+                                if (exists) return prev;
+                                return [...prev, payload.new];
+                            });
+                        }
                     }
                 )
                 .subscribe();
@@ -67,6 +71,7 @@ const FamilyChat = () => {
             .from('messages')
             .select('*')
             .eq('family_id', user.family_id)
+            .is('recipient_id', null) // Only family chat messages, not DMs
             .order('created_at', { ascending: true })
             .limit(100);
 
@@ -130,6 +135,7 @@ const FamilyChat = () => {
             id: tempId,
             family_id: user.family_id,
             user_id: user.id,
+            recipient_id: null, // Family message, not DM
             content: messageContent,
             photo_url: photoUrl,
             created_at: new Date().toISOString()
@@ -145,6 +151,7 @@ const FamilyChat = () => {
             .insert([{
                 family_id: user.family_id,
                 user_id: user.id,
+                recipient_id: null, // Family message
                 content: messageContent,
                 photo_url: photoUrl
             }])
@@ -231,7 +238,7 @@ const FamilyChat = () => {
                         style={{ display: 'none' }}
                     />
                     <label htmlFor="chat-photo-input" className="photo-btn">
-                        📷
+                        +
                     </label>
                     <input
                         type="text"
