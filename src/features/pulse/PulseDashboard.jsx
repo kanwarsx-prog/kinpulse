@@ -115,6 +115,33 @@ const PulseDashboard = () => {
         setTimeout(() => setRefreshing(false), 500);
     };
 
+    const handleRequestPulse = async () => {
+        if (!user?.family_id) return;
+
+        setRefreshing(true);
+
+        // Send a message to the family chat
+        const { error } = await supabase
+            .from('messages')
+            .insert([{
+                family_id: user.family_id,
+                user_id: user.id,
+                content: '👋 Hey family! How are you all feeling? Share your pulse!'
+            }]);
+
+        if (!error) {
+            // Track the request
+            await supabase
+                .from('pulse_requests')
+                .insert([{
+                    family_id: user.family_id,
+                    requested_by: user.id
+                }]);
+        }
+
+        setRefreshing(false);
+    };
+
     return (
         <div className="pulse-dashboard fade-in">
             <header className="dashboard-header">
@@ -153,7 +180,19 @@ const PulseDashboard = () => {
             </header>
 
             <section className="family-stream">
-                <h3 className="section-title">Family Pulse</h3>
+                <div className="section-header">
+                    <h3 className="section-title">Family Pulse</h3>
+                    <button
+                        className="request-pulse-btn"
+                        onClick={handleRequestPulse}
+                        disabled={refreshing}
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
+                        </svg>
+                        Request
+                    </button>
+                </div>
                 <div className="family-list">
                     {pulses.map(pulse => {
                         const isMe = pulse.user_id === user.id;
