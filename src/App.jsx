@@ -7,18 +7,16 @@ import RitualDetail from './features/rituals/RitualDetail';
 import FamilyChat from './features/chat/FamilyChat';
 
 import { SupabaseProvider, useSupabase } from './contexts/SupabaseContext';
+import { ToastProvider } from './contexts/ToastContext';
 import LoginScreen from './features/auth/LoginScreen';
 import FamilyOnboarding from './features/onboarding/FamilyOnboarding';
+import LoadingSpinner from './components/ui/LoadingSpinner';
 
 const AppRoutes = () => {
   const { session, user, loading } = useSupabase();
 
   if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        Loading...
-      </div>
-    );
+    return <LoadingSpinner size="lg" message="Loading KinPulse..." />;
   }
 
   if (!session) {
@@ -45,9 +43,11 @@ const AppRoutes = () => {
 function App() {
   return (
     <SupabaseProvider>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
+      <ToastProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </ToastProvider>
     </SupabaseProvider>
   );
 }

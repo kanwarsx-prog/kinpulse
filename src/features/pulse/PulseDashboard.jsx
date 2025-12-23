@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useSupabase } from '../../contexts/SupabaseContext';
+import { useToast } from '../../contexts/ToastContext';
 import PulseInput from './PulseInput';
 import StatusBadge from '../../components/ui/StatusBadge';
 import ProfileSettings from '../profile/ProfileSettings';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import './PulseDashboard.css';
 
 const PulseDashboard = () => {
     const { supabase, user } = useSupabase();
+    const toast = useToast();
     const [pulses, setPulses] = useState([]);
     const [profiles, setProfiles] = useState({});
     const [myPulse, setMyPulse] = useState(null);
@@ -112,6 +115,7 @@ const PulseDashboard = () => {
             fetchPulses(),
             fetchFamilyInfo()
         ]);
+        toast.success('Refreshed!');
         setTimeout(() => setRefreshing(false), 500);
     };
 
