@@ -38,20 +38,28 @@ const PulseInput = ({ onSubmit }) => {
         const fileExt = photo.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-        const { error } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
             .from('pulse-photos')
             .upload(fileName, photo);
 
-        if (error) {
-            console.error('Photo upload error:', error);
+        if (uploadError) {
+            console.error('Photo upload error:', uploadError);
+            alert('Failed to upload photo: ' + uploadError.message);
             return null;
         }
 
-        const { data: { publicUrl } } = supabase.storage
+        // Create signed URL valid for 1 year
+        const { data: signedData, error: signedError } = await supabase.storage
             .from('pulse-photos')
-            .getPublicUrl(fileName);
+            .createSignedUrl(fileName, 31536000); // 365 days in seconds
 
-        return publicUrl;
+        if (signedError) {
+            console.error('Signed URL error:', signedError);
+            alert('Failed to create photo URL: ' + signedError.message);
+            return null;
+        }
+
+        return signedData.signedUrl;
     };
 
     const handleSubmit = async () => {
