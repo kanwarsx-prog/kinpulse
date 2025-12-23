@@ -5,6 +5,9 @@ import './NotificationSettings.css';
 const NotificationSettings = () => {
     const { permission, subscription, isSupported, requestPermission, unsubscribe } = usePushNotifications();
 
+    // Debug logging
+    console.log('NotificationSettings state:', { permission, hasSubscription: !!subscription, isSupported });
+
     const testNotification = () => {
         if ('serviceWorker' in navigator && 'Notification' in window) {
             navigator.serviceWorker.ready.then(registration => {
@@ -26,6 +29,11 @@ const NotificationSettings = () => {
         requestPermission();
     };
 
+    // Show enable button if no active subscription (regardless of permission state)
+    const showEnableButton = !subscription;
+    // Show enabled state if there's an active subscription
+    const showEnabledState = subscription && permission === 'granted';
+
     return (
         <div className="notification-settings">
             <h3>Push Notifications</h3>
@@ -33,7 +41,7 @@ const NotificationSettings = () => {
                 Get notified about new messages, pulses, and family activity
             </p>
 
-            {permission === 'default' && (
+            {showEnableButton && (
                 <button className="enable-btn" onClick={handleEnableClick}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -43,7 +51,7 @@ const NotificationSettings = () => {
                 </button>
             )}
 
-            {permission === 'granted' && subscription && (
+            {showEnabledState && (
                 <div className="enabled-state">
                     <div className="status">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -63,7 +71,7 @@ const NotificationSettings = () => {
                 </div>
             )}
 
-            {permission === 'denied' && (
+            {permission === 'denied' && !subscription && (
                 <div className="denied-state">
                     <p>⚠️ Notifications are blocked</p>
                     <p className="help-text">
