@@ -8,15 +8,16 @@
     background-color: hsl(var(--color-bg-primary));
     position: relative;
     box-shadow: var(--shadow-lg);
+    width: 100%;
 }
 
 .content {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     position: relative;
     /* Padding for bottom nav */
     padding-bottom: 80px;
-    padding-left: var(--space-md);
-    padding-right: var(--space-md);
+    width: 100%;
     animation: fadeIn 0.3s ease-out;
 }
