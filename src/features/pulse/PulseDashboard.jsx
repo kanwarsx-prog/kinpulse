@@ -91,6 +91,7 @@ const PulseDashboard = () => {
             family_id: user.family_id,
             state: pulseData.state,
             note: pulseData.note,
+            photo_url: pulseData.photo_url,
             created_at: new Date().toISOString()
         };
         setMyPulse(newPulse);
@@ -99,7 +100,8 @@ const PulseDashboard = () => {
             user_id: user.id,
             family_id: user.family_id,
             state: pulseData.state,
-            note: pulseData.note
+            note: pulseData.note,
+            photo_url: pulseData.photo_url
         });
 
         if (error) {
@@ -124,7 +126,6 @@ const PulseDashboard = () => {
 
         setRefreshing(true);
 
-        // Send a message to the family chat
         const { error } = await supabase
             .from('messages')
             .insert([{
@@ -134,7 +135,6 @@ const PulseDashboard = () => {
             }]);
 
         if (!error) {
-            // Track the request
             await supabase
                 .from('pulse_requests')
                 .insert([{
@@ -145,6 +145,10 @@ const PulseDashboard = () => {
 
         setRefreshing(false);
     };
+
+    if (loading) {
+        return <LoadingSpinner size="md" message="Loading your family pulse..." />;
+    }
 
     return (
         <div className="pulse-dashboard fade-in">
@@ -186,16 +190,27 @@ const PulseDashboard = () => {
             <section className="family-stream">
                 <div className="section-header">
                     <h3 className="section-title">Family Pulse</h3>
-                    <button
-                        className="request-pulse-btn"
-                        onClick={handleRequestPulse}
-                        disabled={refreshing}
-                    >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
-                        </svg>
-                        Request
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                            className="request-pulse-btn"
+                            onClick={() => window.location.href = '/pulse-history'}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            History
+                        </button>
+                        <button
+                            className="request-pulse-btn"
+                            onClick={handleRequestPulse}
+                            disabled={refreshing}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
+                            </svg>
+                            Request
+                        </button>
+                    </div>
                 </div>
                 <div className="family-list">
                     {pulses.map(pulse => {
@@ -217,6 +232,15 @@ const PulseDashboard = () => {
                                     <span className="time">
                                         {new Date(pulse.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </span>
+                                    {pulse.note && <p className="pulse-note">{pulse.note}</p>}
+                                    {pulse.photo_url && (
+                                        <img
+                                            src={pulse.photo_url}
+                                            alt="Pulse photo"
+                                            className="pulse-photo"
+                                            onClick={() => window.open(pulse.photo_url, '_blank')}
+                                        />
+                                    )}
                                 </div>
                                 <StatusBadge status={pulse.state} />
                             </div>

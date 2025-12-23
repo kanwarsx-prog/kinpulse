@@ -65,6 +65,17 @@
     order: 2;
 }
 
+.my-status-card {
+    background: var(--color-bg-primary);
+    padding: var(--space-xl);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-border-light);
+    width: 100%;
+    box-sizing: border-box;
+}
+
 .my-status-compact {
     background: var(--color-bg-primary);
     padding: var(--space-lg);
@@ -110,17 +121,6 @@
 .compact-content .time {
     font-size: 0.875rem;
     color: var(--color-text-secondary);
-}
-
-.my-status-card {
-    background: var(--color-bg-primary);
-    padding: var(--space-xl);
-    border-radius: var(--radius-lg);
-    text-align: center;
-    box-shadow: var(--shadow-md);
-    border: 1px solid var(--color-border-light);
-    width: 100%;
-    box-sizing: border-box;
 }
 
 .my-status-card .label {
@@ -248,4 +248,25 @@
 .member-info .time {
     font-size: 0.75rem;
     color: var(--color-text-secondary);
+}
+
+.pulse-note {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin: var(--space-xs) 0 0 0;
+    line-height: 1.4;
+}
+
+.pulse-photo {
+    width: 100%;
+    max-width: 200px;
+    border-radius: var(--radius-md);
+    margin-top: var(--space-sm);
+    cursor: pointer;
+    transition: transform 0.2s;
+    border: 1px solid var(--color-border);
+}
+
+.pulse-photo:hover {
+    transform: scale(1.02);
 }
