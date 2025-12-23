@@ -40,7 +40,6 @@ const PulseDashboard = () => {
             return;
         }
 
-        // Get profiles in this family
         const { data: profileData } = await supabase
             .from('profiles')
             .select('*')
@@ -50,7 +49,6 @@ const PulseDashboard = () => {
         profileData?.forEach(p => profileMap[p.id] = p);
         setProfiles(profileMap);
 
-        // Get latest pulses
         const { data } = await supabase
             .from('pulses')
             .select('*')
@@ -223,7 +221,8 @@ const PulseDashboard = () => {
                         return (
                             <div
                                 key={pulse.id}
-                                className="family-card"
+                                className={`family-card ${!isMe ? 'clickable' : ''}`}
+                                onClick={() => !isMe && navigate(`/chat/${pulse.user_id}`)}
                                 style={isMe ? {
                                     backgroundColor: '#f0f0ff',
                                     border: '2px solid #6366f1'
@@ -240,7 +239,10 @@ const PulseDashboard = () => {
                                             src={pulse.photo_url}
                                             alt="Pulse photo"
                                             className="pulse-photo"
-                                            onClick={() => window.open(pulse.photo_url, '_blank')}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                window.open(pulse.photo_url, '_blank');
+                                            }}
                                         />
                                     )}
                                 </div>

@@ -6,6 +6,7 @@ import PulseHistory from './features/pulse/PulseHistory';
 import RitualsList from './features/rituals/RitualsList';
 import RitualDetail from './features/rituals/RitualDetail';
 import FamilyChat from './features/chat/FamilyChat';
+import DirectMessage from './features/chat/DirectMessage';
 
 import { SupabaseProvider, useSupabase } from './contexts/SupabaseContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -36,6 +37,7 @@ const AppRoutes = () => {
         <Route path="rituals" element={<RitualsList />} />
         <Route path="rituals/:id" element={<RitualDetail />} />
         <Route path="chat" element={<FamilyChat />} />
+        <Route path="chat/:userId" element={<DirectMessage />} />
       </Route>
     </Routes>
   );

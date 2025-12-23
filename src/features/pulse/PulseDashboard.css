@@ -223,6 +223,16 @@
     gap: 16px;
 }
 
+.family-card.clickable {
+    cursor: pointer;
+}
+
+.family-card.clickable:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-primary);
+}
+
 .family-card:active {
     transform: scale(0.98);
 }
