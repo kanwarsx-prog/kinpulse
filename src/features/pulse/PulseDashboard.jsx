@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import { useToast } from '../../contexts/ToastContext';
+import { usePresence } from '../../hooks/usePresence';
 import PulseInput from './PulseInput';
 import StatusBadge from '../../components/ui/StatusBadge';
+import OnlineIndicator from '../../components/ui/OnlineIndicator';
 import ProfileSettings from '../profile/ProfileSettings';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import './PulseDashboard.css';
@@ -12,6 +14,7 @@ const PulseDashboard = () => {
     const navigate = useNavigate();
     const { supabase, user } = useSupabase();
     const toast = useToast();
+    const { isOnline, onlineCount } = usePresence();
     const [pulses, setPulses] = useState([]);
     const [profiles, setProfiles] = useState({});
     const [myPulse, setMyPulse] = useState(null);
@@ -179,7 +182,10 @@ const PulseDashboard = () => {
                         </button>
                     </div>
                 </div>
-                <p className="subtitle">{familyInfo?.name || 'Family Sync'}</p>
+                <p className="subtitle">
+                    {familyInfo?.name || 'Family Sync'}
+                    {onlineCount > 0 && ` • ${onlineCount} online`}
+                </p>
                 {familyInfo && (
                     <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '4px' }}>
                         Invite Code: <strong style={{ color: '#6366f1' }}>{familyInfo.invite_code}</strong>
@@ -229,7 +235,10 @@ const PulseDashboard = () => {
                                 } : {}}
                             >
                                 <div className="member-info">
-                                    <span className="name">{displayName}</span>
+                                    <div className="name-with-status">
+                                        <span className="name">{displayName}</span>
+                                        {!isMe && <OnlineIndicator isOnline={isOnline(pulse.user_id)} />}
+                                    </div>
                                     <span className="time">
                                         {new Date(pulse.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </span>

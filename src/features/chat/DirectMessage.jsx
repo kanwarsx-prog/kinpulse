@@ -1,12 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSupabase } from '../../contexts/SupabaseContext';
+import { usePresence } from '../../hooks/usePresence';
+import OnlineIndicator from '../../components/ui/OnlineIndicator';
 import './DirectMessage.css';
 
 const DirectMessage = () => {
     const { userId } = useParams();
     const navigate = useNavigate();
     const { supabase, user } = useSupabase();
+    const { isOnline } = usePresence();
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [photo, setPhoto] = useState(null);
@@ -245,12 +248,17 @@ const DirectMessage = () => {
     return (
         <div className="direct-message">
             <header className="dm-header">
-                <button className="back-btn" onClick={() => navigate('/chat')}>
-                    ←
-                </button>
+                <button className="back-btn" onClick={() => navigate('/chat')}>←</button>
                 <div className="dm-header-info">
-                    <h1>{recipient?.name || recipient?.email?.split('@')[0] || 'User'}</h1>
-                    {isTyping && <span className="typing-status">typing...</span>}
+                    <div className="header-with-status">
+                        <h1>{recipient?.name || recipient?.email?.split('@')[0] || 'User'}</h1>
+                        <OnlineIndicator isOnline={isOnline(userId)} size="md" />
+                    </div>
+                    {isOnline(userId) ? (
+                        <span className="online-status">Online</span>
+                    ) : (
+                        isTyping && <span className="typing-status">typing...</span>
+                    )}
                 </div>
             </header>
 
