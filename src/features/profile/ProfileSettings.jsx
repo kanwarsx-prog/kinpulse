@@ -3,7 +3,7 @@ import { useSupabase } from '../../contexts/SupabaseContext';
 import './ProfileSettings.css';
 
 const ProfileSettings = ({ onClose }) => {
-    const { supabase, user, refreshUser } = useSupabase();
+    const { supabase, user, refreshUser, signOut } = useSupabase();
     const [name, setName] = useState(user?.name || '');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
@@ -28,6 +28,12 @@ const ProfileSettings = ({ onClose }) => {
             }, 1000);
         }
         setLoading(false);
+    };
+
+    const handleSignOut = async () => {
+        if (confirm('Are you sure you want to sign out?')) {
+            await signOut();
+        }
     };
 
     return (
@@ -57,17 +63,33 @@ const ProfileSettings = ({ onClose }) => {
                         />
                     </div>
 
+                    <div className="form-group">
+                        <label>Family</label>
+                        <input
+                            type="text"
+                            value={user?.family_id ? 'Connected' : 'Not in a family'}
+                            disabled
+                            style={{ opacity: 0.6 }}
+                        />
+                    </div>
+
                     {message && <p className={message.includes('Error') ? 'error' : 'success'}>{message}</p>}
 
                     <div className="form-actions">
                         <button type="button" onClick={onClose} disabled={loading}>
                             Cancel
                         </button>
-                        <button type="submit" disabled={loading}>
+                        <button type="submit" disabled={loading} className="primary-btn">
                             {loading ? 'Saving...' : 'Save'}
                         </button>
                     </div>
                 </form>
+
+                <div className="danger-zone">
+                    <button type="button" onClick={handleSignOut} className="sign-out-btn">
+                        Sign Out
+                    </button>
+                </div>
             </div>
         </div>
     );

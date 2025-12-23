@@ -120,17 +120,29 @@ const PulseDashboard = () => {
             <header className="dashboard-header">
                 <div className="header-content">
                     <h1>KinPulse</h1>
-                    <button
-                        className="refresh-btn"
-                        onClick={handleRefresh}
-                        disabled={refreshing}
-                        aria-label="Refresh"
-                        style={{ transform: refreshing ? 'rotate(360deg)' : 'rotate(0deg)', transition: 'transform 0.5s ease' }}
-                    >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
-                        </svg>
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                            className="refresh-btn"
+                            onClick={handleRefresh}
+                            disabled={refreshing}
+                            aria-label="Refresh"
+                            style={{ transform: refreshing ? 'rotate(360deg)' : 'rotate(0deg)', transition: 'transform 0.5s ease' }}
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
+                            </svg>
+                        </button>
+                        <button
+                            className="refresh-btn"
+                            onClick={() => setShowSettings(true)}
+                            aria-label="Settings"
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <circle cx="12" cy="12" r="3" />
+                                <path d="M12 1v6m0 6v6" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 <p className="subtitle">{familyInfo?.name || 'Family Sync'}</p>
                 {familyInfo && (

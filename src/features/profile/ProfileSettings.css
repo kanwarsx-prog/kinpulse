@@ -75,7 +75,8 @@
     color: var(--color-text-primary);
 }
 
-.form-actions button[type="submit"] {
+.form-actions button[type="submit"],
+.form-actions .primary-btn {
     background: var(--color-primary);
     color: white;
 }
@@ -97,4 +98,28 @@
     font-size: 0.875rem;
     margin-top: 12px;
     text-align: center;
+}
+
+.danger-zone {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-border);
+}
+
+.sign-out-btn {
+    width: 100%;
+    padding: 12px 20px;
+    background: transparent;
+    color: var(--color-error);
+    border: 1px solid var(--color-error);
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.sign-out-btn:hover {
+    background: var(--color-error);
+    color: white;
 }
