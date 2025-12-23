@@ -1,0 +1,22 @@
+.mobile-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-width: 600px;
+    /* Constrain on desktop */
+    margin: 0 auto;
+    background-color: hsl(var(--color-bg-primary));
+    position: relative;
+    box-shadow: var(--shadow-lg);
+}
+
+.content {
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+    /* Padding for bottom nav */
+    padding-bottom: 80px;
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+    animation: fadeIn 0.3s ease-out;
+}

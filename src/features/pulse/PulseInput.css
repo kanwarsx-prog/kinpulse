@@ -1,0 +1,80 @@
+.pulse-input-container {
+    padding: var(--space-md);
+    background: var(--color-bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    margin-bottom: var(--space-lg);
+}
+
+.pulse-question {
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: var(--space-lg);
+    color: hsl(var(--color-text-primary));
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.status-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    border: 2px solid transparent;
+    background-color: hsl(var(--color-bg-primary));
+    transition: all 0.2s ease;
+}
+
+.status-option .emoji {
+    font-size: 2rem;
+    margin-bottom: var(--space-sm);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.status-option .label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: hsl(var(--color-text-secondary));
+}
+
+.status-option.selected {
+    border-color: var(--status-color);
+    background-color: white;
+    /* Or a light tint */
+    box-shadow: var(--shadow-sm);
+}
+
+.status-option.selected .emoji {
+    transform: scale(1.2);
+}
+
+.status-option.selected .label {
+    color: hsl(var(--color-text-primary));
+}
+
+.action-area {
+    display: flex;
+    justify-content: center;
+}
+
+.submit-btn {
+    background-color: hsl(var(--color-text-primary));
+    color: white;
+    padding: 12px 32px;
+    border-radius: var(--radius-pill);
+    font-weight: 600;
+    font-size: 1rem;
+    transition: opacity 0.2s;
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

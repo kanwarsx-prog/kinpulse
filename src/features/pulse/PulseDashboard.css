@@ -1,0 +1,122 @@
+.pulse-dashboard {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-lg);
+    padding-bottom: 80px;
+    /* Space for bottom nav */
+}
+
+.dashboard-header {
+    text-align: center;
+    margin-bottom: var(--space-xl);
+    padding-top: var(--space-md);
+}
+
+.dashboard-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-xs);
+}
+
+.dashboard-header .subtitle {
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+
+.my-pulse-section {
+    margin-bottom: var(--space-xl);
+}
+
+.my-status-card {
+    background: var(--color-bg-primary);
+    padding: var(--space-xl);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-border-light);
+}
+
+.my-status-card .label {
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    margin-bottom: var(--space-sm);
+}
+
+.my-status-card .current-status {
+    margin: var(--space-md) 0;
+}
+
+.my-status-card .time {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin-top: var(--space-sm);
+}
+
+.update-btn {
+    margin-top: var(--space-md);
+    padding: 10px 24px;
+    background: var(--color-primary);
+    color: white;
+    border-radius: var(--radius-pill);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+}
+
+.family-stream {
+    margin-top: var(--space-xl);
+}
+
+.section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-text-tertiary);
+    margin-bottom: var(--space-md);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.family-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.family-card {
+    background: var(--color-bg-primary);
+    padding: var(--space-lg);
+    border-radius: var(--radius-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border-light);
+    transition: all 0.2s ease;
+}
+
+.family-card:active {
+    transform: scale(0.98);
+}
+
+.member-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.member-info .name {
+    font-weight: 600;
+    color: var(--color-text-primary);
+    font-size: 1rem;
+}
+
+.member-info .time {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+}
