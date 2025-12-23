@@ -116,6 +116,8 @@ export const usePushNotifications = () => {
                 .eq('endpoint', subscription.endpoint);
 
             setSubscription(null);
+            // Reset permission to default so the enable button shows again
+            setPermission('default');
             console.log('Unsubscribed from push notifications');
         } catch (error) {
             console.error('Unsubscribe error:', error);
