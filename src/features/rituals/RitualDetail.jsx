@@ -48,7 +48,7 @@ const RitualDetail = () => {
             const myRes = responseData?.find(r => r.user_id === user.id);
             if (myRes) {
                 setSubmitted(true);
-                setResponse(myRes.content);
+                setResponse(myRes.response);
             }
 
             setLoading(false);
@@ -63,7 +63,7 @@ const RitualDetail = () => {
             const { error } = await supabase.from('ritual_responses').insert({
                 ritual_id: id,
                 user_id: user.id,
-                content: response
+                response: response
             });
 
             if (!error) {
@@ -71,7 +71,7 @@ const RitualDetail = () => {
                 // Optimistically add to list
                 setResponses([...responses, {
                     user_id: user.id,
-                    content: response,
+                    response: response,
                     created_at: new Date().toISOString()
                 }]);
             }
@@ -117,7 +117,7 @@ const RitualDetail = () => {
                                 return (
                                     <div key={idx} className="my-response">
                                         <span className="user-label">You</span>
-                                        <p>{res.content}</p>
+                                        <p>{res.response}</p>
                                     </div>
                                 );
                             }
@@ -130,7 +130,7 @@ const RitualDetail = () => {
                                             {new Date(res.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </span>
                                     </div>
-                                    <p className="response-text">{res.content}</p>
+                                    <p className="response-text">{res.response}</p>
                                 </div>
                             );
                         })}
