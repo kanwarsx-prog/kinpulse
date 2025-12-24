@@ -48,3 +48,15 @@
 .nav-item.active svg {
     transform: translateY(-2px);
 }
+
+.nav-icon-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-icon-wrapper .unread-badge {
+    top: -4px;
+    right: -8px;
+}

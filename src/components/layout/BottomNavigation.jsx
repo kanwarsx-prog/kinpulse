@@ -1,8 +1,12 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { useUnreadCounts } from '../../hooks/useUnreadCounts';
+import UnreadBadge from '../ui/UnreadBadge';
 import './BottomNavigation.css';
 
 const BottomNavigation = () => {
+    const { totalUnread } = useUnreadCounts();
+
     return (
         <nav className="bottom-nav">
             <NavLink
@@ -19,9 +23,12 @@ const BottomNavigation = () => {
                 to="/chat"
                 className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
             >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                </svg>
+                <div className="nav-icon-wrapper">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                    <UnreadBadge count={totalUnread} />
+                </div>
                 <span className="label">Chat</span>
             </NavLink>
 

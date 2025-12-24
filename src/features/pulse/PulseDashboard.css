@@ -237,6 +237,22 @@
     transform: scale(0.98);
 }
 
+.fami.pulse-card.clickable:active {
+    transform: scale(0.98);
+}
+
+.pulse-card-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 5;
+}
+
+.pulse-card-badge .unread-badge {
+    position: static;
+}
+
+
 .member-info {
     display: flex;
     flex-direction: column;

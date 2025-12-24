@@ -1,0 +1,35 @@
+.unread-badge {
+    position: absolute;
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 10px;
+    line-height: 1;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+}
+
+.unread-badge.small {
+    min-width: 18px;
+    height: 18px;
+    font-size: 10px;
+}
+
+.unread-badge.medium {
+    min-width: 22px;
+    height: 22px;
+    font-size: 11px;
+}
+
+.unread-badge.large {
+    min-width: 26px;
+    height: 26px;
+    font-size: 12px;
+}

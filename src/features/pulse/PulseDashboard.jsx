@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import { useToast } from '../../contexts/ToastContext';
 import { usePresence } from '../../hooks/usePresence';
+import { useUnreadCounts } from '../../hooks/useUnreadCounts';
 import PulseInput from './PulseInput';
 import StatusBadge from '../../components/ui/StatusBadge';
 import OnlineIndicator from '../../components/ui/OnlineIndicator';
+import UnreadBadge from '../../components/ui/UnreadBadge';
 import ProfileSettings from '../profile/ProfileSettings';
 import ShareInvite from '../family/ShareInvite';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
@@ -16,6 +18,7 @@ const PulseDashboard = () => {
     const { supabase, user } = useSupabase();
     const toast = useToast();
     const { isOnline, onlineCount } = usePresence();
+    const { getUnreadForUser, markAsRead } = useUnreadCounts();
     const [pulses, setPulses] = useState([]);
     const [profiles, setProfiles] = useState({});
     const [myPulse, setMyPulse] = useState(null);
@@ -238,17 +241,28 @@ const PulseDashboard = () => {
                         const isMe = pulse.user_id === user.id;
                         const profile = profiles[pulse.user_id];
                         const displayName = isMe ? 'You' : (profile?.name || profile?.email?.split('@')[0] || 'Family Member');
+                        const unreadCount = !isMe ? getUnreadForUser(pulse.user_id) : 0;
 
                         return (
                             <div
                                 key={pulse.id}
-                                className={`family-card ${!isMe ? 'clickable' : ''}`}
-                                onClick={() => !isMe && navigate(`/chat/${pulse.user_id}`)}
+                                className={`pulse-card ${!isMe ? 'clickable' : ''}`}
+                                onClick={() => {
+                                    if (!isMe) {
+                                        markAsRead(pulse.user_id);
+                                        navigate(`/chat/${pulse.user_id}`);
+                                    }
+                                }}
                                 style={isMe ? {
                                     backgroundColor: '#f0f0ff',
                                     border: '2px solid #6366f1'
                                 } : {}}
                             >
+                                {unreadCount > 0 && (
+                                    <div className="pulse-card-badge">
+                                        <UnreadBadge count={unreadCount} />
+                                    </div>
+                                )}
                                 <div className="member-info">
                                     <div className="name-with-status">
                                         <span className="name">{displayName}</span>
