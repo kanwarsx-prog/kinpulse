@@ -28,8 +28,8 @@
 .messages-container {
     flex: 1;
     overflow-y: auto;
-    padding: var(--space-md);
-    padding-bottom: 70px;
+    padding: 12px;
+    padding-bottom: 76px;
 }
 
 .empty-state {
@@ -39,7 +39,7 @@
 }
 
 .message {
-    margin-bottom: var(--space-sm);
+    margin-bottom: 10px;
     display: flex;
     flex-direction: column;
 }
@@ -61,9 +61,9 @@
 
 .message-bubble {
     background: white;
-    padding: 10px 12px;
-    border-radius: 16px;
-    max-width: 78%;
+    padding: 9px 11px;
+    border-radius: 14px;
+    max-width: 82%;
     box-shadow: var(--shadow-sm);
     display: inline-block;
 }
@@ -93,7 +93,7 @@
     left: 0;
     right: 0;
     background: white;
-    padding: 10px var(--space-md);
+    padding: 8px var(--space-md);
     border-top: 1px solid var(--color-border);
     display: flex;
     flex-direction: column;
