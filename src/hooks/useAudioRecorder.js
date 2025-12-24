@@ -21,11 +21,18 @@ export const useAudioRecorder = () => {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             streamRef.current = stream;
 
-            // Create MediaRecorder
-            const mediaRecorder = new MediaRecorder(stream, {
-                mimeType: 'audio/webm;codecs=opus'
-            });
+            // Create MediaRecorder with iOS-compatible format
+            let mimeType = 'audio/mp4';
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+                // Fallback to webm for desktop browsers
+                mimeType = 'audio/webm;codecs=opus';
+            }
+
+            const mediaRecorder = new MediaRecorder(stream, { mimeType });
             mediaRecorderRef.current = mediaRecorder;
+
+            // Store mime type for blob creation
+            let recordedMimeType = mimeType;
 
             // Collect audio data
             mediaRecorder.ondataavailable = (event) => {
@@ -36,7 +43,7 @@ export const useAudioRecorder = () => {
 
             // Handle recording stop
             mediaRecorder.onstop = () => {
-                const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+                const blob = new Blob(chunksRef.current, { type: recordedMimeType });
                 setAudioBlob(blob);
 
                 // Stop all tracks
