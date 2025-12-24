@@ -5,7 +5,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-sm) var(--space-md);
+  padding: 10px var(--space-md);
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
@@ -90,4 +90,39 @@
   display: grid;
   place-items: center;
   font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .top-bar {
+    padding: 8px var(--space-md);
+  }
+
+  .top-bar-inner {
+    gap: var(--space-sm);
+  }
+
+  .brand-mark {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+  }
+
+  .brand-name {
+    font-size: 16px;
+  }
+
+  .invite-code {
+    display: none;
+  }
+
+  .icon-btn,
+  .avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .icon-btn svg {
+    width: 16px;
+    height: 16px;
+  }
 }
