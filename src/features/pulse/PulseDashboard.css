@@ -248,6 +248,15 @@
     position: static;
 }
 
+.pulse-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+    gap: 8px;
+}
+
+
 .member-info {
     display: flex;
     flex-direction: column;

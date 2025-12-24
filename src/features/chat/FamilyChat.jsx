@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import { useUnreadCounts } from '../../hooks/useUnreadCounts';
+import MessageReaction from '../../components/ui/MessageReaction';
 import './FamilyChat.css';
 
 const FamilyChat = () => {
@@ -218,6 +219,7 @@ const FamilyChat = () => {
                                     )}
                                     <span className="message-time">{formatTime(message.created_at)}</span>
                                 </div>
+                                <MessageReaction messageId={message.id} />
                             </div>
                         );
                     })

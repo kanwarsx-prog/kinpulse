@@ -1,0 +1,53 @@
+.reaction-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: transparent;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.reaction-button:hover {
+    background: #f9fafb;
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.reaction-button.reacted {
+    background: #fef2f2;
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.reaction-button.reacted svg {
+    animation: heartPop 0.3s ease;
+}
+
+.reaction-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.reaction-count {
+    line-height: 1;
+}
+
+@keyframes heartPop {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.3);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}

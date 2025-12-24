@@ -4,6 +4,7 @@ import { useSupabase } from '../../contexts/SupabaseContext';
 import { usePresence } from '../../hooks/usePresence';
 import { useUnreadCounts } from '../../hooks/useUnreadCounts';
 import OnlineIndicator from '../../components/ui/OnlineIndicator';
+import MessageReaction from '../../components/ui/MessageReaction';
 import './DirectMessage.css';
 
 const DirectMessage = () => {
@@ -282,6 +283,7 @@ const DirectMessage = () => {
                                     )}
                                     <span className="message-time">{formatTime(message.created_at)}</span>
                                 </div>
+                                <MessageReaction messageId={message.id} />
                             </div>
                         );
                     })

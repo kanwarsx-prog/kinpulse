@@ -8,6 +8,7 @@ import PulseInput from './PulseInput';
 import StatusBadge from '../../components/ui/StatusBadge';
 import OnlineIndicator from '../../components/ui/OnlineIndicator';
 import UnreadBadge from '../../components/ui/UnreadBadge';
+import PulseReaction from '../../components/ui/PulseReaction';
 import ProfileSettings from '../profile/ProfileSettings';
 import ShareInvite from '../family/ShareInvite';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
@@ -284,7 +285,10 @@ const PulseDashboard = () => {
                                         />
                                     )}
                                 </div>
-                                <StatusBadge status={pulse.state} />
+                                <div className="pulse-card-footer">
+                                    <StatusBadge status={pulse.state} />
+                                    <PulseReaction pulseId={pulse.id} />
+                                </div>
                             </div>
                         );
                     })}
