@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import { useUnreadCounts } from '../../hooks/useUnreadCounts';
 import MessageReaction from '../../components/ui/MessageReaction';
+import VoiceRecorder from '../../components/ui/VoiceRecorder';
+import VoicePlayer from '../../components/ui/VoicePlayer';
 import './FamilyChat.css';
 
 const FamilyChat = () => {
@@ -11,6 +13,7 @@ const FamilyChat = () => {
     const [newMessage, setNewMessage] = useState('');
     const [photo, setPhoto] = useState(null);
     const [photoPreview, setPhotoPreview] = useState(null);
+    const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
     const [profiles, setProfiles] = useState({});
     const [loading, setLoading] = useState(true);
     const messagesEndRef = useRef(null);
@@ -126,6 +129,38 @@ const FamilyChat = () => {
         return signedData.signedUrl;
     };
 
+    const handleSendVoice = async (audioBlob, duration) => {
+        try {
+            // Upload audio to storage
+            const fileName = `${user.id}/${Date.now()}.webm`;
+            const { data: uploadData, error: uploadError } = await supabase.storage
+                .from('pulse-photos')
+                .upload(fileName, audioBlob, {
+                    contentType: 'audio/webm'
+                });
+
+            if (uploadError) throw uploadError;
+
+            // Get signed URL
+            const { data: urlData } = await supabase.storage
+                .from('pulse-photos')
+                .createSignedUrl(fileName, 31536000); // 1 year
+
+            // Send message with audio
+            await supabase.from('messages').insert([{
+                family_id: user.family_id,
+                user_id: user.id,
+                audio_url: urlData.signedUrl,
+                audio_duration: duration,
+                is_read: false
+            }]);
+
+            setShowVoiceRecorder(false);
+        } catch (error) {
+            console.error('Error sending voice message:', error);
+        }
+    };
+
     const handleSend = async (e) => {
         e.preventDefault();
         if (!newMessage.trim() && !photo) return;
@@ -219,6 +254,12 @@ const FamilyChat = () => {
                                     )}
                                     <span className="message-time">{formatTime(message.created_at)}</span>
                                 </div>
+                                {message.audio_url && (
+                                    <VoicePlayer
+                                        audioUrl={message.audio_url}
+                                        duration={message.audio_duration}
+                                    />
+                                )}
                                 <MessageReaction messageId={message.id} />
                             </div>
                         );
@@ -245,6 +286,15 @@ const FamilyChat = () => {
                     <label htmlFor="chat-photo-input" className="photo-btn">
                         +
                     </label>
+                    {!showVoiceRecorder && (
+                        <button
+                            type="button"
+                            className="voice-btn"
+                            onClick={() => setShowVoiceRecorder(true)}
+                        >
+                            🎤
+                        </button>
+                    )}
                     <input
                         type="text"
                         placeholder="Type a message..."
@@ -260,6 +310,15 @@ const FamilyChat = () => {
                     </button>
                 </div>
             </form>
+
+            {showVoiceRecorder && (
+                <div className="voice-recorder-container">
+                    <VoiceRecorder
+                        onSend={handleSendVoice}
+                        onCancel={() => setShowVoiceRecorder(false)}
+                    />
+                </div>
+            )}
         </div>
     );
 };

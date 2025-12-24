@@ -1,0 +1,157 @@
+.voice-recorder {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 12px;
+}
+
+.record-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: #6366f1;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.record-btn:hover {
+    background: #4f46e5;
+    transform: scale(1.05);
+}
+
+.voice-recorder.recording {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+}
+
+.recording-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.recording-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ef4444;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.recording-time {
+    font-size: 16px;
+    font-weight: 600;
+    color: #374151;
+    font-variant-numeric: tabular-nums;
+}
+
+.warning {
+    font-size: 12px;
+    color: #dc2626;
+    font-weight: 600;
+}
+
+.recording-actions,
+.preview-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.stop-btn,
+.send-btn,
+.cancel-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.stop-btn {
+    background: #ef4444;
+    color: white;
+}
+
+.stop-btn:hover {
+    background: #dc2626;
+}
+
+.send-btn {
+    background: #6366f1;
+    color: white;
+}
+
+.send-btn:hover {
+    background: #4f46e5;
+}
+
+.cancel-btn {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.cancel-btn:hover {
+    background: #d1d5db;
+}
+
+.voice-recorder.preview {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+}
+
+.preview-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.preview-icon {
+    font-size: 20px;
+}
+
+.preview-duration {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.preview-player {
+    flex: 1;
+    height: 32px;
+}
+
+.voice-recorder.error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+}
+
+.error-message {
+    color: #dc2626;
+    font-size: 14px;
+    margin: 0;
+    flex: 1;
+}

@@ -1,0 +1,78 @@
+.voice-player {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f3f4f6;
+    border-radius: 12px;
+    max-width: 300px;
+}
+
+.play-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: #6366f1;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.play-btn:hover {
+    background: #4f46e5;
+    transform: scale(1.05);
+}
+
+.player-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.progress-bar {
+    height: 4px;
+    background: #d1d5db;
+    border-radius: 2px;
+    cursor: pointer;
+    margin-bottom: 4px;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #6366f1;
+    border-radius: 2px;
+    transition: width 0.1s linear;
+}
+
+.time-info {
+    display: flex;
+    gap: 4px;
+    font-size: 11px;
+    color: #6b7280;
+    font-variant-numeric: tabular-nums;
+}
+
+.speed-btn {
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background: white;
+    font-size: 11px;
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.speed-btn:hover {
+    background: #f9fafb;
+    border-color: #6366f1;
+    color: #6366f1;
+}

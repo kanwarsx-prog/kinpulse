@@ -5,6 +5,8 @@ import { usePresence } from '../../hooks/usePresence';
 import { useUnreadCounts } from '../../hooks/useUnreadCounts';
 import OnlineIndicator from '../../components/ui/OnlineIndicator';
 import MessageReaction from '../../components/ui/MessageReaction';
+import VoiceRecorder from '../../components/ui/VoiceRecorder';
+import VoicePlayer from '../../components/ui/VoicePlayer';
 import './DirectMessage.css';
 
 const DirectMessage = () => {
@@ -17,6 +19,7 @@ const DirectMessage = () => {
     const [newMessage, setNewMessage] = useState('');
     const [photo, setPhoto] = useState(null);
     const [photoPreview, setPhotoPreview] = useState(null);
+    const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
     const [recipient, setRecipient] = useState(null);
     const [isTyping, setIsTyping] = useState(false);
     const [loading, setLoading] = useState(true);
