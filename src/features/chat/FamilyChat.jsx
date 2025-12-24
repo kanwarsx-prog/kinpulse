@@ -148,18 +148,18 @@ const FamilyChat = () => {
 
             console.log('Upload successful:', uploadData);
 
-            // Get signed URL
-            const { data: urlData } = await supabase.storage
+            // Get public URL (instant, no signing needed)
+            const { data: urlData } = supabase.storage
                 .from('pulse-photos')
-                .createSignedUrl(fileName, 31536000); // 1 year
+                .getPublicUrl(fileName);
 
-            console.log('Signed URL created:', urlData?.signedUrl);
+            console.log('Public URL created:', urlData?.publicUrl);
 
             // Send message with audio
             const messageData = {
                 family_id: user.family_id,
                 user_id: user.id,
-                audio_url: urlData.signedUrl,
+                audio_url: urlData.publicUrl,
                 audio_duration: duration,
                 is_read: false
             };
