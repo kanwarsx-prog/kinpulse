@@ -16,31 +16,26 @@ const PulseHistory = () => {
 
     useEffect(() => {
         fetchHistory();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dateRange, selectedMember]);
 
     const fetchHistory = async () => {
         setLoading(true);
 
-        // Fetch profiles
         const { data: profileData } = await supabase
             .from('profiles')
             .select('*')
             .eq('family_id', user.family_id);
 
         const profileMap = {};
-        profileData?.forEach(p => profileMap[p.id] = p);
+        profileData?.forEach((p) => (profileMap[p.id] = p));
         setProfiles(profileMap);
 
-        // Calculate date filter
-        let query = supabase
-            .from('pulses')
-            .select('*')
-            .eq('family_id', user.family_id)
-            .order('created_at', { ascending: false });
+        let query = supabase.from('pulses').select('*').eq('family_id', user.family_id).order('created_at', { ascending: false });
 
         if (dateRange !== 'all') {
             const daysAgo = new Date();
-            daysAgo.setDate(daysAgo.getDate() - parseInt(dateRange));
+            daysAgo.setDate(daysAgo.getDate() - parseInt(dateRange, 10));
             query = query.gte('created_at', daysAgo.toISOString());
         }
 
@@ -53,9 +48,9 @@ const PulseHistory = () => {
         setLoading(false);
     };
 
-    const groupByDate = (pulses) => {
+    const groupByDate = (pulseList) => {
         const groups = {};
-        pulses.forEach(pulse => {
+        pulseList.forEach((pulse) => {
             const date = new Date(pulse.created_at).toLocaleDateString();
             if (!groups[date]) groups[date] = [];
             groups[date].push(pulse);
@@ -66,12 +61,12 @@ const PulseHistory = () => {
     const groupedPulses = groupByDate(pulses);
 
     return (
-        <div className="pulse-history">
-            <header className="history-header">
-                <button className="back-btn" onClick={() => navigate(-1)}>
+        <div className="pulse-history page fade-in">
+            <header className="history-header page-header">
+                <button className="back-btn" onClick={() => navigate(-1)} aria-label="Go back">
                     ← Back
                 </button>
-                <h1>Pulse History</h1>
+                <h1 className="page-title">Pulse History</h1>
             </header>
 
             <div className="filters">
@@ -88,9 +83,9 @@ const PulseHistory = () => {
                     <label>Family Member</label>
                     <select value={selectedMember} onChange={(e) => setSelectedMember(e.target.value)}>
                         <option value="all">Everyone</option>
-                        {Object.values(profiles).map(profile => (
+                        {Object.values(profiles).map((profile) => (
                             <option key={profile.id} value={profile.id}>
-                                {profile.id === user.id ? 'You' : (profile.name || profile.email?.split('@')[0])}
+                                {profile.id === user.id ? 'You' : profile.name || profile.email?.split('@')[0]}
                             </option>
                         ))}
                     </select>
@@ -103,14 +98,15 @@ const PulseHistory = () => {
                 <div className="timeline">
                     {Object.keys(groupedPulses).length === 0 ? (
                         <div className="empty-state">
-                            <p>No pulses found for this time range</p>
+                            <h3>No pulses found</h3>
+                            <p>Try a wider time range or select “Everyone”.</p>
                         </div>
                     ) : (
                         Object.entries(groupedPulses).map(([date, datePulses]) => (
                             <div key={date} className="timeline-day">
                                 <div className="date-header">{date}</div>
                                 <div className="day-pulses">
-                                    {datePulses.map(pulse => {
+                                    {datePulses.map((pulse) => {
                                         const profile = profiles[pulse.user_id];
                                         const isMe = pulse.user_id === user.id;
                                         return (
@@ -124,13 +120,11 @@ const PulseHistory = () => {
                                                 <div className="pulse-content">
                                                     <div className="pulse-header">
                                                         <span className="pulse-name">
-                                                            {isMe ? 'You' : (profile?.name || profile?.email?.split('@')[0] || 'Family')}
+                                                            {isMe ? 'You' : profile?.name || profile?.email?.split('@')[0] || 'Family'}
                                                         </span>
                                                         <StatusBadge status={pulse.state} />
                                                     </div>
-                                                    {pulse.note && (
-                                                        <p className="pulse-note">{pulse.note}</p>
-                                                    )}
+                                                    {pulse.note && <p className="pulse-note">{pulse.note}</p>}
                                                 </div>
                                             </div>
                                         );

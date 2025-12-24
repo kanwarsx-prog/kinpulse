@@ -14,6 +14,7 @@ export default function JoinFamily() {
 
     useEffect(() => {
         validateInvitation();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [inviteCode]);
 
     const validateInvitation = async () => {
@@ -21,20 +22,13 @@ export default function JoinFamily() {
         setError('');
 
         try {
-            // Check if user is authenticated
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                // Redirect to auth with return URL
                 navigate(`/auth?redirect=/join/${inviteCode}`);
                 return;
             }
 
-            // Check if user already has a family
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('family_id')
-                .eq('id', user.id)
-                .single();
+            const { data: profile } = await supabase.from('profiles').select('family_id').eq('id', user.id).single();
 
             if (profile?.family_id) {
                 setError('You are already part of a family. Please leave your current family first.');
@@ -42,16 +36,17 @@ export default function JoinFamily() {
                 return;
             }
 
-            // Validate invitation code
             const { data: invite, error: inviteError } = await supabase
                 .from('family_invitations')
-                .select(`
+                .select(
+                    `
           *,
           families (
             id,
             name
           )
-        `)
+        `
+                )
                 .eq('invite_code', inviteCode.toUpperCase())
                 .eq('is_active', true)
                 .single();
@@ -62,14 +57,12 @@ export default function JoinFamily() {
                 return;
             }
 
-            // Check expiration
             if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
                 setError('This invitation has expired.');
                 setLoading(false);
                 return;
             }
 
-            // Check usage limit
             if (invite.max_uses && invite.use_count >= invite.max_uses) {
                 setError('This invitation has reached its maximum number of uses.');
                 setLoading(false);
@@ -94,15 +87,10 @@ export default function JoinFamily() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('Not authenticated');
 
-            // Update user's family_id
-            const { error: updateError } = await supabase
-                .from('profiles')
-                .update({ family_id: invitation.family_id })
-                .eq('id', user.id);
+            const { error: updateError } = await supabase.from('profiles').update({ family_id: invitation.family_id }).eq('id', user.id);
 
             if (updateError) throw updateError;
 
-            // Increment invitation use count
             const { error: incrementError } = await supabase
                 .from('family_invitations')
                 .update({ use_count: invitation.use_count + 1 })
@@ -110,7 +98,6 @@ export default function JoinFamily() {
 
             if (incrementError) console.error('Error updating use count:', incrementError);
 
-            // Redirect to dashboard
             navigate('/');
         } catch (err) {
             console.error('Error joining family:', err);
@@ -137,13 +124,10 @@ export default function JoinFamily() {
             <div className="join-family-container">
                 <div className="join-family-card">
                     <div className="join-family-error">
-                        <div className="error-icon">⚠️</div>
+                        <div className="error-icon">🚫</div>
                         <h2>Invitation Error</h2>
                         <p>{error}</p>
-                        <button
-                            className="back-button"
-                            onClick={() => navigate('/')}
-                        >
+                        <button className="back-button" onClick={() => navigate('/')}>
                             Go to Dashboard
                         </button>
                     </div>
@@ -156,7 +140,7 @@ export default function JoinFamily() {
         <div className="join-family-container">
             <div className="join-family-card">
                 <div className="join-family-content">
-                    <div className="welcome-icon">👨‍👩‍👧‍👦</div>
+                    <div className="welcome-icon">🎉</div>
                     <h1>You're Invited!</h1>
                     <p className="join-description">
                         You've been invited to join <strong>{familyName}</strong> on KinPulse.
@@ -171,19 +155,11 @@ export default function JoinFamily() {
                         </ul>
                     </div>
 
-                    <button
-                        className="join-button"
-                        onClick={handleJoinFamily}
-                        disabled={joining}
-                    >
+                    <button className="join-button" onClick={handleJoinFamily} disabled={joining}>
                         {joining ? 'Joining...' : 'Join Family'}
                     </button>
 
-                    <button
-                        className="cancel-button"
-                        onClick={() => navigate('/')}
-                        disabled={joining}
-                    >
+                    <button className="cancel-button" onClick={() => navigate('/')} disabled={joining}>
                         Maybe Later
                     </button>
                 </div>

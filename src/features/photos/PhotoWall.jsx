@@ -9,26 +9,24 @@ export default function PhotoWall() {
     const [photos, setPhotos] = useState([]);
     const [profiles, setProfiles] = useState({});
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState('all'); // 'all', 'pulses', 'chat'
+    const [filter, setFilter] = useState('all');
     const [selectedPhoto, setSelectedPhoto] = useState(null);
     const [selectedIndex, setSelectedIndex] = useState(0);
 
     useEffect(() => {
         fetchPhotos();
         fetchProfiles();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.family_id]);
 
     const fetchProfiles = async () => {
         if (!user?.family_id) return;
 
-        const { data } = await supabase
-            .from('profiles')
-            .select('id, name, email')
-            .eq('family_id', user.family_id);
+        const { data } = await supabase.from('profiles').select('id, name, email').eq('family_id', user.family_id);
 
         if (data) {
             const profileMap = {};
-            data.forEach(profile => {
+            data.forEach((profile) => {
                 profileMap[profile.id] = profile;
             });
             setProfiles(profileMap);
@@ -42,7 +40,6 @@ export default function PhotoWall() {
         }
 
         try {
-            // Fetch photos from pulses
             const { data: pulsePhotos } = await supabase
                 .from('pulses')
                 .select('photo_url, created_at, user_id, id')
@@ -50,7 +47,6 @@ export default function PhotoWall() {
                 .not('photo_url', 'is', null)
                 .order('created_at', { ascending: false });
 
-            // Fetch photos from messages
             const { data: chatPhotos } = await supabase
                 .from('messages')
                 .select('photo_url, created_at, sender_id, id')
@@ -58,28 +54,25 @@ export default function PhotoWall() {
                 .not('photo_url', 'is', null)
                 .order('created_at', { ascending: false });
 
-            // Combine and format photos
-            // Use the URLs directly from the database (they're already signed URLs)
             const allPhotos = [
-                ...(pulsePhotos || []).map(p => ({
+                ...(pulsePhotos || []).map((p) => ({
                     id: `pulse-${p.id}`,
                     url: p.photo_url,
-                    signedUrl: p.photo_url, // Use the stored URL directly
+                    signedUrl: p.photo_url,
                     created_at: p.created_at,
                     user_id: p.user_id,
                     source: 'pulse'
                 })),
-                ...(chatPhotos || []).map(m => ({
+                ...(chatPhotos || []).map((m) => ({
                     id: `chat-${m.id}`,
                     url: m.photo_url,
-                    signedUrl: m.photo_url, // Use the stored URL directly
+                    signedUrl: m.photo_url,
                     created_at: m.created_at,
                     user_id: m.sender_id,
                     source: 'chat'
                 }))
             ];
 
-            // Sort by date
             allPhotos.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
             setPhotos(allPhotos);
@@ -90,7 +83,7 @@ export default function PhotoWall() {
         }
     };
 
-    const filteredPhotos = photos.filter(photo => {
+    const filteredPhotos = photos.filter((photo) => {
         if (filter === 'all') return true;
         if (filter === 'pulses') return photo.source === 'pulse';
         if (filter === 'chat') return photo.source === 'chat';
@@ -119,36 +112,30 @@ export default function PhotoWall() {
     }
 
     return (
-        <div className="photo-wall">
-            <header className="photo-wall-header">
-                <h1>Family Photos</h1>
+        <div className="photo-wall page fade-in">
+            <header className="photo-wall-header page-header">
+                <div>
+                    <h1 className="page-title">Family Photos</h1>
+                    <p className="page-subtitle">Shared moments from pulses and chat</p>
+                </div>
                 <p className="photo-count">{filteredPhotos.length} photos</p>
             </header>
 
             <div className="photo-filters">
-                <button
-                    className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
-                    onClick={() => setFilter('all')}
-                >
+                <button className={`filter-btn ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>
                     All Photos
                 </button>
-                <button
-                    className={`filter-btn ${filter === 'pulses' ? 'active' : ''}`}
-                    onClick={() => setFilter('pulses')}
-                >
+                <button className={`filter-btn ${filter === 'pulses' ? 'active' : ''}`} onClick={() => setFilter('pulses')}>
                     From Pulses
                 </button>
-                <button
-                    className={`filter-btn ${filter === 'chat' ? 'active' : ''}`}
-                    onClick={() => setFilter('chat')}
-                >
+                <button className={`filter-btn ${filter === 'chat' ? 'active' : ''}`} onClick={() => setFilter('chat')}>
                     From Chat
                 </button>
             </div>
 
             {filteredPhotos.length === 0 ? (
                 <div className="empty-state">
-                    <div className="empty-icon">📸</div>
+                    <div className="empty-icon">📷</div>
                     <h3>No photos yet</h3>
                     <p>Photos shared in pulses and chat will appear here</p>
                 </div>
@@ -156,16 +143,10 @@ export default function PhotoWall() {
                 <div className="photo-grid">
                     {filteredPhotos.map((photo, index) => {
                         const profile = profiles[photo.user_id];
-                        const displayName = photo.user_id === user.id
-                            ? 'You'
-                            : (profile?.name || profile?.email?.split('@')[0] || 'Family Member');
+                        const displayName = photo.user_id === user.id ? 'You' : profile?.name || profile?.email?.split('@')[0] || 'Family Member';
 
                         return (
-                            <div
-                                key={photo.id}
-                                className="photo-item loading"
-                                onClick={() => handlePhotoClick(photo, index)}
-                            >
+                            <div key={photo.id} className="photo-item loading" onClick={() => handlePhotoClick(photo, index)}>
                                 <img
                                     src={photo.signedUrl}
                                     alt={`Shared by ${displayName}`}
@@ -183,9 +164,7 @@ export default function PhotoWall() {
                                 <div className="photo-overlay">
                                     <div className="photo-info">
                                         <span className="photo-author">{displayName}</span>
-                                        <span className="photo-source">
-                                            {photo.source === 'pulse' ? '💜 Pulse' : '💬 Chat'}
-                                        </span>
+                                        <span className="photo-source">{photo.source === 'pulse' ? 'From Pulse' : 'From Chat'}</span>
                                     </div>
                                 </div>
                             </div>

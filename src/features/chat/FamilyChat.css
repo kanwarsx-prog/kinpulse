@@ -163,6 +163,25 @@
     background: var(--color-border);
 }
 
+.voice-btn {
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 10px;
+    background: var(--color-bg-tertiary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    transition: all 0.2s;
+    border: 1px solid var(--color-border);
+}
+
+.voice-btn:hover {
+    background: var(--color-border);
+}
+
 .chat-photo-preview {
     position: relative;
     padding: 8px;

@@ -16,10 +16,10 @@ export const ToastProvider = ({ children }) => {
 
     const showToast = (message, type = 'info') => {
         const id = Date.now();
-        setToasts(prev => [...prev, { id, message, type }]);
+        setToasts((prev) => [...prev, { id, message, type }]);
 
         setTimeout(() => {
-            setToasts(prev => prev.filter(t => t.id !== id));
+            setToasts((prev) => prev.filter((t) => t.id !== id));
         }, 3000);
     };
 
@@ -31,11 +31,11 @@ export const ToastProvider = ({ children }) => {
         <ToastContext.Provider value={{ success, error, info }}>
             {children}
             <div className="toast-container">
-                {toasts.map(toast => (
+                {toasts.map((toast) => (
                     <div key={toast.id} className={`toast toast-${toast.type}`}>
-                        {toast.type === 'success' && <span className="toast-icon">✓</span>}
-                        {toast.type === 'error' && <span className="toast-icon">✕</span>}
-                        {toast.type === 'info' && <span className="toast-icon">ℹ</span>}
+                        {toast.type === 'success' && <span className="toast-icon">✅</span>}
+                        {toast.type === 'error' && <span className="toast-icon">⚠️</span>}
+                        {toast.type === 'info' && <span className="toast-icon">ℹ️</span>}
                         <span className="toast-message">{toast.message}</span>
                     </div>
                 ))}

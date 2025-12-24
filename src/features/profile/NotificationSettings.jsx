@@ -5,14 +5,11 @@ import './NotificationSettings.css';
 const NotificationSettings = () => {
     const { permission, subscription, isSupported, requestPermission, unsubscribe } = usePushNotifications();
 
-    // Debug logging
-    console.log('NotificationSettings state:', { permission, hasSubscription: !!subscription, isSupported });
-
     const testNotification = () => {
         if ('serviceWorker' in navigator && 'Notification' in window) {
-            navigator.serviceWorker.ready.then(registration => {
+            navigator.serviceWorker.ready.then((registration) => {
                 registration.showNotification('KinPulse Test', {
-                    body: 'Push notifications are working! 🎉',
+                    body: 'Push notifications are working!',
                     icon: '/vite.svg',
                     tag: 'test',
                     requireInteraction: false
@@ -23,23 +20,21 @@ const NotificationSettings = () => {
 
     const handleEnableClick = () => {
         if (!isSupported) {
-            alert('Push notifications are not supported on iOS Safari yet. Please try using Chrome or Firefox on desktop, or wait for Apple to add support in a future iOS update.');
+            alert(
+                'Push notifications are not supported on iOS Safari yet. Please try using Chrome or Firefox on desktop, or wait for Apple to add support in a future iOS update.'
+            );
             return;
         }
         requestPermission();
     };
 
-    // Show enable button if no active subscription (regardless of permission state)
     const showEnableButton = !subscription;
-    // Show enabled state if there's an active subscription
     const showEnabledState = subscription && permission === 'granted';
 
     return (
         <div className="notification-settings">
             <h3>Push Notifications</h3>
-            <p className="description">
-                Get notified about new messages, pulses, and family activity
-            </p>
+            <p className="description">Get notified about new messages, pulses, and family activity</p>
 
             {showEnableButton && (
                 <button className="enable-btn" onClick={handleEnableClick}>
@@ -73,10 +68,8 @@ const NotificationSettings = () => {
 
             {permission === 'denied' && !subscription && (
                 <div className="denied-state">
-                    <p>⚠️ Notifications are blocked</p>
-                    <p className="help-text">
-                        To enable, go to your browser settings and allow notifications for this site.
-                    </p>
+                    <p>Notifications are blocked</p>
+                    <p className="help-text">To enable, go to your browser settings and allow notifications for this site.</p>
                 </div>
             )}
         </div>

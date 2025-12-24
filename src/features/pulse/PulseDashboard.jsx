@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -11,8 +11,39 @@ import UnreadBadge from '../../components/ui/UnreadBadge';
 import PulseReaction from '../../components/ui/PulseReaction';
 import ProfileSettings from '../profile/ProfileSettings';
 import ShareInvite from '../family/ShareInvite';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import './PulseDashboard.css';
+
+const PulseSkeleton = () => (
+    <div className="pulse-dashboard page">
+        <div className="page-header">
+            <div>
+                <div className="page-title">KinPulse</div>
+                <p className="page-subtitle">Checking in with your family</p>
+            </div>
+        </div>
+        <div className="section-card" style={{ marginBottom: 16 }}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                <div className="skeleton avatar" />
+                <div style={{ flex: 1 }}>
+                    <div className="skeleton title" style={{ width: '40%', marginBottom: 8 }} />
+                    <div className="skeleton text" style={{ width: '60%' }} />
+                </div>
+            </div>
+        </div>
+        <div className="section-card">
+            {[1, 2, 3].map((i) => (
+                <div key={i} style={{ display: 'flex', gap: 12, marginBottom: i === 3 ? 0 : 12 }}>
+                    <div className="skeleton avatar" />
+                    <div style={{ flex: 1 }}>
+                        <div className="skeleton title" style={{ width: '50%', marginBottom: 8 }} />
+                        <div className="skeleton text" style={{ width: '70%', marginBottom: 6 }} />
+                        <div className="skeleton text" style={{ width: '40%' }} />
+                    </div>
+                </div>
+            ))}
+        </div>
+    </div>
+);
 
 const PulseDashboard = () => {
     const navigate = useNavigate();
@@ -29,56 +60,7 @@ const PulseDashboard = () => {
     const [showInvite, setShowInvite] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
 
-    const fetchFamilyInfo = async () => {
-        if (!user?.family_id) return;
-
-        const { data: family } = await supabase
-            .from('families')
-            .select('*')
-            .eq('id', user.family_id)
-            .single();
-
-        if (family) {
-            setFamilyInfo(family);
-        }
-    };
-
-    const fetchPulses = async () => {
-        if (!user?.family_id) {
-            setLoading(false);
-            return;
-        }
-
-        const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('family_id', user.family_id);
-
-        const profileMap = {};
-        profileData?.forEach(p => profileMap[p.id] = p);
-        setProfiles(profileMap);
-
-        const { data } = await supabase
-            .from('pulses')
-            .select('*')
-            .eq('family_id', user.family_id)
-            .order('created_at', { ascending: false })
-            .limit(20);
-
-        if (data) {
-            const latestByUser = {};
-            data.forEach(p => {
-                if (!latestByUser[p.user_id]) latestByUser[p.user_id] = p;
-            });
-
-            setPulses(Object.values(latestByUser));
-
-            if (latestByUser[user.id]) {
-                setMyPulse(latestByUser[user.id]);
-            }
-        }
-        setLoading(false);
-    };
+    const hasFamily = !!user?.family_id;
 
     useEffect(() => {
         fetchPulses();
@@ -92,7 +74,59 @@ const PulseDashboard = () => {
             .subscribe();
 
         return () => supabase.removeChannel(subscription);
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [hasFamily]);
+
+    const fetchFamilyInfo = async () => {
+        if (!hasFamily) return;
+
+        const { data: family } = await supabase
+            .from('families')
+            .select('*')
+            .eq('id', user.family_id)
+            .single();
+
+        if (family) {
+            setFamilyInfo(family);
+        }
+    };
+
+    const fetchPulses = async () => {
+        if (!hasFamily) {
+            setLoading(false);
+            return;
+        }
+
+        const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('family_id', user.family_id);
+
+        const profileMap = {};
+        profileData?.forEach((p) => (profileMap[p.id] = p));
+        setProfiles(profileMap);
+
+        const { data } = await supabase
+            .from('pulses')
+            .select('*')
+            .eq('family_id', user.family_id)
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+        if (data) {
+            const latestByUser = {};
+            data.forEach((p) => {
+                if (!latestByUser[p.user_id]) latestByUser[p.user_id] = p;
+            });
+
+            setPulses(Object.values(latestByUser));
+
+            if (latestByUser[user.id]) {
+                setMyPulse(latestByUser[user.id]);
+            }
+        }
+        setLoading(false);
+    };
 
     const handlePulseSubmit = async (pulseData) => {
         const newPulse = {
@@ -114,188 +148,184 @@ const PulseDashboard = () => {
         });
 
         if (error) {
-            console.error("Pulse submit error:", error);
-            alert("Failed to save pulse: " + error.message);
+            console.error('Pulse submit error:', error);
+            toast.error('Failed to save pulse');
             setMyPulse(null);
         }
     };
 
     const handleRefresh = async () => {
         setRefreshing(true);
-        await Promise.all([
-            fetchPulses(),
-            fetchFamilyInfo()
-        ]);
-        toast.success('Refreshed!');
-        setTimeout(() => setRefreshing(false), 500);
+        await Promise.all([fetchPulses(), fetchFamilyInfo()]);
+        toast.success('Refreshed');
+        setTimeout(() => setRefreshing(false), 400);
     };
 
     const handleRequestPulse = async () => {
-        if (!user?.family_id) return;
+        if (!hasFamily) return;
 
         setRefreshing(true);
 
-        const { error } = await supabase
-            .from('messages')
-            .insert([{
+        const { error } = await supabase.from('messages').insert([
+            {
                 family_id: user.family_id,
                 user_id: user.id,
-                content: '👋 Hey family! How are you all feeling? Share your pulse!'
-            }]);
+                content: 'Hey family! How are you all feeling? Share your pulse!'
+            }
+        ]);
 
         if (!error) {
-            await supabase
-                .from('pulse_requests')
-                .insert([{
+            await supabase.from('pulse_requests').insert([
+                {
                     family_id: user.family_id,
                     requested_by: user.id
-                }]);
+                }
+            ]);
+            toast.success('Pulse request sent');
+        } else {
+            toast.error('Could not request pulses');
         }
 
         setRefreshing(false);
     };
 
+    const pulseCards = useMemo(
+        () =>
+            pulses.map((pulse) => {
+                const isMe = pulse.user_id === user.id;
+                const profile = profiles[pulse.user_id];
+                const displayName = isMe ? 'You' : profile?.name || profile?.email?.split('@')[0] || 'Family Member';
+                const unreadCount = !isMe ? getUnreadForUser(pulse.user_id) : 0;
+
+                return (
+                    <div
+                        key={pulse.id}
+                        className={`family-card ${!isMe ? 'clickable' : ''}`}
+                        onClick={() => {
+                            if (!isMe) {
+                                markAsRead(pulse.user_id);
+                                navigate(`/chat/${pulse.user_id}`);
+                            }
+                        }}
+                        style={
+                            isMe
+                                ? {
+                                      backgroundColor: 'var(--color-primary-soft)',
+                                      border: '2px solid var(--color-primary)'
+                                  }
+                                : {}
+                        }
+                    >
+                        {unreadCount > 0 && (
+                            <div className="pulse-card-badge">
+                                <UnreadBadge count={unreadCount} />
+                            </div>
+                        )}
+                        <div className="member-info">
+                            <div className="name-with-status">
+                                <span className="name">{displayName}</span>
+                                {!isMe && <OnlineIndicator isOnline={isOnline(pulse.user_id)} />}
+                            </div>
+                            <span className="time">
+                                {new Date(pulse.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            {pulse.note && <p className="pulse-note">{pulse.note}</p>}
+                            {pulse.photo_url && (
+                                <img
+                                    src={pulse.photo_url}
+                                    alt="Pulse"
+                                    className="pulse-photo"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        window.open(pulse.photo_url, '_blank');
+                                    }}
+                                />
+                            )}
+                        </div>
+                        <div className="pulse-card-footer">
+                            <StatusBadge status={pulse.state} />
+                            <PulseReaction pulseId={pulse.id} />
+                        </div>
+                    </div>
+                );
+            }),
+        [pulses, profiles, user?.id, getUnreadForUser, markAsRead, navigate, isOnline]
+    );
+
     if (loading) {
-        return <LoadingSpinner size="md" message="Loading your family pulse..." />;
+        return <PulseSkeleton />;
     }
 
     return (
-        <div className="pulse-dashboard fade-in">
-            <header className="dashboard-header">
-                <div className="header-content">
-                    <h1>KinPulse</h1>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                        <button
-                            className="refresh-btn"
-                            onClick={handleRefresh}
-                            disabled={refreshing}
-                            aria-label="Refresh"
-                            style={{ transform: refreshing ? 'rotate(360deg)' : 'rotate(0deg)', transition: 'transform 0.5s ease' }}
-                        >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
-                            </svg>
-                        </button>
-                        <button
-                            className="refresh-btn"
-                            onClick={() => setShowInvite(true)}
-                            aria-label="Invite Family"
-                            title="Invite family members"
-                        >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                                <circle cx="8.5" cy="7" r="4" />
-                                <line x1="20" y1="8" x2="20" y2="14" />
-                                <line x1="23" y1="11" x2="17" y2="11" />
-                            </svg>
-                        </button>
-                        <button
-                            className="refresh-btn"
-                            onClick={() => setShowSettings(true)}
-                            aria-label="Settings"
-                        >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <circle cx="12" cy="12" r="3" />
-                                <path d="M12 1v6m0 6v6" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                <p className="subtitle">
-                    {familyInfo?.name || 'Family Sync'}
-                    {onlineCount > 0 && ` • ${onlineCount} online`}
-                </p>
-                {familyInfo && (
-                    <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '4px' }}>
-                        Invite Code: <strong style={{ color: '#6366f1' }}>{familyInfo.invite_code}</strong>
+        <div className="pulse-dashboard page fade-in">
+            <header className="dashboard-header page-header">
+                <div>
+                    <h1 className="page-title">KinPulse</h1>
+                    <p className="page-subtitle">
+                        {familyInfo?.name || 'Family Sync'}
+                        {onlineCount > 0 && ` • ${onlineCount} online`}
                     </p>
-                )}
+                    {familyInfo && (
+                        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', marginTop: 6 }}>
+                            Invite Code:{' '}
+                            <strong style={{ color: 'var(--color-primary-strong)' }}>{familyInfo.invite_code}</strong>
+                        </p>
+                    )}
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                        className="refresh-btn"
+                        onClick={handleRefresh}
+                        disabled={refreshing}
+                        aria-label="Refresh"
+                        style={{ transform: refreshing ? 'rotate(360deg)' : 'rotate(0deg)', transition: 'transform 0.5s ease' }}
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
+                        </svg>
+                    </button>
+                    <button className="refresh-btn" onClick={() => setShowInvite(true)} aria-label="Invite Family" title="Invite family members">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                            <circle cx="8.5" cy="7" r="4" />
+                            <line x1="20" y1="8" x2="20" y2="14" />
+                            <line x1="23" y1="11" x2="17" y2="11" />
+                        </svg>
+                    </button>
+                    <button className="refresh-btn" onClick={() => setShowSettings(true)} aria-label="Settings">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="3" />
+                            <path d="M12 1v6m0 6v6" />
+                        </svg>
+                    </button>
+                </div>
             </header>
 
             <section className="family-stream">
                 <div className="section-header">
                     <h3 className="section-title">Family Pulse</h3>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                        <button
-                            className="request-pulse-btn"
-                            onClick={() => navigate('/pulse-history')}
-                        >
+                        <button className="request-pulse-btn" onClick={() => navigate('/pulse-history')}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             History
                         </button>
-                        <button
-                            className="request-pulse-btn"
-                            onClick={handleRequestPulse}
-                            disabled={refreshing}
-                        >
+                        <button className="request-pulse-btn" onClick={handleRequestPulse} disabled={refreshing}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
                             </svg>
-                            Request
+                            Request pulses
                         </button>
                     </div>
                 </div>
                 <div className="family-list">
-                    {pulses.map(pulse => {
-                        const isMe = pulse.user_id === user.id;
-                        const profile = profiles[pulse.user_id];
-                        const displayName = isMe ? 'You' : (profile?.name || profile?.email?.split('@')[0] || 'Family Member');
-                        const unreadCount = !isMe ? getUnreadForUser(pulse.user_id) : 0;
-
-                        return (
-                            <div
-                                key={pulse.id}
-                                className={`family-card ${!isMe ? 'clickable' : ''}`}
-                                onClick={() => {
-                                    if (!isMe) {
-                                        markAsRead(pulse.user_id);
-                                        navigate(`/chat/${pulse.user_id}`);
-                                    }
-                                }}
-                                style={isMe ? {
-                                    backgroundColor: '#f0f0ff',
-                                    border: '2px solid #6366f1'
-                                } : {}}
-                            >
-                                {unreadCount > 0 && (
-                                    <div className="pulse-card-badge">
-                                        <UnreadBadge count={unreadCount} />
-                                    </div>
-                                )}
-                                <div className="member-info">
-                                    <div className="name-with-status">
-                                        <span className="name">{displayName}</span>
-                                        {!isMe && <OnlineIndicator isOnline={isOnline(pulse.user_id)} />}
-                                    </div>
-                                    <span className="time">
-                                        {new Date(pulse.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </span>
-                                    {pulse.note && <p className="pulse-note">{pulse.note}</p>}
-                                    {pulse.photo_url && (
-                                        <img
-                                            src={pulse.photo_url}
-                                            alt="Pulse photo"
-                                            className="pulse-photo"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                window.open(pulse.photo_url, '_blank');
-                                            }}
-                                        />
-                                    )}
-                                </div>
-                                <div className="pulse-card-footer">
-                                    <StatusBadge status={pulse.state} />
-                                    <PulseReaction pulseId={pulse.id} />
-                                </div>
-                            </div>
-                        );
-                    })}
+                    {pulseCards}
                     {pulses.length === 0 && (
-                        <p style={{ textAlign: 'center', color: '#888', fontSize: '0.8rem' }}>
-                            No pulses yet. Share your pulse below!
-                        </p>
+                        <div className="empty-state">
+                            <h3>No pulses yet</h3>
+                            <p>Share your pulse below to start the check-in.</p>
+                        </div>
                     )}
                 </div>
             </section>
@@ -305,10 +335,7 @@ const PulseDashboard = () => {
                     <div className="my-status-compact">
                         <div className="compact-header">
                             <span className="label">Your Pulse</span>
-                            <button
-                                className="update-btn-small"
-                                onClick={() => setMyPulse(null)}
-                            >
+                            <button className="update-btn-small" onClick={() => setMyPulse(null)}>
                                 Update
                             </button>
                         </div>
@@ -324,16 +351,9 @@ const PulseDashboard = () => {
                 )}
             </section>
 
-            {showSettings && (
-                <ProfileSettings onClose={() => setShowSettings(false)} />
-            )}
+            {showSettings && <ProfileSettings onClose={() => setShowSettings(false)} />}
 
-            {showInvite && (
-                <ShareInvite
-                    isOpen={showInvite}
-                    onClose={() => setShowInvite(false)}
-                />
-            )}
+            {showInvite && <ShareInvite isOpen={showInvite} onClose={() => setShowInvite(false)} />}
         </div>
     );
 };

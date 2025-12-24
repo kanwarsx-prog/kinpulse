@@ -10,7 +10,6 @@ const Calendar = () => {
     const [showEventModal, setShowEventModal] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
 
-    // Get first and last day of current month
     const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
 
@@ -75,13 +74,17 @@ const Calendar = () => {
     const monthYear = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
     return (
-        <div className="calendar-container">
+        <div className="calendar-container page fade-in">
             <header className="calendar-header">
-                <h1>Family Calendar</h1>
+                <h1 className="page-title">Family Calendar</h1>
                 <div className="calendar-controls">
-                    <button onClick={goToPreviousMonth} className="nav-btn">←</button>
+                    <button onClick={goToPreviousMonth} className="nav-btn" aria-label="Previous month">
+                        ←
+                    </button>
                     <button onClick={goToToday} className="today-btn">Today</button>
-                    <button onClick={goToNextMonth} className="nav-btn">→</button>
+                    <button onClick={goToNextMonth} className="nav-btn" aria-label="Next month">
+                        →
+                    </button>
                 </div>
                 <h2 className="month-year">{monthYear}</h2>
             </header>
@@ -89,12 +92,7 @@ const Calendar = () => {
             {loading ? (
                 <div className="calendar-loading">Loading calendar...</div>
             ) : (
-                <CalendarGrid
-                    currentDate={currentDate}
-                    events={events}
-                    onDateClick={handleDateClick}
-                    onEventClick={handleEventClick}
-                />
+                <CalendarGrid currentDate={currentDate} events={events} onDateClick={handleDateClick} onEventClick={handleEventClick} />
             )}
 
             {showEventModal && (

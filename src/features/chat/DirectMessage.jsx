@@ -7,6 +7,7 @@ import OnlineIndicator from '../../components/ui/OnlineIndicator';
 import MessageReaction from '../../components/ui/MessageReaction';
 import VoiceRecorder from '../../components/ui/VoiceRecorder';
 import VoicePlayer from '../../components/ui/VoicePlayer';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import './DirectMessage.css';
 
 const DirectMessage = () => {
@@ -30,11 +31,11 @@ const DirectMessage = () => {
         if (user && userId) {
             fetchRecipient();
             fetchMessages();
-            // Mark messages as read using the hook
             markAsReadInHook(userId);
             subscribeToMessages();
             subscribeToTyping();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, userId]);
 
     useEffect(() => {
@@ -46,12 +47,7 @@ const DirectMessage = () => {
     };
 
     const fetchRecipient = async () => {
-        const { data } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', userId)
-            .single();
-
+        const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
         setRecipient(data);
     };
 
@@ -69,26 +65,31 @@ const DirectMessage = () => {
     const subscribeToMessages = () => {
         const channel = supabase
             .channel(`dm-${userId}`)
-            .on('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'messages'
-            }, (payload) => {
-                const msg = payload.new;
-                if ((msg.user_id === user.id && msg.recipient_id === userId) ||
-                    (msg.user_id === userId && msg.recipient_id === user.id)) {
-                    setMessages(prev => {
-                        const exists = prev.some(m => m.id === msg.id);
-                        if (exists) return prev;
-                        return [...prev, msg];
-                    });
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'messages'
+                },
+                (payload) => {
+                    const msg = payload.new;
+                    if (
+                        (msg.user_id === user.id && msg.recipient_id === userId) ||
+                        (msg.user_id === userId && msg.recipient_id === user.id)
+                    ) {
+                        setMessages((prev) => {
+                            const exists = prev.some((m) => m.id === msg.id);
+                            if (exists) return prev;
+                            return [...prev, msg];
+                        });
 
-                    // Mark as read if from recipient
-                    if (msg.user_id === userId) {
-                        markAsReadInHook(userId);
+                        if (msg.user_id === userId) {
+                            markAsReadInHook(userId);
+                        }
                     }
                 }
-            })
+            )
             .subscribe();
 
         return () => supabase.removeChannel(channel);
@@ -97,48 +98,47 @@ const DirectMessage = () => {
     const subscribeToTyping = () => {
         const channel = supabase
             .channel(`typing-${userId}`)
-            .on('postgres_changes', {
-                event: '*',
-                schema: 'public',
-                table: 'typing_indicators',
-                filter: `user_id=eq.${userId}`
-            }, (payload) => {
-                if (payload.eventType === 'DELETE') {
-                    setIsTyping(false);
-                } else if (payload.new?.recipient_id === user.id) {
-                    setIsTyping(true);
-                    // Auto-clear after 3 seconds
-                    setTimeout(() => setIsTyping(false), 3000);
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'typing_indicators',
+                    filter: `user_id=eq.${userId}`
+                },
+                (payload) => {
+                    if (payload.eventType === 'DELETE') {
+                        setIsTyping(false);
+                    } else if (payload.new?.recipient_id === user.id) {
+                        setIsTyping(true);
+                        setTimeout(() => setIsTyping(false), 3000);
+                    }
                 }
-            })
+            )
             .subscribe();
 
         return () => supabase.removeChannel(channel);
     };
 
     const handleTyping = () => {
-        // Clear existing timeout
         if (typingTimeoutRef.current) {
             clearTimeout(typingTimeoutRef.current);
         }
 
-        // Send typing indicator
         supabase
             .from('typing_indicators')
-            .upsert({
-                user_id: user.id,
-                recipient_id: userId,
-                family_id: user.family_id,
-                updated_at: new Date().toISOString()
-            }, { onConflict: 'user_id,recipient_id' });
+            .upsert(
+                {
+                    user_id: user.id,
+                    recipient_id: userId,
+                    family_id: user.family_id,
+                    updated_at: new Date().toISOString()
+                },
+                { onConflict: 'user_id,recipient_id' }
+            );
 
-        // Clear after 2 seconds of no typing
         typingTimeoutRef.current = setTimeout(() => {
-            supabase
-                .from('typing_indicators')
-                .delete()
-                .eq('user_id', user.id)
-                .eq('recipient_id', userId);
+            supabase.from('typing_indicators').delete().eq('user_id', user.id).eq('recipient_id', userId);
         }, 2000);
     };
 
@@ -162,18 +162,14 @@ const DirectMessage = () => {
         const fileExt = photo.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-        const { error: uploadError } = await supabase.storage
-            .from('pulse-photos')
-            .upload(fileName, photo);
+        const { error: uploadError } = await supabase.storage.from('pulse-photos').upload(fileName, photo);
 
         if (uploadError) {
             console.error('Photo upload error:', uploadError);
             return null;
         }
 
-        const { data: signedData, error: signedError } = await supabase.storage
-            .from('pulse-photos')
-            .createSignedUrl(fileName, 31536000);
+        const { data: signedData, error: signedError } = await supabase.storage.from('pulse-photos').createSignedUrl(fileName, 31536000);
 
         if (signedError) {
             console.error('Signed URL error:', signedError);
@@ -181,6 +177,44 @@ const DirectMessage = () => {
         }
 
         return signedData.signedUrl;
+    };
+
+    const handleSendVoice = async (audioBlob, duration) => {
+        try {
+            const fileName = `${user.id}/${Date.now()}.webm`;
+            const { error: uploadError } = await supabase.storage.from('pulse-photos').upload(fileName, audioBlob, {
+                contentType: 'audio/webm'
+            });
+
+            if (uploadError) {
+                console.error('Upload error:', uploadError);
+                throw uploadError;
+            }
+
+            const { data: urlData } = supabase.storage.from('pulse-photos').getPublicUrl(fileName);
+
+            const messageData = {
+                family_id: user.family_id,
+                user_id: user.id,
+                recipient_id: userId,
+                audio_url: urlData.publicUrl,
+                audio_duration: duration,
+                is_read: false
+            };
+
+            const { error } = await supabase.from('messages').insert([messageData]);
+
+            if (error) {
+                console.error('Database insert error:', error);
+                alert(`Error sending voice message: ${error.message}`);
+                throw error;
+            }
+
+            setShowVoiceRecorder(false);
+        } catch (error) {
+            console.error('Error sending voice message:', error);
+            alert(`Failed to send voice message: ${error.message || 'Unknown error'}`);
+        }
     };
 
     const handleSend = async (e) => {
@@ -191,12 +225,7 @@ const DirectMessage = () => {
         const tempId = 'temp-' + Date.now();
         const photoUrl = await uploadPhoto();
 
-        // Clear typing indicator
-        await supabase
-            .from('typing_indicators')
-            .delete()
-            .eq('user_id', user.id)
-            .eq('recipient_id', userId);
+        await supabase.from('typing_indicators').delete().eq('user_id', user.id).eq('recipient_id', userId);
 
         const tempMessage = {
             id: tempId,
@@ -208,29 +237,31 @@ const DirectMessage = () => {
             created_at: new Date().toISOString()
         };
 
-        setMessages(prev => [...prev, tempMessage]);
+        setMessages((prev) => [...prev, tempMessage]);
         setNewMessage('');
         setPhoto(null);
         setPhotoPreview(null);
 
         const { data, error } = await supabase
             .from('messages')
-            .insert([{
-                family_id: user.family_id,
-                user_id: user.id,
-                recipient_id: userId,
-                content: messageContent,
-                photo_url: photoUrl
-            }])
+            .insert([
+                {
+                    family_id: user.family_id,
+                    user_id: user.id,
+                    recipient_id: userId,
+                    content: messageContent,
+                    photo_url: photoUrl
+                }
+            ])
             .select()
             .single();
 
         if (error) {
             console.error('Send error:', error);
-            setMessages(prev => prev.filter(m => m.id !== tempId));
+            setMessages((prev) => prev.filter((m) => m.id !== tempId));
             setNewMessage(messageContent);
         } else {
-            setMessages(prev => prev.map(m => m.id === tempId ? data : m));
+            setMessages((prev) => prev.map((m) => (m.id === tempId ? data : m)));
         }
     };
 
@@ -240,13 +271,15 @@ const DirectMessage = () => {
     };
 
     if (loading) {
-        return <div className="dm-loading">Loading conversation...</div>;
+        return <LoadingSpinner size="md" message="Loading conversation..." />;
     }
 
     return (
-        <div className="direct-message">
+        <div className="direct-message page fade-in">
             <header className="dm-header">
-                <button className="back-btn" onClick={() => navigate('/chat')}>←</button>
+                <button className="back-btn" onClick={() => navigate('/chat')} aria-label="Back to chat list">
+                    ←
+                </button>
                 <div className="dm-header-info">
                     <div className="header-with-status">
                         <h1>{recipient?.name || recipient?.email?.split('@')[0] || 'User'}</h1>
@@ -255,7 +288,7 @@ const DirectMessage = () => {
                     {isOnline(userId) ? (
                         <span className="online-status">Online</span>
                     ) : (
-                        isTyping && <span className="typing-status">typing...</span>
+                        isTyping && <span className="typing-status">typing…</span>
                     )}
                 </div>
             </header>
@@ -263,29 +296,28 @@ const DirectMessage = () => {
             <div className="messages-container">
                 {messages.length === 0 ? (
                     <div className="empty-state">
-                        <p>Start your conversation with {recipient?.name || 'them'}!</p>
+                        <h3>No messages yet</h3>
+                        <p>Start your conversation with {recipient?.name || 'them'}.</p>
                     </div>
                 ) : (
                     messages.map((message) => {
                         const isMe = message.user_id === user.id;
 
                         return (
-                            <div
-                                key={message.id}
-                                className={`message ${isMe ? 'message-me' : 'message-other'}`}
-                            >
+                            <div key={message.id} className={`message ${isMe ? 'message-me' : 'message-other'}`}>
                                 <div className="message-bubble">
                                     {message.content && <p className="message-content">{message.content}</p>}
                                     {message.photo_url && (
                                         <img
                                             src={message.photo_url}
-                                            alt="Shared photo"
+                                            alt="Shared"
                                             className="message-photo"
                                             onClick={() => window.open(message.photo_url, '_blank')}
                                         />
                                     )}
                                     <span className="message-time">{formatTime(message.created_at)}</span>
                                 </div>
+                                {message.audio_url && <VoicePlayer audioUrl={message.audio_url} duration={message.audio_duration} />}
                                 <MessageReaction messageId={message.id} />
                             </div>
                         );
@@ -298,20 +330,26 @@ const DirectMessage = () => {
                 {photoPreview && (
                     <div className="chat-photo-preview">
                         <img src={photoPreview} alt="Preview" />
-                        <button type="button" onClick={() => { setPhoto(null); setPhotoPreview(null); }}>✕</button>
+                        <button type="button" aria-label="Remove photo" onClick={() => { setPhoto(null); setPhotoPreview(null); }}>
+                            ×
+                        </button>
                     </div>
                 )}
                 <div className="input-row">
-                    <input
-                        type="file"
-                        id="dm-photo-input"
-                        accept="image/*"
-                        onChange={handlePhotoChange}
-                        style={{ display: 'none' }}
-                    />
+                    <input type="file" id="dm-photo-input" accept="image/*" onChange={handlePhotoChange} style={{ display: 'none' }} />
                     <label htmlFor="dm-photo-input" className="photo-btn">
                         +
                     </label>
+                    {!showVoiceRecorder && (
+                        <button
+                            type="button"
+                            className="voice-btn"
+                            onClick={() => setShowVoiceRecorder(true)}
+                            aria-label="Record voice message"
+                        >
+                            🎤
+                        </button>
+                    )}
                     <input
                         type="text"
                         placeholder="Type a message..."
@@ -322,7 +360,7 @@ const DirectMessage = () => {
                         }}
                         maxLength={500}
                     />
-                    <button type="submit" disabled={!newMessage.trim() && !photo}>
+                    <button type="submit" disabled={!newMessage.trim() && !photo} aria-label="Send message">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <line x1="22" y1="2" x2="11" y2="13"></line>
                             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
@@ -330,6 +368,12 @@ const DirectMessage = () => {
                     </button>
                 </div>
             </form>
+
+            {showVoiceRecorder && (
+                <div className="voice-recorder-container">
+                    <VoiceRecorder onSend={(audio, duration) => handleSendVoice(audio, duration)} onCancel={() => setShowVoiceRecorder(false)} />
+                </div>
+            )}
         </div>
     );
 };

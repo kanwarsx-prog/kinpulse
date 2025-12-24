@@ -4,6 +4,7 @@ import { useUnreadCounts } from '../../hooks/useUnreadCounts';
 import MessageReaction from '../../components/ui/MessageReaction';
 import VoiceRecorder from '../../components/ui/VoiceRecorder';
 import VoicePlayer from '../../components/ui/VoicePlayer';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import './FamilyChat.css';
 
 const FamilyChat = () => {
@@ -22,10 +23,8 @@ const FamilyChat = () => {
         if (user?.family_id) {
             fetchMessages();
             fetchProfiles();
-            // Mark group messages as read when viewing
             markAsRead();
 
-            // Subscribe to new family messages only (not DMs)
             const channel = supabase
                 .channel('family-messages')
                 .on(
@@ -38,10 +37,9 @@ const FamilyChat = () => {
                     },
                     (payload) => {
                         const newMsg = payload.new;
-                        // Only add if it's a group message (no recipient_id)
                         if (!newMsg.recipient_id) {
-                            setMessages(prev => {
-                                const exists = prev.some(m => m.id === newMsg.id);
+                            setMessages((prev) => {
+                                const exists = prev.some((m) => m.id === newMsg.id);
                                 if (exists) return prev;
                                 return [...prev, newMsg];
                             });
@@ -52,6 +50,7 @@ const FamilyChat = () => {
 
             return () => supabase.removeChannel(channel);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.family_id]);
 
     useEffect(() => {
@@ -63,13 +62,10 @@ const FamilyChat = () => {
     };
 
     const fetchProfiles = async () => {
-        const { data } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('family_id', user.family_id);
+        const { data } = await supabase.from('profiles').select('*').eq('family_id', user.family_id);
 
         const profileMap = {};
-        data?.forEach(p => profileMap[p.id] = p);
+        data?.forEach((p) => (profileMap[p.id] = p));
         setProfiles(profileMap);
     };
 
@@ -78,7 +74,7 @@ const FamilyChat = () => {
             .from('messages')
             .select('*')
             .eq('family_id', user.family_id)
-            .is('recipient_id', null) // Only family chat messages, not DMs
+            .is('recipient_id', null)
             .order('created_at', { ascending: true })
             .limit(100);
 
@@ -108,18 +104,14 @@ const FamilyChat = () => {
         const fileExt = photo.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-        const { error: uploadError } = await supabase.storage
-            .from('pulse-photos')
-            .upload(fileName, photo);
+        const { error: uploadError } = await supabase.storage.from('pulse-photos').upload(fileName, photo);
 
         if (uploadError) {
             console.error('Photo upload error:', uploadError);
             return null;
         }
 
-        const { data: signedData, error: signedError } = await supabase.storage
-            .from('pulse-photos')
-            .createSignedUrl(fileName, 31536000);
+        const { data: signedData, error: signedError } = await supabase.storage.from('pulse-photos').createSignedUrl(fileName, 31536000);
 
         if (signedError) {
             console.error('Signed URL error:', signedError);
@@ -131,31 +123,18 @@ const FamilyChat = () => {
 
     const handleSendVoice = async (audioBlob, duration) => {
         try {
-            console.log('Starting voice upload...', { duration, blobSize: audioBlob.size });
-
-            // Upload audio to storage
             const fileName = `${user.id}/${Date.now()}.webm`;
-            const { data: uploadData, error: uploadError } = await supabase.storage
-                .from('pulse-photos')
-                .upload(fileName, audioBlob, {
-                    contentType: 'audio/webm'
-                });
+            const { error: uploadError } = await supabase.storage.from('pulse-photos').upload(fileName, audioBlob, {
+                contentType: 'audio/webm'
+            });
 
             if (uploadError) {
                 console.error('Upload error:', uploadError);
                 throw uploadError;
             }
 
-            console.log('Upload successful:', uploadData);
+            const { data: urlData } = supabase.storage.from('pulse-photos').getPublicUrl(fileName);
 
-            // Get public URL (instant, no signing needed)
-            const { data: urlData } = supabase.storage
-                .from('pulse-photos')
-                .getPublicUrl(fileName);
-
-            console.log('Public URL created:', urlData?.publicUrl);
-
-            // Send message with audio
             const messageData = {
                 family_id: user.family_id,
                 user_id: user.id,
@@ -164,9 +143,7 @@ const FamilyChat = () => {
                 is_read: false
             };
 
-            console.log('Inserting message:', messageData);
-
-            const { data, error } = await supabase.from('messages').insert([messageData]);
+            const { error } = await supabase.from('messages').insert([messageData]);
 
             if (error) {
                 console.error('Database insert error:', error);
@@ -174,7 +151,6 @@ const FamilyChat = () => {
                 throw error;
             }
 
-            console.log('Message sent successfully:', data);
             setShowVoiceRecorder(false);
         } catch (error) {
             console.error('Error sending voice message:', error);
@@ -195,35 +171,37 @@ const FamilyChat = () => {
             id: tempId,
             family_id: user.family_id,
             user_id: user.id,
-            recipient_id: null, // Family message, not DM
+            recipient_id: null,
             content: messageContent,
             photo_url: photoUrl,
             created_at: new Date().toISOString()
         };
 
-        setMessages(prev => [...prev, tempMessage]);
+        setMessages((prev) => [...prev, tempMessage]);
         setNewMessage('');
         setPhoto(null);
         setPhotoPreview(null);
 
         const { data, error } = await supabase
             .from('messages')
-            .insert([{
-                family_id: user.family_id,
-                user_id: user.id,
-                recipient_id: null, // Family message
-                content: messageContent,
-                photo_url: photoUrl
-            }])
+            .insert([
+                {
+                    family_id: user.family_id,
+                    user_id: user.id,
+                    recipient_id: null,
+                    content: messageContent,
+                    photo_url: photoUrl
+                }
+            ])
             .select()
             .single();
 
         if (error) {
             console.error('Send error:', error);
-            setMessages(prev => prev.filter(m => m.id !== tempId));
+            setMessages((prev) => prev.filter((m) => m.id !== tempId));
             setNewMessage(messageContent);
         } else {
-            setMessages(prev => prev.map(m => m.id === tempId ? data : m));
+            setMessages((prev) => prev.map((m) => (m.id === tempId ? data : m)));
         }
     };
 
@@ -233,20 +211,21 @@ const FamilyChat = () => {
     };
 
     if (loading) {
-        return <div className="chat-loading">Loading chat...</div>;
+        return <LoadingSpinner size="md" message="Loading chat..." />;
     }
 
     return (
-        <div className="family-chat">
+        <div className="family-chat page fade-in">
             <header className="chat-header">
-                <h1>Family Chat</h1>
+                <h1 className="page-title">Family Chat</h1>
                 <p className="subtitle">Stay connected</p>
             </header>
 
             <div className="messages-container">
                 {messages.length === 0 ? (
                     <div className="empty-state">
-                        <p>No messages yet. Start the conversation!</p>
+                        <h3>No messages yet</h3>
+                        <p>Start the conversation!</p>
                     </div>
                 ) : (
                     messages.map((message) => {
@@ -254,33 +233,21 @@ const FamilyChat = () => {
                         const profile = profiles[message.user_id];
 
                         return (
-                            <div
-                                key={message.id}
-                                className={`message ${isMe ? 'message-me' : 'message-other'}`}
-                            >
-                                {!isMe && (
-                                    <div className="message-sender">
-                                        {profile?.name || profile?.email?.split('@')[0] || 'Family'}
-                                    </div>
-                                )}
+                            <div key={message.id} className={`message ${isMe ? 'message-me' : 'message-other'}`}>
+                                {!isMe && <div className="message-sender">{profile?.name || profile?.email?.split('@')[0] || 'Family'}</div>}
                                 <div className="message-bubble">
                                     {message.content && <p className="message-content">{message.content}</p>}
                                     {message.photo_url && (
                                         <img
                                             src={message.photo_url}
-                                            alt="Shared photo"
+                                            alt="Shared"
                                             className="message-photo"
                                             onClick={() => window.open(message.photo_url, '_blank')}
                                         />
                                     )}
                                     <span className="message-time">{formatTime(message.created_at)}</span>
                                 </div>
-                                {message.audio_url && (
-                                    <VoicePlayer
-                                        audioUrl={message.audio_url}
-                                        duration={message.audio_duration}
-                                    />
-                                )}
+                                {message.audio_url && <VoicePlayer audioUrl={message.audio_url} duration={message.audio_duration} />}
                                 <MessageReaction messageId={message.id} />
                             </div>
                         );
@@ -293,17 +260,13 @@ const FamilyChat = () => {
                 {photoPreview && (
                     <div className="chat-photo-preview">
                         <img src={photoPreview} alt="Preview" />
-                        <button type="button" onClick={() => { setPhoto(null); setPhotoPreview(null); }}>✕</button>
+                        <button type="button" aria-label="Remove photo" onClick={() => { setPhoto(null); setPhotoPreview(null); }}>
+                            ×
+                        </button>
                     </div>
                 )}
                 <div className="input-row">
-                    <input
-                        type="file"
-                        id="chat-photo-input"
-                        accept="image/*"
-                        onChange={handlePhotoChange}
-                        style={{ display: 'none' }}
-                    />
+                    <input type="file" id="chat-photo-input" accept="image/*" onChange={handlePhotoChange} style={{ display: 'none' }} />
                     <label htmlFor="chat-photo-input" className="photo-btn">
                         +
                     </label>
@@ -312,6 +275,7 @@ const FamilyChat = () => {
                             type="button"
                             className="voice-btn"
                             onClick={() => setShowVoiceRecorder(true)}
+                            aria-label="Record voice message"
                         >
                             🎤
                         </button>
@@ -323,7 +287,7 @@ const FamilyChat = () => {
                         onChange={(e) => setNewMessage(e.target.value)}
                         maxLength={500}
                     />
-                    <button type="submit" disabled={!newMessage.trim() && !photo}>
+                    <button type="submit" disabled={!newMessage.trim() && !photo} aria-label="Send message">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <line x1="22" y1="2" x2="11" y2="13"></line>
                             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
@@ -334,10 +298,7 @@ const FamilyChat = () => {
 
             {showVoiceRecorder && (
                 <div className="voice-recorder-container">
-                    <VoiceRecorder
-                        onSend={handleSendVoice}
-                        onCancel={() => setShowVoiceRecorder(false)}
-                    />
+                    <VoiceRecorder onSend={handleSendVoice} onCancel={() => setShowVoiceRecorder(false)} />
                 </div>
             )}
         </div>

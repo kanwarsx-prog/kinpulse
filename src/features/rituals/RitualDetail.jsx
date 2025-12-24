@@ -17,25 +17,14 @@ const RitualDetail = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            // Fetch Ritual
-            const { data: ritualData } = await supabase
-                .from('rituals')
-                .select('*')
-                .eq('id', id)
-                .single();
-
+            const { data: ritualData } = await supabase.from('rituals').select('*').eq('id', id).single();
             setRitual(ritualData);
 
-            // Fetch Profiles
-            const { data: profileData } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('family_id', user.family_id);
+            const { data: profileData } = await supabase.from('profiles').select('*').eq('family_id', user.family_id);
             const profileMap = {};
-            profileData?.forEach(p => profileMap[p.id] = p);
+            profileData?.forEach((p) => (profileMap[p.id] = p));
             setProfiles(profileMap);
 
-            // Fetch Responses
             const { data: responseData } = await supabase
                 .from('ritual_responses')
                 .select('*')
@@ -44,8 +33,7 @@ const RitualDetail = () => {
 
             setResponses(responseData || []);
 
-            // Check if I already submitted
-            const myRes = responseData?.find(r => r.user_id === user.id);
+            const myRes = responseData?.find((r) => r.user_id === user.id);
             if (myRes) {
                 setSubmitted(true);
                 setResponse(myRes.response);
@@ -55,7 +43,7 @@ const RitualDetail = () => {
         };
 
         fetchData();
-    }, [id, supabase, user.id]);
+    }, [id, supabase, user.id, user.family_id]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -68,12 +56,14 @@ const RitualDetail = () => {
 
             if (!error) {
                 setSubmitted(true);
-                // Optimistically add to list
-                setResponses([...responses, {
-                    user_id: user.id,
-                    response: response,
-                    created_at: new Date().toISOString()
-                }]);
+                setResponses([
+                    ...responses,
+                    {
+                        user_id: user.id,
+                        response: response,
+                        created_at: new Date().toISOString()
+                    }
+                ]);
             }
         }
     };
