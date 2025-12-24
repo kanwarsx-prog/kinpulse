@@ -267,13 +267,12 @@ const PulseDashboard = () => {
         <div className="pulse-dashboard page fade-in">
             <header className="dashboard-header page-header">
                 <div>
-                    <h1 className="page-title">KinPulse</h1>
-                    <p className="page-subtitle">
+                    <p className="page-subtitle" style={{ marginBottom: 4 }}>
                         {familyInfo?.name || 'Family Sync'}
                         {onlineCount > 0 && ` • ${onlineCount} online`}
                     </p>
                     {familyInfo && (
-                        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', marginTop: 6 }}>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
                             Invite Code:{' '}
                             <strong style={{ color: 'var(--color-primary-strong)' }}>{familyInfo.invite_code}</strong>
                         </p>
