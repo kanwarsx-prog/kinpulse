@@ -27,6 +27,8 @@ const FamilyChat = () => {
     const messagesEndRef = useRef(null);
     const listRef = useRef(null);
     const sizeMap = useRef({});
+    const containerRef = useRef(null);
+    const [listHeight, setListHeight] = useState(480);
 
     useEffect(() => {
         if (user?.family_id) {
@@ -78,6 +80,18 @@ const FamilyChat = () => {
     };
 
     const getSize = (index) => sizeMap.current[index] || 140;
+
+    useLayoutEffect(() => {
+        const measure = () => {
+            if (containerRef.current) {
+                const rect = containerRef.current.getBoundingClientRect();
+                setListHeight(Math.max(320, window.innerHeight - rect.top - 90));
+            }
+        };
+        measure();
+        window.addEventListener('resize', measure);
+        return () => window.removeEventListener('resize', measure);
+    }, []);
 
     const fetchProfiles = async () => {
         const { data } = await supabase.from('profiles').select('*').eq('family_id', user.family_id);
@@ -246,7 +260,7 @@ const FamilyChat = () => {
                 <p className="subtitle">Stay connected</p>
             </header>
 
-            <div className="messages-container">
+            <div className="messages-container" ref={containerRef}>
                 {messages.length === 0 ? (
                     <div className="empty-state">
                         <h3>No messages yet</h3>
@@ -254,7 +268,7 @@ const FamilyChat = () => {
                     </div>
                 ) : (
                     <List
-                        height={window.innerHeight - 220}
+                        height={listHeight}
                         width="100%"
                         itemCount={messages.length + (hasMore ? 1 : 0)}
                         itemSize={getSize}

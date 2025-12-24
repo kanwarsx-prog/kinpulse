@@ -34,6 +34,8 @@ const DirectMessage = () => {
     const listRef = useRef(null);
     const sizeMap = useRef({});
     const typingTimeoutRef = useRef(null);
+    const containerRef = useRef(null);
+    const [listHeight, setListHeight] = useState(480);
 
     useEffect(() => {
         if (user && userId) {
@@ -54,6 +56,18 @@ const DirectMessage = () => {
     };
 
     const getSize = (index) => sizeMap.current[index] || 140;
+
+    useLayoutEffect(() => {
+        const measure = () => {
+            if (containerRef.current) {
+                const rect = containerRef.current.getBoundingClientRect();
+                setListHeight(Math.max(320, window.innerHeight - rect.top - 90));
+            }
+        };
+        measure();
+        window.addEventListener('resize', measure);
+        return () => window.removeEventListener('resize', measure);
+    }, []);
 
     const fetchRecipient = async () => {
         const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
@@ -309,7 +323,7 @@ const DirectMessage = () => {
                 </div>
             </header>
 
-            <div className="messages-container">
+            <div className="messages-container" ref={containerRef}>
                 {messages.length === 0 ? (
                     <div className="empty-state">
                         <h3>No messages yet</h3>
@@ -317,7 +331,7 @@ const DirectMessage = () => {
                     </div>
                 ) : (
                     <List
-                        height={window.innerHeight - 220}
+                        height={listHeight}
                         width="100%"
                         itemCount={messages.length + (hasMore ? 1 : 0)}
                         itemSize={getSize}
