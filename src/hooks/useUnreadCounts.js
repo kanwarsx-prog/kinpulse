@@ -45,7 +45,7 @@ export const useUnreadCounts = () => {
                 .select('*', { count: 'exact', head: true })
                 .eq('family_id', user.family_id)
                 .is('recipient_id', null)
-                .neq('sender_id', user.id)
+                .neq('user_id', user.id)
                 .eq('is_read', false);
 
             setGroupChatUnread(groupCount || 0);
@@ -53,7 +53,7 @@ export const useUnreadCounts = () => {
             // Fetch DM unread counts per user
             const { data: dmMessages } = await supabase
                 .from('messages')
-                .select('sender_id')
+                .select('user_id')
                 .eq('family_id', user.family_id)
                 .eq('recipient_id', user.id)
                 .eq('is_read', false);
@@ -61,7 +61,7 @@ export const useUnreadCounts = () => {
             // Count messages per sender
             const counts = {};
             (dmMessages || []).forEach(msg => {
-                counts[msg.sender_id] = (counts[msg.sender_id] || 0) + 1;
+                counts[msg.user_id] = (counts[msg.user_id] || 0) + 1;
             });
 
             setDmUnreadCounts(counts);
@@ -90,7 +90,7 @@ export const useUnreadCounts = () => {
                     .update({ is_read: true })
                     .eq('family_id', user.family_id)
                     .eq('recipient_id', user.id)
-                    .eq('sender_id', senderId)
+                    .eq('user_id', senderId)
                     .eq('is_read', false);
             } else {
                 // Mark group chat as read
@@ -99,7 +99,7 @@ export const useUnreadCounts = () => {
                     .update({ is_read: true })
                     .eq('family_id', user.family_id)
                     .is('recipient_id', null)
-                    .neq('sender_id', user.id)
+                    .neq('user_id', user.id)
                     .eq('is_read', false);
             }
 
