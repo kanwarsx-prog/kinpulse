@@ -116,8 +116,8 @@ export default function PhotoWall() {
         <div className="photo-wall page fade-in">
             <header className="photo-wall-header page-header">
                 <div>
-                    <h1 className="page-title">Family Photos</h1>
-                    <p className="page-subtitle">Shared moments from pulses and chat</p>
+                    <h1 className="page-title" style={{ fontSize: '1.1rem' }}>Family Photos</h1>
+                    <p className="page-subtitle" style={{ fontSize: '0.85rem' }}>Shared moments from pulses and chat</p>
                 </div>
                 <p className="photo-count">{filteredPhotos.length} photos</p>
             </header>
