@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import PhotoLightbox from './PhotoLightbox';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import Avatar from '../../components/ui/Avatar';
 import './PhotoWall.css';
 
 export default function PhotoWall() {
@@ -163,6 +164,7 @@ export default function PhotoWall() {
                                 />
                                 <div className="photo-overlay">
                                     <div className="photo-info">
+                                        <Avatar name={profile?.name} email={profile?.email} size="sm" />
                                         <span className="photo-author">{displayName}</span>
                                         <span className="photo-source">{photo.source === 'pulse' ? 'From Pulse' : 'From Chat'}</span>
                                     </div>

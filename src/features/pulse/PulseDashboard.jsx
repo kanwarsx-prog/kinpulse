@@ -11,6 +11,7 @@ import UnreadBadge from '../../components/ui/UnreadBadge';
 import PulseReaction from '../../components/ui/PulseReaction';
 import ProfileSettings from '../profile/ProfileSettings';
 import ShareInvite from '../family/ShareInvite';
+import Avatar from '../../components/ui/Avatar';
 import './PulseDashboard.css';
 
 const PulseSkeleton = () => (
@@ -229,8 +230,8 @@ const PulseDashboard = () => {
                         )}
                         <div className="member-info">
                             <div className="name-with-status">
+                                <Avatar name={profile?.name} email={profile?.email} isOnline={!isMe && isOnline(pulse.user_id)} />
                                 <span className="name">{displayName}</span>
-                                {!isMe && <OnlineIndicator isOnline={isOnline(pulse.user_id)} />}
                             </div>
                             <span className="time">
                                 {new Date(pulse.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

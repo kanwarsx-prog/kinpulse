@@ -173,8 +173,8 @@
 
 .photo-info {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
+    align-items: center;
+    gap: 8px;
 }
 
 .photo-author {

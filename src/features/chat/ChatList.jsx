@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSupabase } from '../../contexts/SupabaseContext';
+import Avatar from '../../components/ui/Avatar';
 import './ChatList.css';
 
 const ChatList = () => {
@@ -20,7 +21,6 @@ const ChatList = () => {
     }, [user?.family_id]);
 
     const fetchConversations = async () => {
-        // Get all family members except current user
         const { data: members } = await supabase
             .from('profiles')
             .select('*')
@@ -29,7 +29,6 @@ const ChatList = () => {
 
         setFamilyMembers(members || []);
 
-        // Get unread counts for each member
         const counts = {};
         for (const member of members || []) {
             const { count } = await supabase
@@ -43,7 +42,6 @@ const ChatList = () => {
         }
         setUnreadCounts(counts);
 
-        // Get last message for each conversation
         const lastMsgs = {};
         for (const member of members || []) {
             const { data } = await supabase
@@ -61,43 +59,47 @@ const ChatList = () => {
     };
 
     const subscribeToUpdates = () => {
-        // Subscribe to new messages
         const messageChannel = supabase
             .channel('dm-updates')
-            .on('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'messages',
-                filter: `recipient_id=eq.${user.id}`
-            }, (payload) => {
-                // Update unread count
-                setUnreadCounts(prev => ({
-                    ...prev,
-                    [payload.new.user_id]: (prev[payload.new.user_id] || 0) + 1
-                }));
-                // Update last message
-                setLastMessages(prev => ({
-                    ...prev,
-                    [payload.new.user_id]: payload.new
-                }));
-            })
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'messages',
+                    filter: `recipient_id=eq.${user.id}`
+                },
+                (payload) => {
+                    setUnreadCounts((prev) => ({
+                        ...prev,
+                        [payload.new.user_id]: (prev[payload.new.user_id] || 0) + 1
+                    }));
+                    setLastMessages((prev) => ({
+                        ...prev,
+                        [payload.new.user_id]: payload.new
+                    }));
+                }
+            )
             .subscribe();
 
-        // Subscribe to typing indicators
         const typingChannel = supabase
             .channel('typing-updates')
-            .on('postgres_changes', {
-                event: '*',
-                schema: 'public',
-                table: 'typing_indicators',
-                filter: `recipient_id=eq.${user.id}`
-            }, (payload) => {
-                if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-                    setTypingUsers(prev => [...new Set([...prev, payload.new.user_id])]);
-                } else if (payload.eventType === 'DELETE') {
-                    setTypingUsers(prev => prev.filter(id => id !== payload.old.user_id));
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'typing_indicators',
+                    filter: `recipient_id=eq.${user.id}`
+                },
+                (payload) => {
+                    if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+                        setTypingUsers((prev) => [...new Set([...prev, payload.new.user_id])]);
+                    } else if (payload.eventType === 'DELETE') {
+                        setTypingUsers((prev) => prev.filter((id) => id !== payload.old.user_id));
+                    }
                 }
-            })
+            )
             .subscribe();
 
         return () => {
@@ -123,11 +125,7 @@ const ChatList = () => {
             </header>
 
             <div className="conversations">
-                {/* Family Chat */}
-                <div
-                    className="conversation-item family-chat"
-                    onClick={() => navigate('/chat/family')}
-                >
+                <div className="conversation-item family-chat" onClick={() => navigate('/chat/family')}>
                     <div className="conversation-avatar">
                         <span className="avatar-icon">👨‍👩‍👧‍👦</span>
                     </div>
@@ -139,42 +137,27 @@ const ChatList = () => {
                     </div>
                 </div>
 
-                {/* Direct Messages */}
                 <div className="section-divider">
                     <span>Direct Messages</span>
                 </div>
 
-                {familyMembers.map(member => {
+                {familyMembers.map((member) => {
                     const unread = unreadCounts[member.id] || 0;
                     const lastMsg = lastMessages[member.id];
                     const isTyping = typingUsers.includes(member.id);
 
                     return (
-                        <div
-                            key={member.id}
-                            className="conversation-item"
-                            onClick={() => navigate(`/chat/dm/${member.id}`)}
-                        >
+                        <div key={member.id} className="conversation-item" onClick={() => navigate(`/chat/dm/${member.id}`)}>
                             <div className="conversation-avatar">
-                                <span className="avatar-text">
-                                    {(member.name || member.email)?.[0]?.toUpperCase()}
-                                </span>
+                                <Avatar name={member.name} email={member.email} size="sm" />
                             </div>
                             <div className="conversation-info">
                                 <div className="conversation-header">
-                                    <span className="conversation-name">
-                                        {member.name || member.email?.split('@')[0]}
-                                    </span>
-                                    {unread > 0 && (
-                                        <span className="unread-badge">{unread}</span>
-                                    )}
+                                    <span className="conversation-name">{member.name || member.email?.split('@')[0]}</span>
+                                    {unread > 0 && <span className="unread-badge">{unread}</span>}
                                 </div>
                                 <p className="last-message">
-                                    {isTyping ? (
-                                        <span className="typing-indicator">typing...</span>
-                                    ) : (
-                                        formatLastMessage(lastMsg)
-                                    )}
+                                    {isTyping ? <span className="typing-indicator">typing...</span> : formatLastMessage(lastMsg)}
                                 </p>
                             </div>
                         </div>
