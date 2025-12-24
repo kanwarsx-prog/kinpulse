@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSupabase } from '../../contexts/SupabaseContext';
+import { compressImage } from '../../lib/image';
 import './PulseInput.css';
 
 const PulseInput = ({ onSubmit }) => {
@@ -38,9 +39,11 @@ const PulseInput = ({ onSubmit }) => {
         const fileExt = photo.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
+        const toUpload = await compressImage(photo, 1400, 0.7).catch(() => photo);
+
         const { error: uploadError } = await supabase.storage
             .from('pulse-photos')
-            .upload(fileName, photo);
+            .upload(fileName, toUpload);
 
         if (uploadError) {
             console.error('Photo upload error:', uploadError);
@@ -48,7 +51,6 @@ const PulseInput = ({ onSubmit }) => {
             return null;
         }
 
-        // Create signed URL valid for 1 year
         const { data: signedData, error: signedError } = await supabase.storage
             .from('pulse-photos')
             .createSignedUrl(fileName, 31536000); // 365 days in seconds
@@ -121,7 +123,7 @@ const PulseInput = ({ onSubmit }) => {
                         {photoPreview && (
                             <div className="photo-preview">
                                 <img src={photoPreview} alt="Preview" />
-                                <button onClick={() => { setPhoto(null); setPhotoPreview(null); }}>✕</button>
+                                <button onClick={() => { setPhoto(null); setPhotoPreview(null); }}>×</button>
                             </div>
                         )}
                     </div>

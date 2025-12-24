@@ -5,12 +5,17 @@ import MessageReaction from '../../components/ui/MessageReaction';
 import VoiceRecorder from '../../components/ui/VoiceRecorder';
 import VoicePlayer from '../../components/ui/VoicePlayer';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import { compressImage } from '../../lib/image';
 import './FamilyChat.css';
+
+const PAGE_SIZE = 50;
 
 const FamilyChat = () => {
     const { supabase, user } = useSupabase();
     const { markAsRead } = useUnreadCounts();
     const [messages, setMessages] = useState([]);
+    const [page, setPage] = useState(0);
+    const [hasMore, setHasMore] = useState(true);
     const [newMessage, setNewMessage] = useState('');
     const [photo, setPhoto] = useState(null);
     const [photoPreview, setPhotoPreview] = useState(null);
@@ -21,7 +26,7 @@ const FamilyChat = () => {
 
     useEffect(() => {
         if (user?.family_id) {
-            fetchMessages();
+            fetchMessages(true);
             fetchProfiles();
             markAsRead();
 
@@ -69,17 +74,23 @@ const FamilyChat = () => {
         setProfiles(profileMap);
     };
 
-    const fetchMessages = async () => {
+    const fetchMessages = async (reset = false, targetPage) => {
+        const currentPage = reset ? 0 : targetPage ?? page;
         const { data } = await supabase
             .from('messages')
             .select('*')
             .eq('family_id', user.family_id)
             .is('recipient_id', null)
-            .order('created_at', { ascending: true })
-            .limit(100);
+            .order('created_at', { ascending: false })
+            .range(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE - 1);
 
         if (data) {
-            setMessages(data);
+            const chunk = [...data].reverse();
+            setMessages((prev) => (reset ? chunk : [...chunk, ...prev]));
+            setHasMore(data.length === PAGE_SIZE);
+            setPage(currentPage);
+        } else {
+            setHasMore(false);
         }
         setLoading(false);
     };
@@ -103,8 +114,9 @@ const FamilyChat = () => {
 
         const fileExt = photo.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        const toUpload = await compressImage(photo, 1400, 0.7).catch(() => photo);
 
-        const { error: uploadError } = await supabase.storage.from('pulse-photos').upload(fileName, photo);
+        const { error: uploadError } = await supabase.storage.from('pulse-photos').upload(fileName, toUpload);
 
         if (uploadError) {
             console.error('Photo upload error:', uploadError);
@@ -222,6 +234,15 @@ const FamilyChat = () => {
             </header>
 
             <div className="messages-container">
+                {hasMore && (
+                    <button
+                        className="load-more"
+                        onClick={() => fetchMessages(false, page + 1)}
+                        aria-label="Load older messages"
+                    >
+                        Load earlier messages
+                    </button>
+                )}
                 {messages.length === 0 ? (
                     <div className="empty-state">
                         <h3>No messages yet</h3>

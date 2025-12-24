@@ -1,11 +1,13 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import BottomNavigation from './BottomNavigation';
+import TopBar from './TopBar';
 import './MobileLayout.css';
 
 const MobileLayout = () => {
     return (
         <div className="mobile-layout">
+            <TopBar />
             <main className="content">
                 <Outlet />
             </main>

@@ -16,8 +16,9 @@
     overflow-y: auto;
     overflow-x: hidden;
     position: relative;
-    /* Padding for bottom nav */
+    /* Padding for top bar and bottom nav */
     padding-bottom: 80px;
+    padding-top: 12px;
     width: 100%;
     animation: fadeIn 0.3s ease-out;
 }

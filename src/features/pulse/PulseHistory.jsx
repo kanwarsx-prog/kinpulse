@@ -5,33 +5,43 @@ import StatusBadge from '../../components/ui/StatusBadge';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import './PulseHistory.css';
 
+const PAGE_SIZE = 50;
+
 const PulseHistory = () => {
     const { supabase, user } = useSupabase();
     const navigate = useNavigate();
     const [pulses, setPulses] = useState([]);
     const [profiles, setProfiles] = useState({});
     const [loading, setLoading] = useState(true);
-    const [dateRange, setDateRange] = useState('7'); // 7, 30, or 'all'
+    const [dateRange, setDateRange] = useState('7');
     const [selectedMember, setSelectedMember] = useState('all');
+    const [page, setPage] = useState(0);
+    const [hasMore, setHasMore] = useState(true);
 
     useEffect(() => {
-        fetchHistory();
+        setPage(0);
+        setPulses([]);
+        setHasMore(true);
+        fetchHistory(true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dateRange, selectedMember]);
 
-    const fetchHistory = async () => {
-        setLoading(true);
+    const fetchHistory = async (reset = false, targetPage) => {
+        setLoading(reset);
 
-        const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('family_id', user.family_id);
-
+        const { data: profileData } = await supabase.from('profiles').select('*').eq('family_id', user.family_id);
         const profileMap = {};
         profileData?.forEach((p) => (profileMap[p.id] = p));
         setProfiles(profileMap);
 
-        let query = supabase.from('pulses').select('*').eq('family_id', user.family_id).order('created_at', { ascending: false });
+        const currentPage = reset ? 0 : targetPage ?? page;
+
+        let query = supabase
+            .from('pulses')
+            .select('*')
+            .eq('family_id', user.family_id)
+            .order('created_at', { ascending: false })
+            .range(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE - 1);
 
         if (dateRange !== 'all') {
             const daysAgo = new Date();
@@ -44,7 +54,15 @@ const PulseHistory = () => {
         }
 
         const { data } = await query;
-        setPulses(data || []);
+
+        if (data) {
+            setPulses((prev) => (reset ? data : [...prev, ...data]));
+            setHasMore(data.length === PAGE_SIZE);
+            setPage(currentPage);
+        } else {
+            setHasMore(false);
+        }
+
         setLoading(false);
     };
 
@@ -132,6 +150,11 @@ const PulseHistory = () => {
                                 </div>
                             </div>
                         ))
+                    )}
+                    {hasMore && (
+                        <button className="load-more" onClick={() => fetchHistory(false, page + 1)} aria-label="Load older pulses">
+                            Load older pulses
+                        </button>
                     )}
                 </div>
             )}

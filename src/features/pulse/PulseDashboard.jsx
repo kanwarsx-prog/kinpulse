@@ -77,6 +77,12 @@ const PulseDashboard = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [hasFamily]);
 
+    useEffect(() => {
+        const handleOpenInvite = () => setShowInvite(true);
+        window.addEventListener('open-invite', handleOpenInvite);
+        return () => window.removeEventListener('open-invite', handleOpenInvite);
+    }, []);
+
     const fetchFamilyInfo = async () => {
         if (!hasFamily) return;
 

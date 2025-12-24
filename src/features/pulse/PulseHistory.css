@@ -131,3 +131,14 @@
     padding: var(--space-xl);
     color: var(--color-text-secondary);
 }
+
+.load-more {
+    width: 100%;
+    padding: 10px 0;
+    margin-top: var(--space-md);
+    background: var(--color-bg-tertiary);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}

@@ -8,7 +8,10 @@ import MessageReaction from '../../components/ui/MessageReaction';
 import VoiceRecorder from '../../components/ui/VoiceRecorder';
 import VoicePlayer from '../../components/ui/VoicePlayer';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import { compressImage } from '../../lib/image';
 import './DirectMessage.css';
+
+const PAGE_SIZE = 50;
 
 const DirectMessage = () => {
     const { userId } = useParams();
@@ -17,6 +20,8 @@ const DirectMessage = () => {
     const { isOnline } = usePresence();
     const { markAsRead: markAsReadInHook } = useUnreadCounts();
     const [messages, setMessages] = useState([]);
+    const [page, setPage] = useState(0);
+    const [hasMore, setHasMore] = useState(true);
     const [newMessage, setNewMessage] = useState('');
     const [photo, setPhoto] = useState(null);
     const [photoPreview, setPhotoPreview] = useState(null);
@@ -30,7 +35,7 @@ const DirectMessage = () => {
     useEffect(() => {
         if (user && userId) {
             fetchRecipient();
-            fetchMessages();
+            fetchMessages(true);
             markAsReadInHook(userId);
             subscribeToMessages();
             subscribeToTyping();
@@ -51,14 +56,23 @@ const DirectMessage = () => {
         setRecipient(data);
     };
 
-    const fetchMessages = async () => {
+    const fetchMessages = async (reset = false, targetPage) => {
+        const currentPage = reset ? 0 : targetPage ?? page;
         const { data } = await supabase
             .from('messages')
             .select('*')
             .or(`and(user_id.eq.${user.id},recipient_id.eq.${userId}),and(user_id.eq.${userId},recipient_id.eq.${user.id})`)
-            .order('created_at', { ascending: true });
+            .order('created_at', { ascending: false })
+            .range(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE - 1);
 
-        setMessages(data || []);
+        if (data) {
+            const chunk = [...data].reverse();
+            setMessages((prev) => (reset ? chunk : [...chunk, ...prev]));
+            setHasMore(data.length === PAGE_SIZE);
+            setPage(currentPage);
+        } else {
+            setHasMore(false);
+        }
         setLoading(false);
     };
 
@@ -162,7 +176,9 @@ const DirectMessage = () => {
         const fileExt = photo.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-        const { error: uploadError } = await supabase.storage.from('pulse-photos').upload(fileName, photo);
+        const toUpload = await compressImage(photo, 1400, 0.7).catch(() => photo);
+
+        const { error: uploadError } = await supabase.storage.from('pulse-photos').upload(fileName, toUpload);
 
         if (uploadError) {
             console.error('Photo upload error:', uploadError);
@@ -285,15 +301,20 @@ const DirectMessage = () => {
                         <h1>{recipient?.name || recipient?.email?.split('@')[0] || 'User'}</h1>
                         <OnlineIndicator isOnline={isOnline(userId)} size="md" />
                     </div>
-                    {isOnline(userId) ? (
-                        <span className="online-status">Online</span>
-                    ) : (
-                        isTyping && <span className="typing-status">typing…</span>
-                    )}
+                    {isOnline(userId) ? <span className="online-status">Online</span> : isTyping && <span className="typing-status">typing…</span>}
                 </div>
             </header>
 
             <div className="messages-container">
+                {hasMore && (
+                    <button
+                        className="load-more"
+                        onClick={() => fetchMessages(false, page + 1)}
+                        aria-label="Load older messages"
+                    >
+                        Load earlier messages
+                    </button>
+                )}
                 {messages.length === 0 ? (
                     <div className="empty-state">
                         <h3>No messages yet</h3>
