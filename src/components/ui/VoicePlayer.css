@@ -29,6 +29,11 @@
     transform: scale(1.05);
 }
 
+.play-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
 .player-info {
     flex: 1;
     min-width: 0;
