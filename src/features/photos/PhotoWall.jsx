@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import PhotoLightbox from './PhotoLightbox';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
@@ -10,9 +10,11 @@ export default function PhotoWall() {
     const [photos, setPhotos] = useState([]);
     const [profiles, setProfiles] = useState({});
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState('all');
+    const [filter, setFilter] = useState('all'); // 'all', 'pulses', 'chat'
     const [selectedPhoto, setSelectedPhoto] = useState(null);
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const scrollRef = useRef(null);
+    const [showScrollTop, setShowScrollTop] = useState(false);
 
     useEffect(() => {
         fetchPhotos();
@@ -108,19 +110,29 @@ export default function PhotoWall() {
         setSelectedPhoto(filteredPhotos[prevIndex]);
     };
 
+    const handleScroll = (e) => {
+        const y = e.target.scrollTop;
+        setShowScrollTop(y > 400);
+    };
+
+    const scrollToTop = () => {
+        scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     if (loading) {
         return <LoadingSpinner size="lg" message="Loading photos..." />;
     }
 
     return (
-        <div className="photo-wall page fade-in">
-            <header className="photo-wall-header page-header">
+        <div className="photo-wall fade-in">
+            <div className="photo-hero">
                 <div>
-                    <h1 className="page-title" style={{ fontSize: '1.1rem' }}>Family Photos</h1>
-                    <p className="page-subtitle" style={{ fontSize: '0.85rem' }}>Shared moments from pulses and chat</p>
+                    <p className="photo-hero-eyebrow">Shared moments</p>
+                    <h1 className="photo-hero-title">Family Photos</h1>
+                    <p className="photo-hero-subtitle">From pulses and chat</p>
                 </div>
-                <p className="photo-count">{filteredPhotos.length} photos</p>
-            </header>
+                <div className="photo-hero-count">{filteredPhotos.length} photos</div>
+            </div>
 
             <div className="photo-filters">
                 <button className={`filter-btn ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>
@@ -134,46 +146,50 @@ export default function PhotoWall() {
                 </button>
             </div>
 
-            {filteredPhotos.length === 0 ? (
-                <div className="empty-state">
-                    <div className="empty-icon">📷</div>
-                    <h3>No photos yet</h3>
-                    <p>Photos shared in pulses and chat will appear here</p>
-                </div>
-            ) : (
-                <div className="photo-grid">
-                    {filteredPhotos.map((photo, index) => {
-                        const profile = profiles[photo.user_id];
-                        const displayName = photo.user_id === user.id ? 'You' : profile?.name || profile?.email?.split('@')[0] || 'Family Member';
+            <div className="photo-scroll" ref={scrollRef} onScroll={handleScroll}>
+                <div className="photo-top-spacer" />
 
-                        return (
-                            <div key={photo.id} className="photo-item loading" onClick={() => handlePhotoClick(photo, index)}>
-                                <img
-                                    src={photo.signedUrl}
-                                    alt={`Shared by ${displayName}`}
-                                    loading="lazy"
-                                    decoding="async"
-                                    onLoad={(e) => {
-                                        e.target.classList.add('loaded');
-                                        e.target.parentElement.classList.remove('loading');
-                                    }}
-                                    onError={(e) => {
-                                        e.target.parentElement.classList.remove('loading');
-                                        console.error('Failed to load image:', photo.signedUrl);
-                                    }}
-                                />
-                                <div className="photo-overlay">
-                                    <div className="photo-info">
-                                        <Avatar name={profile?.name} email={profile?.email} size="sm" />
-                                        <span className="photo-author">{displayName}</span>
-                                        <span className="photo-source">{photo.source === 'pulse' ? 'From Pulse' : 'From Chat'}</span>
+                {filteredPhotos.length === 0 ? (
+                    <div className="empty-state">
+                        <div className="empty-icon">📷</div>
+                        <h3>No photos yet</h3>
+                        <p>Photos shared in pulses and chat will appear here</p>
+                    </div>
+                ) : (
+                    <div className="photo-grid">
+                        {filteredPhotos.map((photo, index) => {
+                            const profile = profiles[photo.user_id];
+                            const displayName = photo.user_id === user.id ? 'You' : profile?.name || profile?.email?.split('@')[0] || 'Family Member';
+
+                            return (
+                                <div key={photo.id} className="photo-item loading" onClick={() => handlePhotoClick(photo, index)}>
+                                    <img
+                                        src={photo.signedUrl}
+                                        alt={`Shared by ${displayName}`}
+                                        loading="lazy"
+                                        decoding="async"
+                                        onLoad={(e) => {
+                                            e.target.classList.add('loaded');
+                                            e.target.parentElement.classList.remove('loading');
+                                        }}
+                                        onError={(e) => {
+                                            e.target.parentElement.classList.remove('loading');
+                                            console.error('Failed to load image:', photo.signedUrl);
+                                        }}
+                                    />
+                                    <div className="photo-overlay">
+                                        <div className="photo-info">
+                                            <Avatar name={profile?.name} email={profile?.email} size="sm" />
+                                            <span className="photo-author">{displayName}</span>
+                                            <span className="photo-source">{photo.source === 'pulse' ? 'From Pulse' : 'From Chat'}</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
 
             {selectedPhoto && (
                 <PhotoLightbox
@@ -186,6 +202,12 @@ export default function PhotoWall() {
                     hasNext={selectedIndex < filteredPhotos.length - 1}
                     hasPrevious={selectedIndex > 0}
                 />
+            )}
+
+            {showScrollTop && (
+                <button className="scroll-chip" onClick={scrollToTop} aria-label="Back to top">
+                    ↑ Top
+                </button>
             )}
         </div>
     );

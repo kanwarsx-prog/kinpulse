@@ -5,26 +5,44 @@
     padding-top: 0;
 }
 
-.photo-wall-header {
+.photo-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
     background: white;
-    padding: 16px 16px 12px;
+    padding: 14px 16px;
     border-bottom: 1px solid #e0e0e0;
     position: sticky;
     top: 0;
     z-index: 5;
 }
 
-.photo-wall-header h1 {
-    margin: 0 0 2px;
-    font-size: 22px;
-    font-weight: 800;
-    color: #1a1a1a;
+.photo-hero-eyebrow {
+    margin: 0;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7280;
 }
 
-.photo-count {
+.photo-hero-title {
+    margin: 2px 0;
+    font-size: 20px;
+    font-weight: 800;
+    color: #111827;
+}
+
+.photo-hero-subtitle {
     margin: 0;
     font-size: 13px;
-    color: #666;
+    color: #6b7280;
+}
+
+.photo-hero-count {
+    font-weight: 700;
+    color: #374151;
+    white-space: nowrap;
 }
 
 .photo-filters {
@@ -90,6 +108,16 @@
     gap: 8px;
     padding: 16px;
     animation: fadeIn 0.3s ease-out;
+}
+
+.photo-scroll {
+    height: calc(100vh - 200px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.photo-top-spacer {
+    height: 12px;
 }
 
 @keyframes fadeIn {
