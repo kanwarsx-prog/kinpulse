@@ -246,7 +246,7 @@ const PulseDashboard = () => {
                         return (
                             <div
                                 key={pulse.id}
-                                className={`pulse-card ${!isMe ? 'clickable' : ''}`}
+                                className={`family-card ${!isMe ? 'clickable' : ''}`}
                                 onClick={() => {
                                     if (!isMe) {
                                         markAsRead(pulse.user_id);

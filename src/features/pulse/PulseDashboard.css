@@ -233,11 +233,7 @@
     border-color: var(--color-primary);
 }
 
-.family-card:active {
-    transform: scale(0.98);
-}
-
-.fami.pulse-card.clickable:active {
+.family-card.clickable:active {
     transform: scale(0.98);
 }
 
@@ -251,7 +247,6 @@
 .pulse-card-badge .unread-badge {
     position: static;
 }
-
 
 .member-info {
     display: flex;
