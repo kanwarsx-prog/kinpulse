@@ -3,6 +3,8 @@
   --color-primary: #2563eb;           /* cobalt blue */
   --color-primary-strong: #1e3a8a;    /* deep indigo */
   --color-primary-soft: #e0f2fe;      /* ice blue */
+  --color-accent: #ef4444;            /* vibrant red */
+  --color-accent-soft: #fee2e2;       /* soft red background */
 
   --color-bg-primary: #ffffff;
   --color-bg-secondary: #f7f7fa;
