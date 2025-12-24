@@ -2,6 +2,7 @@
     min-height: 100vh;
     background: #f8f9fa;
     padding-bottom: 80px;
+    padding-top: 12px;
 }
 
 .photo-wall-header {
@@ -9,8 +10,8 @@
     padding: 24px 20px 16px;
     border-bottom: 1px solid #e0e0e0;
     position: sticky;
-    top: 0;
-    z-index: 10;
+    top: 60px;
+    z-index: 5;
 }
 
 .photo-wall-header h1 {
@@ -104,7 +105,7 @@
 .photo-item {
     position: relative;
     aspect-ratio: 1;
-    border-radius: 12px;
+    border-radius: 10px;
     overflow: hidden;
     cursor: pointer;
     transition: transform 0.2s;
