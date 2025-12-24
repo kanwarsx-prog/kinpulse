@@ -80,8 +80,16 @@ const PulseDashboard = () => {
 
     useEffect(() => {
         const handleOpenInvite = () => setShowInvite(true);
+        const handleOpenSettings = () => setShowSettings(true);
+        const handleRefreshEvent = () => handleRefresh();
         window.addEventListener('open-invite', handleOpenInvite);
-        return () => window.removeEventListener('open-invite', handleOpenInvite);
+        window.addEventListener('open-settings', handleOpenSettings);
+        window.addEventListener('pulse-refresh', handleRefreshEvent);
+        return () => {
+            window.removeEventListener('open-invite', handleOpenInvite);
+            window.removeEventListener('open-settings', handleOpenSettings);
+            window.removeEventListener('pulse-refresh', handleRefreshEvent);
+        };
     }, []);
 
     const fetchFamilyInfo = async () => {
