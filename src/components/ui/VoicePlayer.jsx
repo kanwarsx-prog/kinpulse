@@ -6,6 +6,7 @@ const VoicePlayer = ({ audioUrl, duration }) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [playbackRate, setPlaybackRate] = useState(1);
+    const [isLoading, setIsLoading] = useState(true);
 
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);
@@ -14,7 +15,7 @@ const VoicePlayer = ({ audioUrl, duration }) => {
     };
 
     const togglePlay = () => {
-        if (audioRef.current) {
+        if (audioRef.current && !isLoading) {
             if (isPlaying) {
                 audioRef.current.pause();
             } else {
@@ -22,6 +23,10 @@ const VoicePlayer = ({ audioUrl, duration }) => {
             }
             setIsPlaying(!isPlaying);
         }
+    };
+
+    const handleCanPlay = () => {
+        setIsLoading(false);
     };
 
     const handleTimeUpdate = () => {
