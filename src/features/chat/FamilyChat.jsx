@@ -131,6 +131,8 @@ const FamilyChat = () => {
 
     const handleSendVoice = async (audioBlob, duration) => {
         try {
+            console.log('Starting voice upload...', { duration, blobSize: audioBlob.size });
+
             // Upload audio to storage
             const fileName = `${user.id}/${Date.now()}.webm`;
             const { data: uploadData, error: uploadError } = await supabase.storage
@@ -139,25 +141,44 @@ const FamilyChat = () => {
                     contentType: 'audio/webm'
                 });
 
-            if (uploadError) throw uploadError;
+            if (uploadError) {
+                console.error('Upload error:', uploadError);
+                throw uploadError;
+            }
+
+            console.log('Upload successful:', uploadData);
 
             // Get signed URL
             const { data: urlData } = await supabase.storage
                 .from('pulse-photos')
                 .createSignedUrl(fileName, 31536000); // 1 year
 
+            console.log('Signed URL created:', urlData?.signedUrl);
+
             // Send message with audio
-            await supabase.from('messages').insert([{
+            const messageData = {
                 family_id: user.family_id,
                 user_id: user.id,
                 audio_url: urlData.signedUrl,
                 audio_duration: duration,
                 is_read: false
-            }]);
+            };
 
+            console.log('Inserting message:', messageData);
+
+            const { data, error } = await supabase.from('messages').insert([messageData]);
+
+            if (error) {
+                console.error('Database insert error:', error);
+                alert(`Error sending voice message: ${error.message}`);
+                throw error;
+            }
+
+            console.log('Message sent successfully:', data);
             setShowVoiceRecorder(false);
         } catch (error) {
             console.error('Error sending voice message:', error);
+            alert(`Failed to send voice message: ${error.message || 'Unknown error'}`);
         }
     };
 
