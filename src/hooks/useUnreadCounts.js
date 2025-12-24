@@ -83,6 +83,8 @@ export const useUnreadCounts = () => {
     const markAsRead = async (senderId = null) => {
         if (!user?.family_id) return;
 
+        console.log('markAsRead called with senderId:', senderId);
+
         try {
             if (senderId) {
                 // Mark DMs from specific user as read
@@ -95,13 +97,16 @@ export const useUnreadCounts = () => {
                     .eq('is_read', false);
             } else {
                 // Mark group chat as read
-                await supabase
+                const { data, error } = await supabase
                     .from('messages')
                     .update({ is_read: true })
                     .eq('family_id', user.family_id)
                     .is('recipient_id', null)
                     .neq('user_id', user.id)
-                    .eq('is_read', false);
+                    .eq('is_read', false)
+                    .select();
+
+                console.log('Marked group chat as read - rows affected:', data?.length, 'Error:', error);
             }
 
             // Refresh counts immediately
