@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import { usePresence } from '../../hooks/usePresence';
@@ -9,6 +9,8 @@ import VoiceRecorder from '../../components/ui/VoiceRecorder';
 import VoicePlayer from '../../components/ui/VoicePlayer';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { compressImage } from '../../lib/image';
+import { VariableSizeList as List } from 'react-window';
+import MeasuredItem from './MeasuredItem';
 import './DirectMessage.css';
 
 const PAGE_SIZE = 50;
@@ -29,7 +31,8 @@ const DirectMessage = () => {
     const [recipient, setRecipient] = useState(null);
     const [isTyping, setIsTyping] = useState(false);
     const [loading, setLoading] = useState(true);
-    const messagesEndRef = useRef(null);
+    const listRef = useRef(null);
+    const sizeMap = useRef({});
     const typingTimeoutRef = useRef(null);
 
     useEffect(() => {
@@ -43,13 +46,14 @@ const DirectMessage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, userId]);
 
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
-
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const setSize = (index, size) => {
+        if (sizeMap.current[index] !== size) {
+            sizeMap.current[index] = size;
+            listRef.current?.resetAfterIndex(index);
+        }
     };
+
+    const getSize = (index) => sizeMap.current[index] || 140;
 
     const fetchRecipient = async () => {
         const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
@@ -306,45 +310,62 @@ const DirectMessage = () => {
             </header>
 
             <div className="messages-container">
-                {hasMore && (
-                    <button
-                        className="load-more"
-                        onClick={() => fetchMessages(false, page + 1)}
-                        aria-label="Load older messages"
-                    >
-                        Load earlier messages
-                    </button>
-                )}
                 {messages.length === 0 ? (
                     <div className="empty-state">
                         <h3>No messages yet</h3>
                         <p>Start your conversation with {recipient?.name || 'them'}.</p>
                     </div>
                 ) : (
-                    messages.map((message) => {
-                        const isMe = message.user_id === user.id;
+                    <List
+                        height={window.innerHeight - 220}
+                        width="100%"
+                        itemCount={messages.length + (hasMore ? 1 : 0)}
+                        itemSize={getSize}
+                        ref={listRef}
+                        className="virtual-list"
+                    >
+                        {({ index, style }) => {
+                            if (hasMore && index === 0) {
+                                return (
+                                    <MeasuredItem index={index} setSize={setSize} style={style}>
+                                        <button
+                                            className="load-more"
+                                            onClick={() => fetchMessages(false, page + 1)}
+                                            aria-label="Load older messages"
+                                        >
+                                            Load earlier messages
+                                        </button>
+                                    </MeasuredItem>
+                                );
+                            }
 
-                        return (
-                            <div key={message.id} className={`message ${isMe ? 'message-me' : 'message-other'}`}>
-                                <div className="message-bubble">
-                                    {message.content && <p className="message-content">{message.content}</p>}
-                                    {message.photo_url && (
-                                        <img
-                                            src={message.photo_url}
-                                            alt="Shared"
-                                            className="message-photo"
-                                            onClick={() => window.open(message.photo_url, '_blank')}
-                                        />
-                                    )}
-                                    <span className="message-time">{formatTime(message.created_at)}</span>
-                                </div>
-                                {message.audio_url && <VoicePlayer audioUrl={message.audio_url} duration={message.audio_duration} />}
-                                <MessageReaction messageId={message.id} />
-                            </div>
-                        );
-                    })
+                            const messageIndex = hasMore ? index - 1 : index;
+                            const message = messages[messageIndex];
+                            const isMe = message.user_id === user.id;
+
+                            return (
+                                <MeasuredItem index={index} setSize={setSize} style={style}>
+                                    <div className={`message ${isMe ? 'message-me' : 'message-other'}`}>
+                                        <div className="message-bubble">
+                                            {message.content && <p className="message-content">{message.content}</p>}
+                                            {message.photo_url && (
+                                                <img
+                                                    src={message.photo_url}
+                                                    alt="Shared"
+                                                    className="message-photo"
+                                                    onClick={() => window.open(message.photo_url, '_blank')}
+                                                />
+                                            )}
+                                            <span className="message-time">{formatTime(message.created_at)}</span>
+                                        </div>
+                                        {message.audio_url && <VoicePlayer audioUrl={message.audio_url} duration={message.audio_duration} />}
+                                        <MessageReaction messageId={message.id} />
+                                    </div>
+                                </MeasuredItem>
+                            );
+                        }}
+                    </List>
                 )}
-                <div ref={messagesEndRef} />
             </div>
 
             <form className="message-input-form" onSubmit={handleSend}>
