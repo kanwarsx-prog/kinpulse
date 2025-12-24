@@ -13,18 +13,19 @@ export const useUnreadCounts = () => {
         // Initial fetch
         fetchUnreadCounts();
 
-        // Subscribe to real-time updates
+        // Subscribe to real-time updates - listen for both INSERT and UPDATE
         const subscription = supabase
             .channel('unread-messages')
             .on(
                 'postgres_changes',
                 {
-                    event: '*',
+                    event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
                     schema: 'public',
                     table: 'messages',
                     filter: `family_id=eq.${user.family_id}`
                 },
-                () => {
+                (payload) => {
+                    console.log('Message change detected:', payload.eventType);
                     fetchUnreadCounts();
                 }
             )
@@ -39,6 +40,8 @@ export const useUnreadCounts = () => {
         if (!user?.family_id) return;
 
         try {
+            console.log('Fetching unread counts for family:', user.family_id);
+
             // Fetch group chat unread count
             const { count: groupCount } = await supabase
                 .from('messages')
@@ -48,6 +51,7 @@ export const useUnreadCounts = () => {
                 .neq('user_id', user.id)
                 .eq('is_read', false);
 
+            console.log('Group chat unread:', groupCount);
             setGroupChatUnread(groupCount || 0);
 
             // Fetch DM unread counts per user
@@ -58,17 +62,22 @@ export const useUnreadCounts = () => {
                 .eq('recipient_id', user.id)
                 .eq('is_read', false);
 
+            console.log('DM messages unread:', dmMessages);
+
             // Count messages per sender
             const counts = {};
             (dmMessages || []).forEach(msg => {
                 counts[msg.user_id] = (counts[msg.user_id] || 0) + 1;
             });
 
+            console.log('DM unread counts:', counts);
             setDmUnreadCounts(counts);
 
             // Calculate total
             const dmTotal = Object.values(counts).reduce((sum, count) => sum + count, 0);
-            setTotalUnread((groupCount || 0) + dmTotal);
+            const total = (groupCount || 0) + dmTotal;
+            console.log('Total unread:', total);
+            setTotalUnread(total);
 
         } catch (error) {
             console.error('Error fetching unread counts:', error);
@@ -82,29 +91,37 @@ export const useUnreadCounts = () => {
     const markAsRead = async (senderId = null) => {
         if (!user?.family_id) return;
 
+        console.log('markAsRead called with senderId:', senderId);
+
         try {
             if (senderId) {
                 // Mark DMs from specific user as read
-                await supabase
+                const { data, error } = await supabase
                     .from('messages')
                     .update({ is_read: true })
                     .eq('family_id', user.family_id)
                     .eq('recipient_id', user.id)
                     .eq('user_id', senderId)
-                    .eq('is_read', false);
+                    .eq('is_read', false)
+                    .select();
+
+                console.log('Marked DMs as read:', data, 'Error:', error);
             } else {
                 // Mark group chat as read
-                await supabase
+                const { data, error } = await supabase
                     .from('messages')
                     .update({ is_read: true })
                     .eq('family_id', user.family_id)
                     .is('recipient_id', null)
                     .neq('user_id', user.id)
-                    .eq('is_read', false);
+                    .eq('is_read', false)
+                    .select();
+
+                console.log('Marked group chat as read:', data, 'Error:', error);
             }
 
-            // Refresh counts
-            fetchUnreadCounts();
+            // Refresh counts immediately
+            await fetchUnreadCounts();
         } catch (error) {
             console.error('Error marking messages as read:', error);
         }

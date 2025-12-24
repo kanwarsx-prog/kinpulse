@@ -26,7 +26,8 @@ const DirectMessage = () => {
         if (user && userId) {
             fetchRecipient();
             fetchMessages();
-            markAsRead();
+            // Mark messages as read using the hook
+            markAsReadInHook(userId);
             subscribeToMessages();
             subscribeToTyping();
         }
@@ -61,18 +62,6 @@ const DirectMessage = () => {
         setLoading(false);
     };
 
-    const markAsRead = async () => {
-        await supabase
-            .from('messages')
-            .update({ is_read: true })
-            .eq('recipient_id', user.id)
-            .eq('user_id', userId)
-            .eq('is_read', false);
-
-        // Update the unread counts in the hook
-        markAsReadInHook(userId);
-    };
-
     const subscribeToMessages = () => {
         const channel = supabase
             .channel(`dm-${userId}`)
@@ -92,7 +81,7 @@ const DirectMessage = () => {
 
                     // Mark as read if from recipient
                     if (msg.user_id === userId) {
-                        markAsRead();
+                        markAsReadInHook(userId);
                     }
                 }
             })
