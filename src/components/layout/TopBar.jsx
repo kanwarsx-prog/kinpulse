@@ -6,7 +6,6 @@ import './TopBar.css';
 
 const TopBar = () => {
     const { supabase, user } = useSupabase();
-    const { onlineCount } = usePresence();
     const navigate = useNavigate();
     const [familyInfo, setFamilyInfo] = useState(null);
 
@@ -41,18 +40,11 @@ const TopBar = () => {
                     <div className="brand-mark">KP</div>
                     <span className="brand-name">KinPulse</span>
                 </div>
-                {user?.family_id && (
+                {user?.family_id && familyInfo?.invite_code && (
                     <div className="top-bar-info">
-                        <div className="top-bar-meta">
-                            <span className="family-name">{familyInfo?.name || 'Family'}</span>
-                            <span className="dot">•</span>
-                            <span className="online-count">{onlineCount} online</span>
+                        <div className="invite-code">
+                            Invite Code: <strong>{familyInfo.invite_code}</strong>
                         </div>
-                        {familyInfo?.invite_code && (
-                            <div className="invite-code">
-                                Invite Code: <strong>{familyInfo.invite_code}</strong>
-                            </div>
-                        )}
                     </div>
                 )}
                 <div className="top-bar-actions">
