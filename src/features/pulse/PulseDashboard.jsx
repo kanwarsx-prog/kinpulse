@@ -273,48 +273,6 @@ const PulseDashboard = () => {
 
     return (
         <div className="pulse-dashboard page fade-in">
-            <header className="dashboard-header page-header">
-                <div>
-                    <p className="page-subtitle" style={{ marginBottom: 4 }}>
-                        {familyInfo?.name || 'Family Sync'}
-                        {onlineCount > 0 && ` • ${onlineCount} online`}
-                    </p>
-                    {familyInfo && (
-                        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
-                            Invite Code:{' '}
-                            <strong style={{ color: 'var(--color-primary-strong)' }}>{familyInfo.invite_code}</strong>
-                        </p>
-                    )}
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                    <button
-                        className="refresh-btn"
-                        onClick={handleRefresh}
-                        disabled={refreshing}
-                        aria-label="Refresh"
-                        style={{ transform: refreshing ? 'rotate(360deg)' : 'rotate(0deg)', transition: 'transform 0.5s ease' }}
-                    >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
-                        </svg>
-                    </button>
-                    <button className="refresh-btn" onClick={() => setShowInvite(true)} aria-label="Invite Family" title="Invite family members">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                            <circle cx="8.5" cy="7" r="4" />
-                            <line x1="20" y1="8" x2="20" y2="14" />
-                            <line x1="23" y1="11" x2="17" y2="11" />
-                        </svg>
-                    </button>
-                    <button className="refresh-btn" onClick={() => setShowSettings(true)} aria-label="Settings">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="12" cy="12" r="3" />
-                            <path d="M12 1v6m0 6v6" />
-                        </svg>
-                    </button>
-                </div>
-            </header>
-
             <section className="family-stream">
                 <div className="section-header">
                     <h3 className="section-title">Family Pulse</h3>
