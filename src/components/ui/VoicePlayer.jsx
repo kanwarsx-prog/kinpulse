@@ -15,7 +15,7 @@ const VoicePlayer = ({ audioUrl, duration }) => {
     };
 
     const togglePlay = () => {
-        if (audioRef.current && !isLoading) {
+        if (audioRef.current) {
             if (isPlaying) {
                 audioRef.current.pause();
             } else {
