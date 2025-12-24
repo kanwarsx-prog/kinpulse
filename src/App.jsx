@@ -8,6 +8,7 @@ import RitualDetail from './features/rituals/RitualDetail';
 import FamilyChat from './features/chat/FamilyChat';
 import DirectMessage from './features/chat/DirectMessage';
 import PhotoWall from './features/photos/PhotoWall';
+import Calendar from './features/calendar/Calendar';
 import JoinFamily from './features/family/JoinFamily';
 
 import { SupabaseProvider, useSupabase } from './contexts/SupabaseContext';
@@ -47,6 +48,7 @@ const AuthenticatedRoutes = () => {
         <Route path="chat" element={<FamilyChat />} />
         <Route path="chat/:userId" element={<DirectMessage />} />
         <Route path="photos" element={<PhotoWall />} />
+        <Route path="calendar" element={<Calendar />} />
       </Route>
     </Routes>
   );

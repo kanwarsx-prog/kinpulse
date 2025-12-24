@@ -1,0 +1,115 @@
+.calendar-grid-container {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.calendar-weekdays>div {
+    padding: 12px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: #e5e7eb;
+}
+
+.calendar-day {
+    background: white;
+    min-height: 100px;
+    padding: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.calendar-day:hover {
+    background: #f9fafb;
+}
+
+.calendar-day.empty {
+    background: #f9fafb;
+    cursor: default;
+}
+
+.calendar-day.today {
+    background: #eff6ff;
+}
+
+.calendar-day.today .day-number {
+    background: #6366f1;
+    color: white;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.day-number {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 4px;
+}
+
+.day-events {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.event-chip {
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.event-chip:hover {
+    opacity: 0.8;
+}
+
+.event-chip.general {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.event-chip.birthday {
+    background: #fce7f3;
+    color: #be185d;
+}
+
+.event-chip.ritual {
+    background: #e9d5ff;
+    color: #7e22ce;
+}
+
+.event-chip.anniversary {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.event-overflow {
+    font-size: 10px;
+    color: #6b7280;
+    margin-top: 2px;
+}
