@@ -275,7 +275,12 @@ const PulseDashboard = () => {
         <div className="pulse-dashboard page fade-in">
             <section className="family-stream">
                 <div className="section-header">
-                    <h3 className="section-title">Family Pulse</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <h3 className="section-title" style={{ marginBottom: 0 }}>Family Pulse</h3>
+                        {onlineCount > 0 && (
+                            <span className="online-chip">{onlineCount} online</span>
+                        )}
+                    </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                         <button className="request-pulse-btn" onClick={() => navigate('/pulse-history')}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
