@@ -166,6 +166,12 @@
     margin-bottom: var(--space-sm);
 }
 
+.section-header.stacked {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+
 .section-title {
     font-size: 0.75rem;
     font-weight: 700;
@@ -173,6 +179,13 @@
     text-transform: uppercase;
     letter-spacing: 0.1em;
     margin: 0;
+}
+
+.section-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .online-chip {
