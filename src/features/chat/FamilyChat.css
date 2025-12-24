@@ -86,6 +86,21 @@
     display: block;
 }
 
+.message-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.message-actions button {
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
 .message-input-form {
     position: fixed;
     bottom: 58px;

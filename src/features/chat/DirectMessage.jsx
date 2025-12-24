@@ -281,6 +281,53 @@ const DirectMessage = () => {
         }
     };
 
+    const handleEditMessage = async (message) => {
+        const current = message.content || '';
+        const updated = window.prompt('Edit message', current);
+        if (updated === null) return;
+        const trimmed = updated.trim();
+        if (!trimmed) return;
+
+        setMessages((prev) => prev.map((m) => (m.id === message.id ? { ...m, content: trimmed } : m)));
+
+        const { data, error } = await supabase
+            .from('messages')
+            .update({ content: trimmed })
+            .eq('id', message.id)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Edit error:', error);
+            setMessages((prev) => prev.map((m) => (m.id === message.id ? message : m)));
+        } else if (data) {
+            setMessages((prev) => prev.map((m) => (m.id === message.id ? data : m)));
+        }
+    };
+
+    const handleDeleteMessage = async (message) => {
+        if (!window.confirm('Delete this message?')) return;
+
+        const backup = { ...message };
+        setMessages((prev) =>
+            prev.map((m) =>
+                m.id === message.id
+                    ? { ...m, content: '[deleted]', photo_url: null, audio_url: null }
+                    : m
+            )
+        );
+
+        const { error } = await supabase
+            .from('messages')
+            .update({ content: '[deleted]', photo_url: null, audio_url: null })
+            .eq('id', message.id);
+
+        if (error) {
+            console.error('Delete error:', error);
+            setMessages((prev) => prev.map((m) => (m.id === message.id ? backup : m)));
+        }
+    };
+
     const formatTime = (timestamp) => {
         const date = new Date(timestamp);
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -341,6 +388,12 @@ const DirectMessage = () => {
                                         />
                                     )}
                                     <span className="message-time">{formatTime(message.created_at)}</span>
+                                    {isMe && message.content && message.content !== '[deleted]' && (
+                                        <div className="message-actions">
+                                            <button type="button" onClick={() => handleEditMessage(message)}>Edit</button>
+                                            <button type="button" onClick={() => handleDeleteMessage(message)}>Delete</button>
+                                        </div>
+                                    )}
                                 </div>
                                 {message.audio_url && <VoicePlayer audioUrl={message.audio_url} duration={message.audio_duration} />}
                                 <MessageReaction messageId={message.id} />
