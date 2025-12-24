@@ -19,6 +19,7 @@ const FamilyChat = () => {
             fetchMessages();
             fetchProfiles();
             // Mark group messages as read when viewing
+            console.log('FamilyChat: Calling markAsRead for group chat');
             markAsRead();
 
             // Subscribe to new family messages only (not DMs)
@@ -33,21 +34,20 @@ const FamilyChat = () => {
                         filter: `family_id=eq.${user.family_id}`
                     },
                     (payload) => {
-                        // Only add family messages (recipient_id is null)
-                        if (payload.new.recipient_id === null) {
+                        const newMsg = payload.new;
+                        // Only add if it's a group message (no recipient_id)
+                        if (!newMsg.recipient_id) {
                             setMessages(prev => {
-                                const exists = prev.some(m => m.id === payload.new.id);
+                                const exists = prev.some(m => m.id === newMsg.id);
                                 if (exists) return prev;
-                                return [...prev, payload.new];
+                                return [...prev, newMsg];
                             });
                         }
                     }
                 )
                 .subscribe();
 
-            return () => {
-                supabase.removeChannel(channel);
-            };
+            return () => supabase.removeChannel(channel);
         }
     }, [user?.family_id]);
 
