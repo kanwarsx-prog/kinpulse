@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSupabase } from '../../contexts/SupabaseContext';
+import { useUnreadCounts } from '../../hooks/useUnreadCounts';
 import './FamilyChat.css';
 
 const FamilyChat = () => {
     const { supabase, user } = useSupabase();
+    const { markAsRead } = useUnreadCounts();
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [photo, setPhoto] = useState(null);
@@ -16,6 +18,8 @@ const FamilyChat = () => {
         if (user?.family_id) {
             fetchMessages();
             fetchProfiles();
+            // Mark group messages as read when viewing
+            markAsRead();
 
             // Subscribe to new family messages only (not DMs)
             const channel = supabase

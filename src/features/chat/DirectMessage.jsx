@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import { usePresence } from '../../hooks/usePresence';
+import { useUnreadCounts } from '../../hooks/useUnreadCounts';
 import OnlineIndicator from '../../components/ui/OnlineIndicator';
 import './DirectMessage.css';
 
@@ -10,6 +11,7 @@ const DirectMessage = () => {
     const navigate = useNavigate();
     const { supabase, user } = useSupabase();
     const { isOnline } = usePresence();
+    const { markAsRead: markAsReadInHook } = useUnreadCounts();
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [photo, setPhoto] = useState(null);
@@ -66,6 +68,9 @@ const DirectMessage = () => {
             .eq('recipient_id', user.id)
             .eq('user_id', userId)
             .eq('is_read', false);
+
+        // Update the unread counts in the hook
+        markAsReadInHook(userId);
     };
 
     const subscribeToMessages = () => {
