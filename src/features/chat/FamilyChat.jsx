@@ -19,7 +19,6 @@ const FamilyChat = () => {
             fetchMessages();
             fetchProfiles();
             // Mark group messages as read when viewing
-            console.log('FamilyChat: Calling markAsRead for group chat');
             markAsRead();
 
             // Subscribe to new family messages only (not DMs)
