@@ -5,7 +5,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px var(--space-md);
+  padding: 8px var(--space-md);
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
@@ -16,20 +16,20 @@
   max-width: 960px;
   display: flex;
   align-items: center;
-  gap: var(--space-md);
+  gap: var(--space-sm);
   justify-content: space-between;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: var(--space-xs);
   cursor: pointer;
 }
 
 .brand-mark {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 10px;
   background: var(--color-primary);
   color: white;
@@ -42,6 +42,7 @@
 .brand-name {
   font-weight: 800;
   letter-spacing: -0.01em;
+  font-size: 17px;
 }
 
 .invite-code {
@@ -52,7 +53,7 @@
 .top-bar-actions {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: var(--space-xs);
 }
 
 .invite-btn {
@@ -65,8 +66,8 @@
 }
 
 .icon-btn {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
   border-radius: var(--radius-pill);
@@ -82,8 +83,8 @@
 }
 
 .avatar {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: var(--color-primary-soft);
   color: var(--color-primary-strong);
@@ -98,17 +99,17 @@
   }
 
   .top-bar-inner {
-    gap: var(--space-sm);
+    gap: var(--space-xs);
   }
 
   .brand-mark {
-    width: 28px;
-    height: 28px;
-    font-size: 13px;
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
   }
 
   .brand-name {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .invite-code {
@@ -117,12 +118,12 @@
 
   .icon-btn,
   .avatar {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
   }
 
   .icon-btn svg {
-    width: 16px;
-    height: 16px;
+    width: 15px;
+    height: 15px;
   }
 }
