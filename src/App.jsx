@@ -16,6 +16,7 @@ import { ToastProvider } from './contexts/ToastContext';
 import LoginScreen from './features/auth/LoginScreen';
 import FamilyOnboarding from './features/onboarding/FamilyOnboarding';
 import LoadingSpinner from './components/ui/LoadingSpinner';
+import VaultHome from './features/vault/VaultHome';
 
 const AppRoutes = () => {
   const { session, user, loading } = useSupabase();
@@ -49,6 +50,7 @@ const AuthenticatedRoutes = () => {
         <Route path="chat/:userId" element={<DirectMessage />} />
         <Route path="photos" element={<PhotoWall />} />
         <Route path="calendar" element={<Calendar />} />
+        <Route path="vault" element={<VaultHome />} />
       </Route>
     </Routes>
   );

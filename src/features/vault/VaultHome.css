@@ -1,0 +1,141 @@
+.vault-home {
+  padding: var(--space-lg);
+}
+
+.vault-header h1 {
+  margin: 4px 0;
+  font-size: 22px;
+}
+
+.vault-eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+.vault-subtitle {
+  margin: 4px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.vault-card {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-md);
+}
+
+.vault-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.vault-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-sm);
+}
+
+.vault-field label {
+  display: block;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+}
+
+.vault-field input,
+.vault-field select {
+  width: 100%;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  font-size: 14px;
+}
+
+.vault-form button {
+  align-self: flex-start;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.vault-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.vault-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vault-refresh {
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-pill);
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.vault-item {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm);
+  background: var(--color-bg-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.vault-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.vault-item-title {
+  margin: 0;
+  font-weight: 700;
+}
+
+.vault-item-meta {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.vault-item-desc {
+  margin: 6px 0 0;
+  color: var(--color-text-secondary);
+}
+
+.vault-type {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-tertiary);
+  font-size: 12px;
+}
+
+.vault-encrypted {
+  font-size: 12px;
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.vault-hint {
+  color: var(--color-text-secondary);
+  margin: var(--space-sm) 0;
+}
