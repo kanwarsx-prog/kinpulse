@@ -58,6 +58,18 @@ const BottomNavigation = () => {
             </NavLink>
 
             <NavLink
+                to="/vault"
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+            >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="10" width="18" height="11" rx="2" />
+                    <path d="M7 10V7a5 5 0 0 1 10 0v3" />
+                    <circle cx="12" cy="15" r="1.25" />
+                </svg>
+                <span className="label">Vault</span>
+            </NavLink>
+
+            <NavLink
                 to="/rituals"
                 className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
             >

@@ -36,39 +36,119 @@ alter table vault_items enable row level security;
 alter table vault_permissions enable row level security;
 alter table vault_audit enable row level security;
 
-create policy "vault_items_family" on vault_items
-  for select using (family_id = (select family_id from profiles where id = auth.uid()))
+-- Reset policies to allow repeatable execution
+drop policy if exists "vault_items_select" on vault_items;
+drop policy if exists "vault_items_insert" on vault_items;
+drop policy if exists "vault_items_update" on vault_items;
+drop policy if exists "vault_items_delete" on vault_items;
+
+drop policy if exists "vault_permissions_select" on vault_permissions;
+drop policy if exists "vault_permissions_insert" on vault_permissions;
+drop policy if exists "vault_permissions_update" on vault_permissions;
+drop policy if exists "vault_permissions_delete" on vault_permissions;
+drop policy if exists "vault_permissions_write_guard" on vault_permissions;
+drop policy if exists "vault_permissions_update_guard" on vault_permissions;
+drop policy if exists "vault_permissions_delete_guard" on vault_permissions;
+
+drop policy if exists "vault_audit_select" on vault_audit;
+drop policy if exists "vault_audit_insert" on vault_audit;
+
+-- Storage bucket for vault files
+insert into storage.buckets (id, name, public)
+values ('vault-files', 'vault-files', false)
+on conflict (id) do nothing;
+
+-- Reset storage policies
+drop policy if exists "vault_files_select" on storage.objects;
+drop policy if exists "vault_files_insert" on storage.objects;
+drop policy if exists "vault_files_delete" on storage.objects;
+
+create policy "vault_files_select" on storage.objects
+  for select using (
+    bucket_id = 'vault-files' and owner = auth.uid()
+  );
+
+create policy "vault_files_insert" on storage.objects
+  for insert with check (
+    bucket_id = 'vault-files' and owner = auth.uid()
+  );
+
+create policy "vault_files_delete" on storage.objects
+  for delete using (
+    bucket_id = 'vault-files' and owner = auth.uid()
+  );
+
+create policy "vault_items_select" on vault_items
+  for select using (family_id = (select family_id from profiles where id = auth.uid()));
+
+create policy "vault_items_insert" on vault_items
+  for insert with check (family_id = (select family_id from profiles where id = auth.uid()));
+
+create policy "vault_items_update" on vault_items
+  for update using (family_id = (select family_id from profiles where id = auth.uid()))
   with check (family_id = (select family_id from profiles where id = auth.uid()));
 
-create policy "vault_permissions_family" on vault_permissions
+create policy "vault_items_delete" on vault_items
+  for delete using (family_id = (select family_id from profiles where id = auth.uid()));
+
+create policy "vault_permissions_select" on vault_permissions
   for select using (exists (
     select 1 from vault_items vi
     where vi.id = item_id and vi.family_id = (select family_id from profiles where id = auth.uid())
   ));
 
-create policy "vault_audit_family" on vault_audit
+create policy "vault_permissions_insert" on vault_permissions
+  for insert with check (exists (
+    select 1 from vault_items vi
+    where vi.id = item_id and vi.family_id = (select family_id from profiles where id = auth.uid())
+  ));
+
+create policy "vault_permissions_update" on vault_permissions
+  for update using (exists (
+    select 1 from vault_items vi
+    where vi.id = item_id and vi.family_id = (select family_id from profiles where id = auth.uid())
+  )) with check (exists (
+    select 1 from vault_items vi
+    where vi.id = item_id and vi.family_id = (select family_id from profiles where id = auth.uid())
+  ));
+
+create policy "vault_permissions_delete" on vault_permissions
+  for delete using (exists (
+    select 1 from vault_items vi
+    where vi.id = item_id and vi.family_id = (select family_id from profiles where id = auth.uid())
+  ));
+
+create policy "vault_audit_select" on vault_audit
   for select using (exists (
     select 1 from vault_items vi
     where vi.id = item_id and vi.family_id = (select family_id from profiles where id = auth.uid())
   ));
 
--- Limit writes to owners/editors
-create policy "vault_items_write" on vault_items
-  for all
-  using (family_id = (select family_id from profiles where id = auth.uid()))
-  with check (family_id = (select family_id from profiles where id = auth.uid()));
-
-create policy "vault_permissions_write" on vault_permissions
-  for all
-  using (exists (
+create policy "vault_permissions_write_guard" on vault_permissions
+  for insert
+  with check (exists (
     select 1 from vault_items vi
-    join vault_permissions vp on vp.item_id = vi.id
     where vi.id = item_id
       and vi.family_id = (select family_id from profiles where id = auth.uid())
-      and vp.user_id = auth.uid()
-      and vp.role in ('owner','editor')
-  ))
-  with check (true);
+  ));
+
+create policy "vault_permissions_update_guard" on vault_permissions
+  for update using (exists (
+    select 1 from vault_items vi
+    where vi.id = item_id
+      and vi.family_id = (select family_id from profiles where id = auth.uid())
+  )) with check (exists (
+    select 1 from vault_items vi
+    where vi.id = item_id
+      and vi.family_id = (select family_id from profiles where id = auth.uid())
+  ));
+
+create policy "vault_permissions_delete_guard" on vault_permissions
+  for delete using (exists (
+    select 1 from vault_items vi
+    where vi.id = item_id
+      and vi.family_id = (select family_id from profiles where id = auth.uid())
+  ));
 
 create policy "vault_audit_insert" on vault_audit
   for insert

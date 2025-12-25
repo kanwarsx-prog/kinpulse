@@ -273,6 +273,25 @@ const PulseDashboard = () => {
 
     return (
         <div className="pulse-dashboard page fade-in">
+            <section className="vault-callout">
+                <div className="vault-callout-left">
+                    <div className="vault-callout-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <rect x="3" y="10" width="18" height="11" rx="2" />
+                            <path d="M7 10V7a5 5 0 0 1 10 0v3" />
+                            <circle cx="12" cy="15" r="1.25" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p className="vault-callout-eyebrow">Trust Vault</p>
+                        <p className="vault-callout-title">Secure docs, passwords, instructions for your family.</p>
+                    </div>
+                </div>
+                <button className="vault-callout-btn" onClick={() => navigate('/vault')}>
+                    Open vault
+                </button>
+            </section>
+
             <section className="family-stream">
                 <div className="section-header stacked">
                     <h3 className="section-title" style={{ marginBottom: 6 }}>Family Pulse</h3>
