@@ -33,6 +33,10 @@ const TopBar = () => {
         window.dispatchEvent(new Event('open-settings'));
     };
 
+    const handleActivity = () => {
+        window.dispatchEvent(new Event('open-activity'));
+    };
+
     return (
         <div className="top-bar">
             <div className="top-bar-inner">
@@ -50,17 +54,22 @@ const TopBar = () => {
                 <div className="top-bar-actions">
                     {user?.family_id && (
                         <>
-                            <button className="icon-btn" onClick={handleRefresh} aria-label="Refresh">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M21 2v6h-6M3 22v-6h6" />
-                                    <path d="M3.51 9a9 9 0 0 1 14.13-3.36L21 8M3 16l3.36 2.36A9 9 0 0 0 20.49 15" />
-                                </svg>
-                            </button>
-                            <button className="icon-btn" onClick={handleInvite} aria-label="Invite family">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                                    <circle cx="8.5" cy="7" r="4" />
-                                    <line x1="20" y1="8" x2="20" y2="14" />
+                    <button className="icon-btn" onClick={handleRefresh} aria-label="Refresh">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M21 2v6h-6M3 22v-6h6" />
+                            <path d="M3.51 9a9 9 0 0 1 14.13-3.36L21 8M3 16l3.36 2.36A9 9 0 0 0 20.49 15" />
+                        </svg>
+                    </button>
+                    <button className="icon-btn" onClick={handleActivity} aria-label="Activity">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                    </button>
+                    <button className="icon-btn" onClick={handleInvite} aria-label="Invite family">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                            <circle cx="8.5" cy="7" r="4" />
+                            <line x1="20" y1="8" x2="20" y2="14" />
                                     <line x1="23" y1="11" x2="17" y2="11" />
                                 </svg>
                             </button>
