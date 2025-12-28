@@ -24,6 +24,26 @@ const FamilyChat = () => {
     const [loading, setLoading] = useState(true);
     const messagesEndRef = useRef(null);
 
+    const sendPushToFamily = async (bodyText) => {
+        const targetIds = Object.keys(profiles).filter((id) => id !== user.id);
+        if (targetIds.length === 0) return;
+        const title = profiles[user.id]?.name
+            ? `${profiles[user.id].name} in Family Chat`
+            : 'New family chat';
+        await Promise.allSettled(
+            targetIds.map((uid) =>
+                supabase.functions.invoke('send-push-notification', {
+                    body: {
+                        user_id: uid,
+                        title,
+                        body: bodyText || 'New message',
+                        url: '/chat'
+                    }
+                })
+            )
+        );
+    };
+
     useEffect(() => {
         if (user?.family_id) {
             fetchMessages(true);
@@ -165,6 +185,7 @@ const FamilyChat = () => {
             }
 
             setShowVoiceRecorder(false);
+            sendPushToFamily('Sent a voice message');
         } catch (error) {
             console.error('Error sending voice message:', error);
             alert(`Failed to send voice message: ${error.message || 'Unknown error'}`);
@@ -215,6 +236,8 @@ const FamilyChat = () => {
             setNewMessage(messageContent);
         } else {
             setMessages((prev) => prev.map((m) => (m.id === tempId ? data : m)));
+            const preview = messageContent || (photoUrl ? 'Shared a photo' : 'New message');
+            sendPushToFamily(preview);
         }
     };
 

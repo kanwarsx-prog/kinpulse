@@ -156,6 +156,19 @@ const DirectMessage = () => {
         }, 2000);
     };
 
+    const sendPushToRecipient = async (bodyText) => {
+        if (!userId) return;
+        const title = recipient?.name ? `${recipient.name}, you have a new DM` : 'New direct message';
+        await supabase.functions.invoke('send-push-notification', {
+            body: {
+                user_id: userId,
+                title,
+                body: bodyText || 'New message',
+                url: `/chat/${user.id}`
+            }
+        });
+    };
+
     const handlePhotoChange = (e) => {
         const file = e.target.files[0];
         if (file && file.size <= 5 * 1024 * 1024) {
@@ -227,6 +240,7 @@ const DirectMessage = () => {
             }
 
             setShowVoiceRecorder(false);
+            sendPushToRecipient('Sent a voice message');
         } catch (error) {
             console.error('Error sending voice message:', error);
             alert(`Failed to send voice message: ${error.message || 'Unknown error'}`);
@@ -278,6 +292,8 @@ const DirectMessage = () => {
             setNewMessage(messageContent);
         } else {
             setMessages((prev) => prev.map((m) => (m.id === tempId ? data : m)));
+            const preview = messageContent || (photoUrl ? 'Sent you a photo' : 'New message');
+            sendPushToRecipient(preview);
         }
     };
 
