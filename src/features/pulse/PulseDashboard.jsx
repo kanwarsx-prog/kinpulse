@@ -173,6 +173,16 @@ const PulseDashboard = () => {
                 };
             });
 
+            // sort by recency, placeholders last
+            withPlaceholders.sort((a, b) => {
+                if (a.created_at && b.created_at) {
+                    return new Date(b.created_at) - new Date(a.created_at);
+                }
+                if (a.created_at) return -1;
+                if (b.created_at) return 1;
+                return 0;
+            });
+
             setPulses(withPlaceholders);
 
             if (latestByUser[user.id]) {
@@ -277,8 +287,12 @@ const PulseDashboard = () => {
                 const displayName = isMe ? 'You' : profile?.name || profile?.email?.split('@')[0] || 'Family Member';
                 const unreadCount = !isMe ? getUnreadForUser(pulse.user_id) : 0;
                 const hasPulse = !!pulse.state;
-                const timeText = hasPulse && pulse.created_at
-                    ? new Date(pulse.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                const dateObj = pulse.created_at ? new Date(pulse.created_at) : null;
+                const timeText = hasPulse && dateObj
+                    ? dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    : '';
+                const dateText = hasPulse && dateObj
+                    ? dateObj.toLocaleDateString([], { month: 'short', day: 'numeric' })
                     : '';
 
                 return (
@@ -310,7 +324,11 @@ const PulseDashboard = () => {
                                 <Avatar name={profile?.name} email={profile?.email} isOnline={!isMe && isOnline(pulse.user_id)} />
                                 <span className="name">{displayName}</span>
                             </div>
-                            {timeText && <span className="time">{timeText}</span>}
+                            {timeText && (
+                                <span className="time">
+                                    {dateText} · {timeText}
+                                </span>
+                            )}
                             {hasPulse && pulse.note && <p className="pulse-note">{pulse.note}</p>}
                             {pulse.photo_url && (
                                 <img
