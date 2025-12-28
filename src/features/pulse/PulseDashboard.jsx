@@ -277,6 +277,9 @@ const PulseDashboard = () => {
                 const displayName = isMe ? 'You' : profile?.name || profile?.email?.split('@')[0] || 'Family Member';
                 const unreadCount = !isMe ? getUnreadForUser(pulse.user_id) : 0;
                 const hasPulse = !!pulse.state;
+                const timeText = hasPulse && pulse.created_at
+                    ? new Date(pulse.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    : '';
 
                 return (
                     <div
@@ -307,12 +310,8 @@ const PulseDashboard = () => {
                                 <Avatar name={profile?.name} email={profile?.email} isOnline={!isMe && isOnline(pulse.user_id)} />
                                 <span className="name">{displayName}</span>
                             </div>
-                            <span className="time">
-                                {pulse.created_at
-                                    ? new Date(pulse.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                                    : 'No pulse yet'}
-                            </span>
-                            {pulse.note && <p className="pulse-note">{pulse.note}</p>}
+                            {timeText && <span className="time">{timeText}</span>}
+                            {hasPulse && pulse.note && <p className="pulse-note">{pulse.note}</p>}
                             {pulse.photo_url && (
                                 <img
                                     src={pulse.photo_url}
