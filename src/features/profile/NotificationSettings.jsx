@@ -10,7 +10,7 @@ const NotificationSettings = () => {
     const testNotification = async () => {
         if (!user) return;
         try {
-            const { error } = await supabase.functions.invoke('send-push', {
+            const { error } = await supabase.functions.invoke('send-push-notification', {
                 body: {
                     user_id: user.id,
                     title: 'KinPulse Test',
