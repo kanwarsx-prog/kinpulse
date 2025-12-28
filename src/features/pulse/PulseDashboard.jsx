@@ -61,6 +61,7 @@ const PulseDashboard = () => {
     const [showInvite, setShowInvite] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [showPulseReminder, setShowPulseReminder] = useState(false);
+    const [showPulseForm, setShowPulseForm] = useState(false);
 
     const hasFamily = !!user?.family_id;
 
@@ -179,6 +180,7 @@ const PulseDashboard = () => {
             created_at: new Date().toISOString()
         };
         setMyPulse(newPulse);
+        setShowPulseForm(false);
 
         const { error } = await supabase.from('pulses').insert({
             user_id: user.id,
@@ -306,7 +308,7 @@ const PulseDashboard = () => {
                             <p className="reminder-title">Share your pulse</p>
                             <p className="reminder-text">You haven’t checked in for 24 hours. How are you feeling?</p>
                         </div>
-                        <button className="reminder-btn" onClick={() => setMyPulse(null)}>
+                        <button className="reminder-btn" onClick={() => setShowPulseForm(true)}>
                             Update now
                         </button>
                     </div>
@@ -343,11 +345,11 @@ const PulseDashboard = () => {
             </section>
 
             <section className="my-pulse-section">
-                {myPulse ? (
+                {myPulse && !showPulseForm ? (
                     <div className="my-status-compact">
                         <div className="compact-header">
                             <span className="label">Your Pulse</span>
-                            <button className="update-btn-small" onClick={() => setMyPulse(null)}>
+                            <button className="update-btn-small" onClick={() => setShowPulseForm(true)}>
                                 Update
                             </button>
                         </div>
