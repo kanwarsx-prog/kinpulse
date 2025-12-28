@@ -35,7 +35,7 @@ const FamilyChat = () => {
         if (!Object.keys(profiles || {}).length) {
             await fetchProfiles();
         }
-        const targetIds = Object.keys(profiles || {}).filter((id) => id !== user.id && !isOnline(id));
+        const targetIds = Object.keys(profiles || {}).filter((id) => id !== user.id);
         if (targetIds.length === 0) return;
         const title = profiles[user.id]?.name
             ? `${profiles[user.id].name} in Family Chat`

@@ -160,7 +160,6 @@ const DirectMessage = () => {
 
     const sendPushToRecipient = async (bodyText) => {
         if (!userId) return;
-        if (isOnline(userId)) return; // skip push if recipient is online
         const title = recipient?.name ? `${recipient.name}, you have a new DM` : 'New direct message';
         try {
             await supabase.functions.invoke('send-push-notification', {
