@@ -175,15 +175,16 @@ const FamilyChat = () => {
         const currentPage = reset ? 0 : page;
         const { data } = await supabase
             .from('messages')
-            .select('*')
-            .eq('family_id', user.family_id)
-            .is('recipient_id', null)
-            .order('created_at', { ascending: false })
-            .range(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE - 1);
+                .select('*')
+                .eq('family_id', user.family_id)
+                .is('recipient_id', null)
+                .order('created_at', { ascending: false })
+                .range(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE - 1);
 
         if (data) {
             const chunk = [...data].reverse();
-            setMessages((prev) => (reset ? chunk : [...chunk, ...prev]));
+            const filtered = chunk.filter((m) => m.content !== '[deleted]');
+            setMessages((prev) => (reset ? filtered : [...filtered, ...prev]));
             setHasMore(data.length === PAGE_SIZE);
             if (reset) setPage(0);
         } else {

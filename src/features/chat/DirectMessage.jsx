@@ -66,7 +66,7 @@ const DirectMessage = () => {
             .range(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE - 1);
 
         if (data) {
-            const chunk = [...data].reverse();
+            const chunk = [...data].reverse().filter((m) => m.content !== '[deleted]');
             setMessages((prev) => (reset ? chunk : [...chunk, ...prev]));
             setHasMore(data.length === PAGE_SIZE);
             if (reset) setPage(0);
