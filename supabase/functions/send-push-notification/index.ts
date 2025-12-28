@@ -1,13 +1,14 @@
 import { serve } from 'https://deno.land/std@0.200.0/http/server.ts';
-import webpush from 'https://esm.sh/web-push@3.6.7';
+import webpush from 'npm:web-push';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 const VAPID_PUBLIC = Deno.env.get('VAPID_PUBLIC_KEY') ?? '';
 const VAPID_PRIVATE = Deno.env.get('VAPID_PRIVATE_KEY') ?? '';
+const VAPID_SUBJECT = Deno.env.get('VAPID_SUBJECT') ?? 'mailto:admin@kinpulse.app';
 
-webpush.setVapidDetails('mailto:admin@kinpulse.app', VAPID_PUBLIC, VAPID_PRIVATE);
+webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE);
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
@@ -15,11 +16,17 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
 };
 
 serve(async (req) => {
+  console.log('[send-push-notification] incoming', { method: req.method, origin: req.headers.get('origin') });
+
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { status: 200, headers: corsHeaders });
+    return new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 
   try {
@@ -52,7 +59,7 @@ serve(async (req) => {
         if (err.statusCode === 404 || err.statusCode === 410) {
           await supabase.from('push_subscriptions').delete().eq('endpoint', sub.endpoint);
         }
-        console.error('Push send error', err);
+        console.error('Push send error', err?.message ?? err);
       }
     }
 
@@ -60,7 +67,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (err: any) {
-    console.error('Function error', err);
+    console.error('Function error', err?.message ?? err);
     return new Response(JSON.stringify({ error: err?.message ?? 'Server error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
