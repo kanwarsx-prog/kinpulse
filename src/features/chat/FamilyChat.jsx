@@ -6,6 +6,7 @@ import MessageReaction from '../../components/ui/MessageReaction';
 import VoiceRecorder from '../../components/ui/VoiceRecorder';
 import VoicePlayer from '../../components/ui/VoicePlayer';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import ImageLightbox from '../../components/ui/ImageLightbox';
 import { compressImage } from '../../lib/image';
 import './FamilyChat.css';
 
@@ -27,6 +28,7 @@ const FamilyChat = () => {
     const [typingUsers, setTypingUsers] = useState([]);
     const typingTimeoutRef = useRef(null);
     const { isOnline } = usePresence();
+    const [lightboxSrc, setLightboxSrc] = useState(null);
 
     const sendPushToFamily = async (bodyText) => {
         // Ensure we have profiles loaded to target other members
@@ -425,7 +427,7 @@ const FamilyChat = () => {
                                                 src={message.photo_url}
                                                 alt="Shared"
                                                 className="message-photo"
-                                                onClick={() => window.open(message.photo_url, '_blank')}
+                                                onClick={() => setLightboxSrc(message.photo_url)}
                                             />
                                         )}
                                         <span className="message-time">{formatTime(message.created_at)}</span>
@@ -489,13 +491,14 @@ const FamilyChat = () => {
                 </div>
             </form>
 
-            {showVoiceRecorder && (
-                <div className="voice-recorder-container">
-                    <VoiceRecorder onSend={handleSendVoice} onCancel={() => setShowVoiceRecorder(false)} />
-                </div>
-            )}
-        </div>
-    );
+        {showVoiceRecorder && (
+            <div className="voice-recorder-container">
+                <VoiceRecorder onSend={handleSendVoice} onCancel={() => setShowVoiceRecorder(false)} />
+            </div>
+        )}
+        <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+    </div>
+);
 };
 
 export default FamilyChat;

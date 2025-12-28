@@ -8,6 +8,7 @@ import MessageReaction from '../../components/ui/MessageReaction';
 import VoiceRecorder from '../../components/ui/VoiceRecorder';
 import VoicePlayer from '../../components/ui/VoicePlayer';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import ImageLightbox from '../../components/ui/ImageLightbox';
 import { compressImage } from '../../lib/image';
 import './DirectMessage.css';
 
@@ -31,6 +32,7 @@ const DirectMessage = () => {
     const [loading, setLoading] = useState(true);
     const messagesEndRef = useRef(null);
     const typingTimeoutRef = useRef(null);
+    const [lightboxSrc, setLightboxSrc] = useState(null);
 
     useEffect(() => {
         if (user && userId) {
@@ -400,14 +402,14 @@ const DirectMessage = () => {
                             <div key={message.id} className={`message ${isMe ? 'message-me' : 'message-other'}`}>
                                 <div className="message-bubble">
                                     {message.content && <p className="message-content">{message.content}</p>}
-                                    {message.photo_url && (
-                                        <img
-                                            src={message.photo_url}
-                                            alt="Shared"
-                                            className="message-photo"
-                                            onClick={() => window.open(message.photo_url, '_blank')}
-                                        />
-                                    )}
+                        {message.photo_url && (
+                            <img
+                                src={message.photo_url}
+                                alt="Shared"
+                                className="message-photo"
+                                onClick={() => setLightboxSrc(message.photo_url)}
+                            />
+                        )}
                                     <span className="message-time">{formatTime(message.created_at)}</span>
                                     {isMe && message.content && message.content !== '[deleted]' && (
                                         <div className="message-actions">
@@ -473,6 +475,7 @@ const DirectMessage = () => {
                     <VoiceRecorder onSend={(audio, duration) => handleSendVoice(audio, duration)} onCancel={() => setShowVoiceRecorder(false)} />
                 </div>
             )}
+            <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
         </div>
     );
 };
