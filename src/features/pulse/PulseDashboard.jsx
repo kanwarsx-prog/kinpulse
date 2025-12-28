@@ -62,6 +62,7 @@ const PulseDashboard = () => {
     const [refreshing, setRefreshing] = useState(false);
     const [showPulseReminder, setShowPulseReminder] = useState(false);
     const [showPulseForm, setShowPulseForm] = useState(false);
+    const pulseFormRef = React.useRef(null);
 
     const hasFamily = !!user?.family_id;
 
@@ -308,7 +309,15 @@ const PulseDashboard = () => {
                             <p className="reminder-title">Share your pulse</p>
                             <p className="reminder-text">You haven’t checked in for 24 hours. How are you feeling?</p>
                         </div>
-                        <button className="reminder-btn" onClick={() => setShowPulseForm(true)}>
+                        <button
+                            className="reminder-btn"
+                            onClick={() => {
+                                setShowPulseForm(true);
+                                setTimeout(() => {
+                                    pulseFormRef.current?.scrollIntoView({ behavior: 'smooth' });
+                                }, 50);
+                            }}
+                        >
                             Update now
                         </button>
                     </div>
@@ -361,7 +370,9 @@ const PulseDashboard = () => {
                         </div>
                     </div>
                 ) : (
-                    <PulseInput onSubmit={handlePulseSubmit} />
+                    <div ref={pulseFormRef}>
+                        <PulseInput onSubmit={handlePulseSubmit} />
+                    </div>
                 )}
             </section>
 
