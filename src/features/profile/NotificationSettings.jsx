@@ -1,20 +1,32 @@
 import React from 'react';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
+import { useSupabase } from '../../contexts/SupabaseContext';
 import './NotificationSettings.css';
 
 const NotificationSettings = () => {
     const { permission, subscription, isSupported, requestPermission, unsubscribe } = usePushNotifications();
+    const { supabase, user } = useSupabase();
 
-    const testNotification = () => {
-        if ('serviceWorker' in navigator && 'Notification' in window) {
-            navigator.serviceWorker.ready.then((registration) => {
-                registration.showNotification('KinPulse Test', {
+    const testNotification = async () => {
+        if (!user) return;
+        try {
+            const { error } = await supabase.functions.invoke('send-push', {
+                body: {
+                    user_id: user.id,
+                    title: 'KinPulse Test',
                     body: 'Push notifications are working!',
-                    icon: '/vite.svg',
-                    tag: 'test',
-                    requireInteraction: false
-                });
+                    url: '/'
+                }
             });
+            if (error) {
+                console.error('Test notification error:', error);
+                alert('Failed to send test notification');
+            } else {
+                alert('Test notification sent. Check your device.');
+            }
+        } catch (err) {
+            console.error('Test notification error:', err);
+            alert('Failed to send test notification');
         }
     };
 
