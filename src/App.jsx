@@ -17,6 +17,7 @@ import LoginScreen from './features/auth/LoginScreen';
 import FamilyOnboarding from './features/onboarding/FamilyOnboarding';
 import LoadingSpinner from './components/ui/LoadingSpinner';
 import VaultHome from './features/vault/VaultHome';
+import AdminConsole from './features/admin/AdminConsole';
 
 const AppRoutes = () => {
   const { session, user, loading } = useSupabase();
@@ -51,6 +52,7 @@ const AuthenticatedRoutes = () => {
         <Route path="photos" element={<PhotoWall />} />
         <Route path="calendar" element={<Calendar />} />
         <Route path="vault" element={<VaultHome />} />
+        <Route path="admin" element={<AdminConsole />} />
       </Route>
     </Routes>
   );
