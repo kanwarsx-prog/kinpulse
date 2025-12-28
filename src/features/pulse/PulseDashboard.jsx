@@ -57,6 +57,7 @@ const PulseDashboard = () => {
     const [pulses, setPulses] = useState([]);
     const [profiles, setProfiles] = useState({});
     const [myPulse, setMyPulse] = useState(null);
+    const [myPulseHistory, setMyPulseHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const [familyInfo, setFamilyInfo] = useState(null);
     const [showSettings, setShowSettings] = useState(false);
@@ -71,17 +72,24 @@ const PulseDashboard = () => {
     useEffect(() => {
         fetchPulses();
         fetchFamilyInfo();
+        fetchMyHistory();
 
         const subscription = supabase
             .channel('public:pulses')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pulses' }, () => {
                 fetchPulses();
+                fetchMyHistory();
             })
             .subscribe();
 
         return () => supabase.removeChannel(subscription);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [hasFamily]);
+
+    useEffect(() => {
+        fetchMyHistory();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?.id]);
 
     useEffect(() => {
         const handleOpenInvite = () => setShowInvite(true);
@@ -109,6 +117,19 @@ const PulseDashboard = () => {
         if (family) {
             setFamilyInfo(family);
         }
+    };
+
+    const fetchMyHistory = async () => {
+        if (!user?.id) return;
+        const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+        const { data } = await supabase
+            .from('pulses')
+            .select('*')
+            .eq('user_id', user.id)
+            .gte('created_at', since)
+            .order('created_at', { ascending: false })
+            .limit(30);
+        if (data) setMyPulseHistory(data);
     };
 
     const fetchPulses = async () => {
@@ -287,7 +308,9 @@ const PulseDashboard = () => {
                                 <span className="name">{displayName}</span>
                             </div>
                             <span className="time">
-                                {new Date(pulse.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                {pulse.created_at
+                                    ? new Date(pulse.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                    : 'No pulse yet'}
                             </span>
                             {pulse.note && <p className="pulse-note">{pulse.note}</p>}
                             {pulse.photo_url && (
@@ -365,6 +388,7 @@ const PulseDashboard = () => {
                         </button>
                     </div>
                 </div>
+                <PulseInsights history={myPulseHistory} />
                 <div className="family-list">
                     {pulseCards}
                     {pulses.length === 0 && (
@@ -407,3 +431,75 @@ const PulseDashboard = () => {
 };
 
 export default PulseDashboard;
+
+const scoreMap = {
+    great: 5,
+    good: 4,
+    okay: 3,
+    stressed: 2,
+    sad: 2,
+    overwhelmed: 1
+};
+
+const scoreLabel = (avg) => {
+    if (avg >= 4.5) return 'Great';
+    if (avg >= 3.5) return 'Good';
+    if (avg >= 2.5) return 'Okay';
+    if (avg >= 1.5) return 'Low';
+    return 'Very low';
+};
+
+const PulseInsights = ({ history }) => {
+    const last14 = history
+        .filter((p) => p.created_at)
+        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+    const byDay = {};
+    last14.forEach((p) => {
+        const day = new Date(p.created_at).toISOString().slice(0, 10);
+        if (!byDay[day]) byDay[day] = p;
+    });
+
+    const days = Array.from({ length: 7 }).map((_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        const key = d.toISOString().slice(0, 10);
+        return { key, label: d.toLocaleDateString([], { weekday: 'short' }), pulse: byDay[key] };
+    });
+
+    const scores = days
+        .filter((d) => d.pulse?.state && scoreMap[d.pulse.state] !== undefined)
+        .map((d) => scoreMap[d.pulse.state]);
+    const avgScore = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+
+    let streak = 0;
+    for (let i = days.length - 1; i >= 0; i--) {
+        if (days[i].pulse?.state) streak += 1;
+        else break;
+    }
+
+    return (
+        <div className="pulse-insights">
+            <div className="insights-header">
+                <div>
+                    <p className="insights-eyebrow">Pulse insights</p>
+                    <h4 className="insights-title">{streak} day streak</h4>
+                    <p className="insights-sub">
+                        Avg mood: {avgScore ? `${scoreLabel(avgScore)} (${avgScore.toFixed(1)})` : 'No data yet'}
+                    </p>
+                </div>
+            </div>
+            <div className="insights-bars">
+                {days.map((d) => {
+                    const value = d.pulse?.state ? scoreMap[d.pulse.state] : 0;
+                    return (
+                        <div key={d.key} className="bar-item">
+                            <div className="bar" style={{ height: `${value * 12}px` }} />
+                            <span className="bar-label">{d.label.slice(0, 3)}</span>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};

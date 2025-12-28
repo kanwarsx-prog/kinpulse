@@ -332,6 +332,71 @@
     transform: scale(1.02);
 }
 
+.no-pulse {
+    color: var(--color-text-secondary);
+    font-weight: 600;
+}
+
+.pulse-insights {
+    margin-bottom: var(--space-md);
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.insights-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.insights-eyebrow {
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary);
+}
+
+.insights-title {
+    margin: 2px 0;
+    font-size: 1.1rem;
+}
+
+.insights-sub {
+    margin: 0;
+    color: var(--color-text-secondary);
+}
+
+.insights-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.bar-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 24px;
+}
+
+.bar {
+    width: 16px;
+    background: var(--color-primary);
+    border-radius: 8px 8px 2px 2px;
+    transition: height 0.2s ease;
+}
+
+.bar-label {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+}
+
 .pulse-reminder {
     display: flex;
     align-items: center;
