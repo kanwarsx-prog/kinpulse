@@ -58,6 +58,7 @@ const PulseDashboard = () => {
     const [profiles, setProfiles] = useState({});
     const [myPulse, setMyPulse] = useState(null);
     const [myPulseHistory, setMyPulseHistory] = useState([]);
+    const [fitnessToday, setFitnessToday] = useState(null);
     const [loading, setLoading] = useState(true);
     const [familyInfo, setFamilyInfo] = useState(null);
     const [showSettings, setShowSettings] = useState(false);
@@ -73,6 +74,7 @@ const PulseDashboard = () => {
         fetchPulses();
         fetchFamilyInfo();
         fetchMyHistory();
+        fetchFitness();
 
         const subscription = supabase
             .channel('public:pulses')
@@ -88,6 +90,7 @@ const PulseDashboard = () => {
 
     useEffect(() => {
         fetchMyHistory();
+        fetchFitness();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.id]);
 
@@ -130,6 +133,18 @@ const PulseDashboard = () => {
             .order('created_at', { ascending: false })
             .limit(30);
         if (data) setMyPulseHistory(data);
+    };
+
+    const fetchFitness = async () => {
+        if (!user?.id) return;
+        const today = new Date().toISOString().slice(0, 10);
+        const { data } = await supabase
+            .from('fitness_metrics')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('metric_date', today)
+            .single();
+        if (data) setFitnessToday(data);
     };
 
     const fetchPulses = async () => {
@@ -366,6 +381,15 @@ const PulseDashboard = () => {
         <div className="pulse-dashboard page fade-in">
             <section className="family-stream">
                 <FitnessWidget />
+                <SmartNudge
+                    myPulse={myPulse}
+                    history={myPulseHistory}
+                    fitnessToday={fitnessToday}
+                    onUpdate={() => {
+                        setShowPulseForm(true);
+                        setTimeout(() => pulseFormRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+                    }}
+                />
                 {showPulseReminder && (
                     <div className="pulse-reminder">
                         <div>
@@ -448,6 +472,36 @@ const PulseDashboard = () => {
 };
 
 export default PulseDashboard;
+
+const SmartNudge = ({ myPulse, history, fitnessToday, onUpdate }) => {
+    const lastPulseDate = myPulse?.created_at ? new Date(myPulse.created_at) : null;
+    const stale = !lastPulseDate || Date.now() - lastPulseDate.getTime() > 24 * 60 * 60 * 1000;
+    const recentMood = history?.[0]?.state;
+    const lowActivity = fitnessToday && (fitnessToday.steps || 0) < 2000;
+
+    if (!stale && !lowActivity) return null;
+
+    const title = stale ? 'Take a quick pulse' : 'Slow day?';
+    const body = stale
+        ? 'It’s been a while since you checked in. Share how you’re feeling.'
+        : 'Activity looks low today. Want to log how you’re doing?';
+
+    return (
+        <div className="pulse-reminder">
+            <div>
+                <p className="reminder-title">{title}</p>
+                <p className="reminder-text">{body}</p>
+                {recentMood && <p className="reminder-sub">Last mood: {scoreLabel(scoreMap[recentMood] || 0)}</p>}
+                {fitnessToday && (
+                    <p className="reminder-sub">
+                        Today: {fitnessToday.steps || 0} steps · {fitnessToday.active_minutes || 0} active mins
+                    </p>
+                )}
+            </div>
+            <button className="reminder-btn" onClick={onUpdate}>Update now</button>
+        </div>
+    );
+};
 
 const scoreMap = {
     great: 5,
