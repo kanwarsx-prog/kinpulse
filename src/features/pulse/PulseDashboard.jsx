@@ -139,7 +139,20 @@ const PulseDashboard = () => {
                 if (!latestByUser[p.user_id]) latestByUser[p.user_id] = p;
             });
 
-            setPulses(Object.values(latestByUser));
+            // Include everyone, even without a pulse yet
+            const withPlaceholders = Object.keys(profileMap).map((id) => {
+                if (latestByUser[id]) return latestByUser[id];
+                return {
+                    id: `placeholder-${id}`,
+                    user_id: id,
+                    family_id: user.family_id,
+                    state: null,
+                    note: null,
+                    created_at: null
+                };
+            });
+
+            setPulses(withPlaceholders);
 
             if (latestByUser[user.id]) {
                 setMyPulse(latestByUser[user.id]);
@@ -242,6 +255,7 @@ const PulseDashboard = () => {
                 const profile = profiles[pulse.user_id];
                 const displayName = isMe ? 'You' : profile?.name || profile?.email?.split('@')[0] || 'Family Member';
                 const unreadCount = !isMe ? getUnreadForUser(pulse.user_id) : 0;
+                const hasPulse = !!pulse.state;
 
                 return (
                     <div
@@ -283,14 +297,20 @@ const PulseDashboard = () => {
                                     className="pulse-photo"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        window.open(pulse.photo_url, '_blank');
-                                    }}
-                                />
+                                window.open(pulse.photo_url, '_blank');
+                            }}
+                        />
                             )}
                         </div>
                         <div className="pulse-card-footer">
-                            <StatusBadge status={pulse.state} />
-                            <PulseReaction pulseId={pulse.id} profiles={profiles} />
+                            {hasPulse ? (
+                                <>
+                                    <StatusBadge status={pulse.state} />
+                                    <PulseReaction pulseId={pulse.id} profiles={profiles} />
+                                </>
+                            ) : (
+                                <span className="no-pulse">No pulse yet</span>
+                            )}
                         </div>
                     </div>
                 );
