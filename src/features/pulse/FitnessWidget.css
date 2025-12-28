@@ -1,5 +1,5 @@
 .fitness-card {
-    padding: var(--space-md);
+    padding: 12px 14px;
     background: var(--color-bg-primary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
@@ -10,8 +10,9 @@
 .fitness-top {
     display: flex;
     align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
     justify-content: space-between;
-    gap: var(--space-md);
 }
 
 .fitness-eyebrow {
@@ -24,7 +25,7 @@
 
 .fitness-title {
     margin: 4px 0;
-    font-size: 1.4rem;
+    font-size: 1.2rem;
 }
 
 .fitness-sub {
@@ -43,9 +44,10 @@
 }
 
 .fitness-form {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    align-items: flex-end;
     gap: 8px;
+    flex-wrap: wrap;
 }
 
 .fitness-form label {
@@ -57,20 +59,22 @@
 }
 
 .fitness-form input {
-    padding: 8px;
+    padding: 6px 8px;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    width: 100%;
 }
 
 .fitness-form button {
-    grid-column: span 2;
-    padding: 10px 12px;
+    padding: 10px 14px;
     background: var(--color-primary);
     color: white;
     border: none;
     border-radius: var(--radius-md);
     font-weight: 700;
     cursor: pointer;
+    min-width: 96px;
 }
 
 .fitness-connect {
@@ -85,9 +89,28 @@
 
 .fitness-connect-actions button {
     flex: 1;
-    padding: 8px;
+    padding: 10px 8px;
     background: var(--color-bg-tertiary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     cursor: pointer;
+}
+
+@media (max-width: 520px) {
+    .fitness-top {
+        flex-direction: column;
+    }
+
+    .fitness-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .fitness-form button {
+        width: 100%;
+    }
+
+    .fitness-connect-actions {
+        flex-direction: column;
+    }
 }
