@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import { useUnreadCounts } from '../../hooks/useUnreadCounts';
+import { usePresence } from '../../hooks/usePresence';
 import MessageReaction from '../../components/ui/MessageReaction';
 import VoiceRecorder from '../../components/ui/VoiceRecorder';
 import VoicePlayer from '../../components/ui/VoicePlayer';
@@ -25,13 +26,14 @@ const FamilyChat = () => {
     const messagesEndRef = useRef(null);
     const [typingUsers, setTypingUsers] = useState([]);
     const typingTimeoutRef = useRef(null);
+    const { isOnline } = usePresence();
 
     const sendPushToFamily = async (bodyText) => {
         // Ensure we have profiles loaded to target other members
         if (!Object.keys(profiles || {}).length) {
             await fetchProfiles();
         }
-        const targetIds = Object.keys(profiles || {}).filter((id) => id !== user.id);
+        const targetIds = Object.keys(profiles || {}).filter((id) => id !== user.id && !isOnline(id));
         if (targetIds.length === 0) return;
         const title = profiles[user.id]?.name
             ? `${profiles[user.id].name} in Family Chat`
