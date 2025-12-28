@@ -394,52 +394,52 @@ const FamilyChat = () => {
                     </button>
                 )}
 
-            {messages.length === 0 ? (
-                <div className="empty-state">
-                    <h3>No messages yet</h3>
-                    <p>Start the conversation!</p>
-                </div>
-            ) : (
-                <>
-                {typingUsers.length > 0 && (
-                    <div className="typing-indicator">
-                        {typingUsers.length === 1
-                            ? `${profiles[typingUsers[0]]?.name || 'Someone'} is typing...`
-                            : 'Several people are typing...'}
+                {messages.length === 0 ? (
+                    <div className="empty-state">
+                        <h3>No messages yet</h3>
+                        <p>Start the conversation!</p>
                     </div>
-                )}
-                messages.map((message) => {
-                    const isMe = message.user_id === user.id;
-                    const profile = profiles[message.user_id];
-
-                    return (
-                            <div key={message.id} className={`message ${isMe ? 'message-me' : 'message-other'}`}>
-                                {!isMe && <div className="message-sender">{profile?.name || profile?.email?.split('@')[0] || 'Family'}</div>}
-                                <div className="message-bubble">
-                                    {message.content && <p className="message-content">{message.content}</p>}
-                                    {message.photo_url && (
-                                        <img
-                                            src={message.photo_url}
-                                            alt="Shared"
-                                            className="message-photo"
-                                            onClick={() => window.open(message.photo_url, '_blank')}
-                                        />
-                                    )}
-                                    <span className="message-time">{formatTime(message.created_at)}</span>
-                                    {isMe && message.content && message.content !== '[deleted]' && (
-                                        <div className="message-actions">
-                                            <button type="button" onClick={() => handleEditMessage(message)}>Edit</button>
-                                            <button type="button" onClick={() => handleDeleteMessage(message)}>Delete</button>
-                                        </div>
-                                    )}
-                                </div>
-                                {message.audio_url && <VoicePlayer audioUrl={message.audio_url} duration={message.audio_duration} />}
-                                <MessageReaction messageId={message.id} />
+                ) : (
+                    <>
+                        {typingUsers.length > 0 && (
+                            <div className="typing-indicator">
+                                {typingUsers.length === 1
+                                    ? `${profiles[typingUsers[0]]?.name || 'Someone'} is typing...`
+                                    : 'Several people are typing...'}
                             </div>
-                        );
-                    })
-                </>
-            )}
+                        )}
+                        {messages.map((message) => {
+                            const isMe = message.user_id === user.id;
+                            const profile = profiles[message.user_id];
+
+                            return (
+                                <div key={message.id} className={`message ${isMe ? 'message-me' : 'message-other'}`}>
+                                    {!isMe && <div className="message-sender">{profile?.name || profile?.email?.split('@')[0] || 'Family'}</div>}
+                                    <div className="message-bubble">
+                                        {message.content && <p className="message-content">{message.content}</p>}
+                                        {message.photo_url && (
+                                            <img
+                                                src={message.photo_url}
+                                                alt="Shared"
+                                                className="message-photo"
+                                                onClick={() => window.open(message.photo_url, '_blank')}
+                                            />
+                                        )}
+                                        <span className="message-time">{formatTime(message.created_at)}</span>
+                                        {isMe && message.content && message.content !== '[deleted]' && (
+                                            <div className="message-actions">
+                                                <button type="button" onClick={() => handleEditMessage(message)}>Edit</button>
+                                                <button type="button" onClick={() => handleDeleteMessage(message)}>Delete</button>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {message.audio_url && <VoicePlayer audioUrl={message.audio_url} duration={message.audio_duration} />}
+                                    <MessageReaction messageId={message.id} />
+                                </div>
+                            );
+                        })}
+                    </>
+                )}
             <div ref={messagesEndRef} />
         </div>
 
