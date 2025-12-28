@@ -331,3 +331,38 @@
 .pulse-photo:hover {
     transform: scale(1.02);
 }
+
+.pulse-reminder {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-md);
+}
+
+.reminder-title {
+    margin: 0;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.reminder-text {
+    margin: 4px 0 0;
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+}
+
+.reminder-btn {
+    padding: 10px 14px;
+    background: var(--color-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-pill);
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+}

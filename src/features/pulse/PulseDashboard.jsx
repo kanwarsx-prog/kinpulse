@@ -60,6 +60,7 @@ const PulseDashboard = () => {
     const [showSettings, setShowSettings] = useState(false);
     const [showInvite, setShowInvite] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const [showPulseReminder, setShowPulseReminder] = useState(false);
 
     const hasFamily = !!user?.family_id;
 
@@ -142,6 +143,31 @@ const PulseDashboard = () => {
         }
         setLoading(false);
     };
+
+    useEffect(() => {
+        if (loading || !user) return;
+        const last = myPulse?.created_at ? new Date(myPulse.created_at) : null;
+        const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
+        const stale = !last || last.getTime() < twentyFourHoursAgo;
+        setShowPulseReminder(stale);
+
+        if (stale) {
+            const todayKey = `kp_pulse_reminder_${user.id}_${new Date().toISOString().slice(0, 10)}`;
+            if (typeof localStorage !== 'undefined' && !localStorage.getItem(todayKey)) {
+                supabase.functions
+                    .invoke('send-push-notification', {
+                        body: {
+                            user_id: user.id,
+                            title: 'Quick pulse check',
+                            body: 'Share how you’re feeling today.',
+                            url: '/'
+                        }
+                    })
+                    .catch((err) => console.error('Pulse reminder push error', err));
+                localStorage.setItem(todayKey, 'sent');
+            }
+        }
+    }, [loading, myPulse, user, supabase]);
 
     const handlePulseSubmit = async (pulseData) => {
         const newPulse = {
@@ -274,6 +300,17 @@ const PulseDashboard = () => {
     return (
         <div className="pulse-dashboard page fade-in">
             <section className="family-stream">
+                {showPulseReminder && (
+                    <div className="pulse-reminder">
+                        <div>
+                            <p className="reminder-title">Share your pulse</p>
+                            <p className="reminder-text">You haven’t checked in for 24 hours. How are you feeling?</p>
+                        </div>
+                        <button className="reminder-btn" onClick={() => setMyPulse(null)}>
+                            Update now
+                        </button>
+                    </div>
+                )}
                 <div className="section-header stacked">
                     <h3 className="section-title" style={{ marginBottom: 6 }}>Family Pulse</h3>
                     <div className="section-actions">

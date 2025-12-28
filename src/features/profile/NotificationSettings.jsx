@@ -5,6 +5,7 @@ import './NotificationSettings.css';
 
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const OPT_OUT_KEY = 'kp_notifications_opt_out';
+const PROMPT_SHOWN_KEY = 'kp_notifications_prompt_shown';
 
 const NotificationSettings = () => {
     const { permission, subscription, isSupported, requestPermission, unsubscribe } = usePushNotifications();
@@ -15,10 +16,15 @@ const NotificationSettings = () => {
     });
 
     useEffect(() => {
-        // Auto-request on load so notifications are enabled by default
-        if (isSupported && permission === 'default' && !subscription && !optOut) {
-            requestPermission();
-        }
+        if (!isSupported || optOut || permission !== 'default' || subscription) return;
+        if (typeof localStorage === 'undefined') return;
+        const alreadyShown = localStorage.getItem(PROMPT_SHOWN_KEY) === 'true';
+        if (alreadyShown) return;
+
+        // show one-time gentle prompt immediately
+        requestPermission().finally(() => {
+            localStorage.setItem(PROMPT_SHOWN_KEY, 'true');
+        });
     }, [isSupported, permission, subscription, optOut, requestPermission]);
 
     const testNotification = async () => {
@@ -59,6 +65,7 @@ const NotificationSettings = () => {
         }
         if (typeof localStorage !== 'undefined') {
             localStorage.removeItem(OPT_OUT_KEY);
+            localStorage.setItem(PROMPT_SHOWN_KEY, 'true');
         }
         setOptOut(false);
         requestPermission();
