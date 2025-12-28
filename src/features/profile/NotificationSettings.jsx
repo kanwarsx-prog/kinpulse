@@ -3,6 +3,8 @@ import { usePushNotifications } from '../../hooks/usePushNotifications';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import './NotificationSettings.css';
 
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
 const NotificationSettings = () => {
     const { permission, subscription, isSupported, requestPermission, unsubscribe } = usePushNotifications();
     const { supabase, user } = useSupabase();
@@ -16,7 +18,10 @@ const NotificationSettings = () => {
                     title: 'KinPulse Test',
                     body: 'Push notifications are working!',
                     url: '/'
-                }
+                },
+                headers: SUPABASE_ANON_KEY ? {
+                    Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+                } : undefined
             });
             if (error) {
                 console.error('Test notification error:', error);
