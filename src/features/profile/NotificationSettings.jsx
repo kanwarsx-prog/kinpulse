@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import './NotificationSettings.css';
@@ -8,6 +8,13 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const NotificationSettings = () => {
     const { permission, subscription, isSupported, requestPermission, unsubscribe } = usePushNotifications();
     const { supabase, user } = useSupabase();
+
+    useEffect(() => {
+        // Auto-request on load so notifications are enabled by default
+        if (isSupported && permission === 'default' && !subscription) {
+            requestPermission();
+        }
+    }, [isSupported, permission, subscription]);
 
     const testNotification = async () => {
         if (!user) return;
