@@ -115,7 +115,7 @@ export const useCalendar = ({ startDate, endDate }) => {
     const getEventsForDate = (date) => {
         const dateStr = date.toISOString().split('T')[0];
         return events.filter(event => {
-            const eventDate = new Date(event.start_time).toISOString().split('T')[0];
+            const eventDate = (event.start_time || '').slice(0, 10);
             return eventDate === dateStr;
         });
     };

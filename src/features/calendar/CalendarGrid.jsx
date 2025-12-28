@@ -29,7 +29,7 @@ const CalendarGrid = ({ currentDate, events, onDateClick, onEventClick }) => {
 
         // Get events for this day
         const dayEvents = events.filter(event => {
-            const eventDate = new Date(event.start_time).toISOString().split('T')[0];
+            const eventDate = (event.start_time || '').slice(0, 10);
             return eventDate === dateStr;
         });
 
