@@ -8,10 +8,11 @@
 }
 
 .fitness-top {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    align-items: center;
-    gap: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: space-between;
 }
 
 .fitness-eyebrow {
@@ -80,7 +81,8 @@
 }
 
 .fitness-connect-actions {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
     margin-top: 4px;
 }
@@ -96,7 +98,7 @@
 
 @media (max-width: 520px) {
     .fitness-top {
-        grid-template-columns: 1fr;
+        flex-direction: column;
     }
 
     .fitness-form {
@@ -112,6 +114,6 @@
     }
 
     .fitness-connect-actions {
-        flex-direction: column;
+        grid-template-columns: 1fr;
     }
 }
