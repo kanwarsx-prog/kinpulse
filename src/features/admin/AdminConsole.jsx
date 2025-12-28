@@ -8,6 +8,12 @@ const AdminConsole = () => {
     const [profiles, setProfiles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
+    const [newFamilyName, setNewFamilyName] = useState('');
+    const [newInviteCode, setNewInviteCode] = useState('');
+    const [newUserName, setNewUserName] = useState('');
+    const [newUserEmail, setNewUserEmail] = useState('');
+    const [newUserFamily, setNewUserFamily] = useState('');
+    const [busy, setBusy] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -22,6 +28,61 @@ const AdminConsole = () => {
         };
         fetchData();
     }, [supabase]);
+
+    const refresh = async () => {
+        const [{ data: fams }, { data: profs }] = await Promise.all([
+            supabase.from('families').select('*').order('created_at', { ascending: false }),
+            supabase.from('profiles').select('*')
+        ]);
+        setFamilies(fams || []);
+        setProfiles(profs || []);
+    };
+
+    const createFamily = async (e) => {
+        e.preventDefault();
+        if (!newFamilyName.trim()) return;
+        setBusy(true);
+        await supabase.from('families').insert({
+            name: newFamilyName.trim(),
+            invite_code: newInviteCode.trim() || null
+        });
+        setNewFamilyName('');
+        setNewInviteCode('');
+        setBusy(false);
+        refresh();
+    };
+
+    const createUser = async (e) => {
+        e.preventDefault();
+        if (!newUserEmail.trim() || !newUserFamily) return;
+        setBusy(true);
+        await supabase.from('profiles').insert({
+            email: newUserEmail.trim(),
+            name: newUserName.trim() || null,
+            family_id: newUserFamily
+        });
+        setNewUserEmail('');
+        setNewUserName('');
+        setNewUserFamily('');
+        setBusy(false);
+        refresh();
+    };
+
+    const deleteFamily = async (id) => {
+        if (!window.confirm('Delete this family and related data?')) return;
+        setBusy(true);
+        await supabase.from('families').delete().eq('id', id);
+        setBusy(false);
+        refresh();
+    };
+
+    const deleteUser = async (id) => {
+        if (!window.confirm('Delete this user?')) return;
+        setBusy(true);
+        await supabase.from('profiles').delete().eq('id', id);
+        setBusy(false);
+        refresh();
+    };
 
     const familyList = useMemo(() => {
         const term = search.trim().toLowerCase();
@@ -55,6 +116,52 @@ const AdminConsole = () => {
                 />
             </header>
 
+            <div className="admin-forms">
+                <form className="admin-form" onSubmit={createFamily}>
+                    <p className="admin-eyebrow">Add family</p>
+                    <div className="form-row">
+                        <input
+                            placeholder="Family name"
+                            value={newFamilyName}
+                            onChange={(e) => setNewFamilyName(e.target.value)}
+                        />
+                        <input
+                            placeholder="Invite code (optional)"
+                            value={newInviteCode}
+                            onChange={(e) => setNewInviteCode(e.target.value)}
+                        />
+                        <button type="submit" disabled={busy || !newFamilyName.trim()}>Add</button>
+                    </div>
+                </form>
+                <form className="admin-form" onSubmit={createUser}>
+                    <p className="admin-eyebrow">Add user</p>
+                    <div className="form-row">
+                        <input
+                            placeholder="Name"
+                            value={newUserName}
+                            onChange={(e) => setNewUserName(e.target.value)}
+                        />
+                        <input
+                            placeholder="Email"
+                            value={newUserEmail}
+                            onChange={(e) => setNewUserEmail(e.target.value)}
+                            required
+                        />
+                        <select
+                            value={newUserFamily}
+                            onChange={(e) => setNewUserFamily(e.target.value)}
+                            required
+                        >
+                            <option value="">Select family</option>
+                            {families.map((f) => (
+                                <option key={f.id} value={f.id}>{f.name || f.invite_code || f.id}</option>
+                            ))}
+                        </select>
+                        <button type="submit" disabled={busy || !newUserEmail.trim() || !newUserFamily}>Add</button>
+                    </div>
+                </form>
+            </div>
+
             {loading ? (
                 <p className="admin-hint">Loading...</p>
             ) : (
@@ -67,7 +174,10 @@ const AdminConsole = () => {
                                     <h3>{fam.name || 'Untitled family'}</h3>
                                     <p className="admin-sub">Invite: {fam.invite_code || 'N/A'}</p>
                                 </div>
-                                <span className="admin-badge">{fam.members.length} users</span>
+                                <div className="admin-actions">
+                                    <span className="admin-badge">{fam.members.length} users</span>
+                                    <button className="admin-delete" onClick={() => deleteFamily(fam.id)} disabled={busy}>Delete</button>
+                                </div>
                             </div>
                             <div className="admin-users">
                                 {fam.members.map((m) => (
@@ -77,6 +187,7 @@ const AdminConsole = () => {
                                             <p className="admin-user-name">{m.name || m.email}</p>
                                             <p className="admin-user-sub">{m.email}</p>
                                         </div>
+                                        <button className="admin-delete" onClick={() => deleteUser(m.id)} disabled={busy}>Remove</button>
                                     </div>
                                 ))}
                                 {fam.members.length === 0 && <p className="admin-hint">No users</p>}
