@@ -19,7 +19,11 @@ const PulseReaction = ({ pulseId, profiles = {} }) => {
         }
     }, [reactionCount]);
 
-    const handleToggle = () => {
+    const handleShortPress = () => {
+        setShowList(true);
+    };
+
+    const handleLongPress = () => {
         toggleReaction();
         setShowList(true);
     };
@@ -29,7 +33,8 @@ const PulseReaction = ({ pulseId, profiles = {} }) => {
             <ReactionButton
                 hasReacted={hasUserReacted}
                 count={reactionCount}
-                onToggle={handleToggle}
+                onShortPress={handleShortPress}
+                onLongPress={handleLongPress}
                 disabled={loading}
             />
             {showList && reactionCount > 0 && (

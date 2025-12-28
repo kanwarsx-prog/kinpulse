@@ -1,17 +1,60 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import './ReactionButton.css';
 
-const ReactionButton = ({ hasReacted, count, onToggle, disabled = false }) => {
-    const handleClick = (e) => {
+const ReactionButton = ({
+    hasReacted,
+    count,
+    onShortPress,
+    onLongPress,
+    disabled = false,
+    longPressMs = 450
+}) => {
+    const timer = useRef(null);
+    const longPressTriggered = useRef(false);
+
+    const clearPress = () => {
+        if (timer.current) {
+            clearTimeout(timer.current);
+            timer.current = null;
+        }
+        longPressTriggered.current = false;
+    };
+
+    const handlePointerDown = (e) => {
         e.stopPropagation();
         if (disabled) return;
-        onToggle?.();
+        clearPress();
+        timer.current = setTimeout(() => {
+            longPressTriggered.current = true;
+            onLongPress?.();
+        }, longPressMs);
+    };
+
+    const handlePointerUp = (e) => {
+        e.stopPropagation();
+        if (disabled) return;
+        if (!longPressTriggered.current) {
+            onShortPress?.();
+        }
+        clearPress();
+    };
+
+    const handleKeyDown = (e) => {
+        if (disabled) return;
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onLongPress?.();
+        }
     };
 
     return (
         <button
             className={`reaction-button ${hasReacted ? 'reacted' : ''}`}
-            onClick={handleClick}
+            onPointerDown={handlePointerDown}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={clearPress}
+            onPointerLeave={clearPress}
+            onKeyDown={handleKeyDown}
             disabled={disabled}
             aria-label={hasReacted ? 'Unlike' : 'Like'}
         >
