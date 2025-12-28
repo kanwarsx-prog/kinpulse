@@ -72,3 +72,22 @@
     font-weight: 700;
     cursor: pointer;
 }
+
+.fitness-connect {
+    margin-top: 8px;
+}
+
+.fitness-connect-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.fitness-connect-actions button {
+    flex: 1;
+    padding: 8px;
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+}

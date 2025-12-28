@@ -9,6 +9,7 @@ const FitnessWidget = () => {
     const [minutes, setMinutes] = useState('');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [showConnect, setShowConnect] = useState(true);
 
     useEffect(() => {
         fetchToday();
@@ -60,6 +61,16 @@ const FitnessWidget = () => {
         setSaving(false);
     };
 
+    const handleConnectGoogle = () => {
+        alert('Google Fit sync will be added here. For now, enter steps/active minutes manually.');
+        setShowConnect(false);
+    };
+
+    const handleConnectApple = () => {
+        alert('Apple Health requires the mobile app. Install via the App Store and enable Health access.');
+        setShowConnect(false);
+    };
+
     const isStale = () => {
         if (!entry) return true;
         const today = new Date().toISOString().slice(0, 10);
@@ -74,6 +85,15 @@ const FitnessWidget = () => {
                     <h3 className="fitness-title">{loading ? 'Loading...' : `${entry?.steps || 0} steps`}</h3>
                     <p className="fitness-sub">{`${entry?.active_minutes || 0} active mins`}</p>
                     {isStale() && <span className="fitness-stale">No data today</span>}
+                    {showConnect && (
+                        <div className="fitness-connect">
+                            <p className="fitness-sub">Connect to sync automatically:</p>
+                            <div className="fitness-connect-actions">
+                                <button type="button" onClick={handleConnectGoogle}>Google Fit</button>
+                                <button type="button" onClick={handleConnectApple}>Apple Health</button>
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <form className="fitness-form" onSubmit={handleSave}>
                     <label>
