@@ -2,10 +2,16 @@ import React from 'react';
 import './ReactionButton.css';
 
 const ReactionButton = ({ hasReacted, count, onToggle, disabled = false }) => {
+    const handleClick = (e) => {
+        e.stopPropagation();
+        if (disabled) return;
+        onToggle?.();
+    };
+
     return (
         <button
             className={`reaction-button ${hasReacted ? 'reacted' : ''}`}
-            onClick={onToggle}
+            onClick={handleClick}
             disabled={disabled}
             aria-label={hasReacted ? 'Unlike' : 'Like'}
         >

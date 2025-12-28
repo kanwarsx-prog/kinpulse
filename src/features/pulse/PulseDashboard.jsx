@@ -259,7 +259,7 @@ const PulseDashboard = () => {
                         </div>
                         <div className="pulse-card-footer">
                             <StatusBadge status={pulse.state} />
-                            <PulseReaction pulseId={pulse.id} />
+                            <PulseReaction pulseId={pulse.id} profiles={profiles} />
                         </div>
                     </div>
                 );
