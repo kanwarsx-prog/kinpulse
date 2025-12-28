@@ -1,20 +1,25 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import './NotificationSettings.css';
 
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const OPT_OUT_KEY = 'kp_notifications_opt_out';
 
 const NotificationSettings = () => {
     const { permission, subscription, isSupported, requestPermission, unsubscribe } = usePushNotifications();
     const { supabase, user } = useSupabase();
+    const [optOut, setOptOut] = useState(() => {
+        if (typeof localStorage === 'undefined') return false;
+        return localStorage.getItem(OPT_OUT_KEY) === 'true';
+    });
 
     useEffect(() => {
         // Auto-request on load so notifications are enabled by default
-        if (isSupported && permission === 'default' && !subscription) {
+        if (isSupported && permission === 'default' && !subscription && !optOut) {
             requestPermission();
         }
-    }, [isSupported, permission, subscription]);
+    }, [isSupported, permission, subscription, optOut, requestPermission]);
 
     const testNotification = async () => {
         if (!user) return;
@@ -52,7 +57,19 @@ const NotificationSettings = () => {
             );
             return;
         }
+        if (typeof localStorage !== 'undefined') {
+            localStorage.removeItem(OPT_OUT_KEY);
+        }
+        setOptOut(false);
         requestPermission();
+    };
+
+    const handleDisableClick = async () => {
+        await unsubscribe();
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem(OPT_OUT_KEY, 'true');
+        }
+        setOptOut(true);
     };
 
     const showEnableButton = !subscription;
@@ -86,7 +103,7 @@ const NotificationSettings = () => {
                         <button className="test-btn" onClick={testNotification}>
                             Test
                         </button>
-                        <button className="disable-btn" onClick={unsubscribe}>
+                        <button className="disable-btn" onClick={handleDisableClick}>
                             Disable
                         </button>
                     </div>
