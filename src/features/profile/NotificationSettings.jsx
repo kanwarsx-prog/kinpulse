@@ -13,7 +13,7 @@ const NotificationSettings = () => {
         if (!user) return;
         try {
             const { data: sessionData } = await supabase.auth.getSession();
-            const accessToken = sessionData?.session?.access_token || SUPABASE_ANON_KEY;
+            const accessToken = sessionData?.session?.access_token;
 
             const { error } = await supabase.functions.invoke('send-push-notification', {
                 body: {
@@ -22,10 +22,10 @@ const NotificationSettings = () => {
                     body: 'Push notifications are working!',
                     url: '/'
                 },
-                headers: accessToken ? {
-                    Authorization: `Bearer ${accessToken}`,
-                    apikey: accessToken
-                } : undefined
+                headers: {
+                    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+                    ...(SUPABASE_ANON_KEY ? { apikey: SUPABASE_ANON_KEY } : {})
+                }
             });
             if (error) {
                 console.error('Test notification error:', error);
