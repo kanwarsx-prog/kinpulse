@@ -13,7 +13,7 @@ const NotificationSettings = () => {
         if (!user) return;
         try {
             const { data: sessionData } = await supabase.auth.getSession();
-            const accessToken = sessionData?.session?.access_token;
+            const accessToken = sessionData?.session?.access_token || SUPABASE_ANON_KEY;
 
             const { error } = await supabase.functions.invoke('send-push-notification', {
                 body: {
