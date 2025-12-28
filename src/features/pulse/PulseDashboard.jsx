@@ -70,6 +70,12 @@ const PulseDashboard = () => {
 
     const hasFamily = !!user?.family_id;
 
+    const lastPulseDate = myPulse?.created_at ? new Date(myPulse.created_at) : null;
+    const stalePulse = !lastPulseDate || Date.now() - lastPulseDate.getTime() > 24 * 60 * 60 * 1000;
+    const recentMood = myPulseHistory?.[0]?.state;
+    const lowActivity = fitnessToday && (fitnessToday.steps || 0) < 2000;
+    const showSmartNudge = stalePulse || lowActivity;
+
     useEffect(() => {
         fetchPulses();
         fetchFamilyInfo();
@@ -381,16 +387,18 @@ const PulseDashboard = () => {
         <div className="pulse-dashboard page fade-in">
             <section className="family-stream">
                 <FitnessWidget />
-                <SmartNudge
-                    myPulse={myPulse}
-                    history={myPulseHistory}
-                    fitnessToday={fitnessToday}
-                    onUpdate={() => {
-                        setShowPulseForm(true);
-                        setTimeout(() => pulseFormRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
-                    }}
-                />
-                {showPulseReminder && (
+                {showSmartNudge && (
+                    <SmartNudge
+                        stale={stalePulse}
+                        recentMood={recentMood}
+                        fitnessToday={fitnessToday}
+                        onUpdate={() => {
+                            setShowPulseForm(true);
+                            setTimeout(() => pulseFormRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+                        }}
+                    />
+                )}
+                {showPulseReminder && !showSmartNudge && (
                     <div className="pulse-reminder">
                         <div>
                             <p className="reminder-title">Share your pulse</p>
@@ -473,10 +481,7 @@ const PulseDashboard = () => {
 
 export default PulseDashboard;
 
-const SmartNudge = ({ myPulse, history, fitnessToday, onUpdate }) => {
-    const lastPulseDate = myPulse?.created_at ? new Date(myPulse.created_at) : null;
-    const stale = !lastPulseDate || Date.now() - lastPulseDate.getTime() > 24 * 60 * 60 * 1000;
-    const recentMood = history?.[0]?.state;
+const SmartNudge = ({ stale, recentMood, fitnessToday, onUpdate }) => {
     const lowActivity = fitnessToday && (fitnessToday.steps || 0) < 2000;
 
     if (!stale && !lowActivity) return null;
