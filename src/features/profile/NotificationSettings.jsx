@@ -12,8 +12,8 @@ const NotificationSettings = () => {
     const testNotification = async () => {
         if (!user) return;
         try {
-            const { data: sessionData } = await supabase.auth.getSession();
-            const accessToken = sessionData?.session?.access_token || SUPABASE_ANON_KEY;
+            // Functions gateway expects the project anon key as bearer; keep it consistent
+            const anon = SUPABASE_ANON_KEY;
 
             const { error } = await supabase.functions.invoke('send-push-notification', {
                 body: {
@@ -23,8 +23,7 @@ const NotificationSettings = () => {
                     url: '/'
                 },
                 headers: {
-                    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-                    ...(SUPABASE_ANON_KEY ? { apikey: SUPABASE_ANON_KEY } : {})
+                    ...(anon ? { Authorization: `Bearer ${anon}`, apikey: anon } : {})
                 }
             });
             if (error) {
