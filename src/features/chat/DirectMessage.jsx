@@ -159,14 +159,18 @@ const DirectMessage = () => {
     const sendPushToRecipient = async (bodyText) => {
         if (!userId) return;
         const title = recipient?.name ? `${recipient.name}, you have a new DM` : 'New direct message';
-        await supabase.functions.invoke('send-push-notification', {
-            body: {
-                user_id: userId,
-                title,
-                body: bodyText || 'New message',
-                url: `/chat/${user.id}`
-            }
-        });
+        try {
+            await supabase.functions.invoke('send-push-notification', {
+                body: {
+                    user_id: userId,
+                    title,
+                    body: bodyText || 'New message',
+                    url: `/chat/${user.id}`
+                }
+            });
+        } catch (err) {
+            console.error('Push invoke error (dm)', err);
+        }
     };
 
     const handlePhotoChange = (e) => {

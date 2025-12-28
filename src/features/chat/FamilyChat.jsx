@@ -23,9 +23,15 @@ const FamilyChat = () => {
     const [profiles, setProfiles] = useState({});
     const [loading, setLoading] = useState(true);
     const messagesEndRef = useRef(null);
+    const [typingUsers, setTypingUsers] = useState([]);
+    const typingTimeoutRef = useRef(null);
 
     const sendPushToFamily = async (bodyText) => {
-        const targetIds = Object.keys(profiles).filter((id) => id !== user.id);
+        // Ensure we have profiles loaded to target other members
+        if (!Object.keys(profiles || {}).length) {
+            await fetchProfiles();
+        }
+        const targetIds = Object.keys(profiles || {}).filter((id) => id !== user.id);
         if (targetIds.length === 0) return;
         const title = profiles[user.id]?.name
             ? `${profiles[user.id].name} in Family Chat`
@@ -39,7 +45,7 @@ const FamilyChat = () => {
                         body: bodyText || 'New message',
                         url: '/chat'
                     }
-                })
+                }).catch((err) => console.error('Push invoke error (family)', err))
             )
         );
     };
@@ -79,11 +85,80 @@ const FamilyChat = () => {
     }, [user?.family_id]);
 
     useEffect(() => {
+        // Periodic refresh as a safety net
+        if (!user?.family_id) return;
+        const id = setInterval(() => {
+            fetchMessages(true);
+        }, 30000);
+        return () => clearInterval(id);
+    }, [user?.family_id]);
+
+    useEffect(() => {
+        if (!user?.family_id) return;
+        const channel = supabase
+            .channel(`typing-family-${user.family_id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'typing_indicators',
+                    filter: `family_id=eq.${user.family_id},recipient_id=is.null`
+                },
+                (payload) => {
+                    const uid = payload.new?.user_id || payload.old?.user_id;
+                    if (!uid || uid === user.id) return;
+                    if (payload.eventType === 'DELETE') {
+                        setTypingUsers((prev) => prev.filter((id) => id !== uid));
+                    } else {
+                        setTypingUsers((prev) => (prev.includes(uid) ? prev : [...prev, uid]));
+                        setTimeout(() => {
+                            setTypingUsers((prev) => prev.filter((id) => id !== uid));
+                        }, 3000);
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => supabase.removeChannel(channel);
+    }, [user?.family_id, user?.id]);
+
+    useEffect(() => {
         scrollToBottom();
     }, [messages]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    const stopTyping = () => {
+        supabase
+            .from('typing_indicators')
+            .delete()
+            .eq('user_id', user.id)
+            .is('recipient_id', null);
+    };
+
+    const handleTyping = () => {
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        }
+
+        supabase
+            .from('typing_indicators')
+            .upsert(
+                {
+                    user_id: user.id,
+                    family_id: user.family_id,
+                    recipient_id: null,
+                    updated_at: new Date().toISOString()
+                },
+                { onConflict: 'user_id,recipient_id' }
+            );
+
+        typingTimeoutRef.current = setTimeout(() => {
+            stopTyping();
+        }, 2000);
     };
 
     const fetchProfiles = async () => {
@@ -319,17 +394,25 @@ const FamilyChat = () => {
                     </button>
                 )}
 
-                {messages.length === 0 ? (
-                    <div className="empty-state">
-                        <h3>No messages yet</h3>
-                        <p>Start the conversation!</p>
+            {messages.length === 0 ? (
+                <div className="empty-state">
+                    <h3>No messages yet</h3>
+                    <p>Start the conversation!</p>
+                </div>
+            ) : (
+                <>
+                {typingUsers.length > 0 && (
+                    <div className="typing-indicator">
+                        {typingUsers.length === 1
+                            ? `${profiles[typingUsers[0]]?.name || 'Someone'} is typing...`
+                            : 'Several people are typing...'}
                     </div>
-                ) : (
-                    messages.map((message) => {
-                        const isMe = message.user_id === user.id;
-                        const profile = profiles[message.user_id];
+                )}
+                messages.map((message) => {
+                    const isMe = message.user_id === user.id;
+                    const profile = profiles[message.user_id];
 
-                        return (
+                    return (
                             <div key={message.id} className={`message ${isMe ? 'message-me' : 'message-other'}`}>
                                 {!isMe && <div className="message-sender">{profile?.name || profile?.email?.split('@')[0] || 'Family'}</div>}
                                 <div className="message-bubble">
@@ -355,9 +438,10 @@ const FamilyChat = () => {
                             </div>
                         );
                     })
-                )}
-                <div ref={messagesEndRef} />
-            </div>
+                </>
+            )}
+            <div ref={messagesEndRef} />
+        </div>
 
             <form className="message-input-form" onSubmit={handleSend}>
                 {photoPreview && (
@@ -387,7 +471,10 @@ const FamilyChat = () => {
                         type="text"
                         placeholder="Type a message..."
                         value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
+                        onChange={(e) => {
+                            setNewMessage(e.target.value);
+                            handleTyping();
+                        }}
                         maxLength={500}
                     />
                     <button type="submit" disabled={!newMessage.trim() && !photo} aria-label="Send message">
