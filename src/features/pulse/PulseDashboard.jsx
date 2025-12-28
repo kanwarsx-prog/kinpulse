@@ -12,7 +12,9 @@ import PulseReaction from '../../components/ui/PulseReaction';
 import ProfileSettings from '../profile/ProfileSettings';
 import ShareInvite from '../family/ShareInvite';
 import Avatar from '../../components/ui/Avatar';
+import FitnessWidget from './FitnessWidget';
 import './PulseDashboard.css';
+import './FitnessWidget.css';
 
 const PulseSkeleton = () => (
     <div className="pulse-dashboard page">
@@ -303,6 +305,7 @@ const PulseDashboard = () => {
     return (
         <div className="pulse-dashboard page fade-in">
             <section className="family-stream">
+                <FitnessWidget />
                 {showPulseReminder && (
                     <div className="pulse-reminder">
                         <div>

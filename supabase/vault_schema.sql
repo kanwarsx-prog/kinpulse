@@ -62,6 +62,8 @@ on conflict (id) do nothing;
 drop policy if exists "vault_files_select" on storage.objects;
 drop policy if exists "vault_files_insert" on storage.objects;
 drop policy if exists "vault_files_delete" on storage.objects;
+drop policy if exists "fitness_select" on fitness_metrics;
+drop policy if exists "fitness_write" on fitness_metrics;
 
 create policy "vault_files_select" on storage.objects
   for select using (
@@ -77,6 +79,28 @@ create policy "vault_files_delete" on storage.objects
   for delete using (
     bucket_id = 'vault-files' and owner = auth.uid()
   );
+
+-- Fitness metrics
+create table if not exists fitness_metrics (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null,
+  metric_date date not null default current_date,
+  steps integer default 0,
+  active_minutes integer default 0,
+  source text default 'manual',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  unique(user_id, metric_date)
+);
+
+alter table fitness_metrics enable row level security;
+
+create policy "fitness_select" on fitness_metrics
+  for select using (user_id = auth.uid());
+
+create policy "fitness_write" on fitness_metrics
+  for insert, update, delete using (user_id = auth.uid())
+  with check (user_id = auth.uid());
 
 -- Push subscriptions (web push)
 create table if not exists push_subscriptions (
