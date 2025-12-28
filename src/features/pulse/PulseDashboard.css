@@ -333,8 +333,16 @@
 }
 
 .no-pulse {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-bg-tertiary);
     color: var(--color-text-secondary);
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 0.9rem;
 }
 
 .pulse-insights {
