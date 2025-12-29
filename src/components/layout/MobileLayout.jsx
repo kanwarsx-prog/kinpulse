@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import BottomNavigation from './BottomNavigation';
 import TopBar from './TopBar';
 import ActivityFeed from '../ui/ActivityFeed';
+import SplashHighlight from '../ui/SplashHighlight';
 import './MobileLayout.css';
 
 const MobileLayout = () => {
@@ -16,6 +17,7 @@ const MobileLayout = () => {
 
     return (
         <div className="mobile-layout">
+            <SplashHighlight />
             <TopBar />
             <main className="content">
                 <Outlet />

@@ -1,0 +1,172 @@
+.splash-highlight {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1200;
+  padding: 10px 12px 0;
+  pointer-events: none;
+  backdrop-filter: blur(6px);
+}
+
+.splash-ribbon {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: linear-gradient(135deg, #eef2ff, #e0f4ff);
+  border-radius: 14px;
+  padding: 10px 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.splash-ribbon-text {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.splash-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #0ea5e9);
+  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
+}
+
+.splash-ribbon-title {
+  font-weight: 800;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.splash-ribbon-sub {
+  font-size: 12px;
+  color: #475569;
+}
+
+.splash-ribbon-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.splash-ribbon-btn {
+  border: none;
+  background: linear-gradient(135deg, #2563eb, #0ea5e9);
+  color: #fff;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+}
+
+.splash-ribbon-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  font-weight: 700;
+  color: #0f172a;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.splash-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  background: rgba(15, 23, 42, 0.35);
+  display: flex;
+  align-items: flex-end;
+}
+
+.splash-drawer-card {
+  width: 100%;
+  background: #fff;
+  border-radius: 18px 18px 0 0;
+  padding: 16px;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.splash-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.splash-badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.1);
+  color: #1d4ed8;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+}
+
+.splash-title {
+  margin: 10px 0 4px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+
+.splash-meta {
+  margin: 0;
+  color: #334155;
+  font-weight: 600;
+}
+
+.splash-countdown {
+  margin: 8px 0 10px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0ea5e9;
+}
+
+.splash-desc {
+  margin: 0 0 12px;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.splash-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.splash-btn {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.splash-btn.primary {
+  background: linear-gradient(135deg, #2563eb, #0ea5e9);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
+}
+
+.splash-btn.ghost {
+  background: rgba(248, 250, 252, 0.9);
+  color: #0f172a;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.splash-btn.close {
+  padding: 8px 12px;
+}
+
+.splash-btn:active {
+  transform: translateY(1px);
+}

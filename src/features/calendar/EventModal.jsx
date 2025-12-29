@@ -26,6 +26,7 @@ const EventModal = ({ event, initialDate, onSave, onDelete, onClose }) => {
     );
     const [allDay, setAllDay] = useState(event?.all_day || false);
     const [eventType, setEventType] = useState(event?.event_type || 'general');
+    const [showOnSplash, setShowOnSplash] = useState(event?.show_on_splash || false);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -48,7 +49,8 @@ const EventModal = ({ event, initialDate, onSave, onDelete, onClose }) => {
             start_time: toLocalISOString(startTime),
             end_time: toLocalISOString(endTime),
             all_day: allDay,
-            event_type: eventType
+            event_type: eventType,
+            show_on_splash: showOnSplash
         };
 
         onSave(eventData);
@@ -136,6 +138,17 @@ const EventModal = ({ event, initialDate, onSave, onDelete, onClose }) => {
                             <option value="birthday">Birthday</option>
                             <option value="anniversary">Anniversary</option>
                         </select>
+                    </div>
+
+                    <div className="form-group">
+                        <label className="checkbox-label">
+                            <input
+                                type="checkbox"
+                                checked={showOnSplash}
+                                onChange={(e) => setShowOnSplash(e.target.checked)}
+                            />
+                            Show countdown splash for this event
+                        </label>
                     </div>
 
                     <div className="modal-actions">
