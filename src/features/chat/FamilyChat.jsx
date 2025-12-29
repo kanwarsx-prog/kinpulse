@@ -368,6 +368,17 @@ const FamilyChat = () => {
         }
     };
 
+    const handleRemovePhoto = async (message) => {
+        if (!message?.photo_url) return;
+        const backup = message.photo_url;
+        setMessages((prev) => prev.map((m) => (m.id === message.id ? { ...m, photo_url: null } : m)));
+        const { error } = await supabase.from('messages').update({ photo_url: null }).eq('id', message.id);
+        if (error) {
+            console.error('Remove photo error:', error);
+            setMessages((prev) => prev.map((m) => (m.id === message.id ? { ...m, photo_url: backup } : m)));
+        }
+    };
+
     const formatTime = (timestamp) => {
         const date = new Date(timestamp);
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -423,12 +434,24 @@ const FamilyChat = () => {
                                     <div className="message-bubble">
                                         {message.content && <p className="message-content">{message.content}</p>}
                                         {message.photo_url && (
-                                            <img
-                                                src={message.photo_url}
-                                                alt="Shared"
-                                                className="message-photo"
-                                                onClick={() => setLightboxSrc(message.photo_url)}
-                                            />
+                                            <div className="message-photo-wrapper">
+                                                <img
+                                                    src={message.photo_url}
+                                                    alt="Shared"
+                                                    className="message-photo"
+                                                    onClick={() => setLightboxSrc(message.photo_url)}
+                                                />
+                                                {isMe && (
+                                                    <button
+                                                        type="button"
+                                                        className="photo-delete-btn"
+                                                        onClick={() => handleRemovePhoto(message)}
+                                                        aria-label="Delete photo"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                )}
+                                            </div>
                                         )}
                                         <span className="message-time">{formatTime(message.created_at)}</span>
                                         {isMe && message.content && message.content !== '[deleted]' && (
