@@ -9,7 +9,8 @@ const MessageReaction = ({ messageId }) => {
         <ReactionButton
             hasReacted={hasUserReacted}
             count={reactionCount}
-            onToggle={toggleReaction}
+            onShortPress={toggleReaction}
+            onLongPress={toggleReaction}
             disabled={loading}
         />
     );
