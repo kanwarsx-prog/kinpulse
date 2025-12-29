@@ -51,7 +51,6 @@ const PulseReaction = ({ pulseId, profiles = {} }) => {
                     aria-label="Add reaction"
                 >
                     <span className="emoji">{userReactionType || '＋'}</span>
-                    <span className="count">React</span>
                 </button>
             </div>
             {showPicker && (
