@@ -404,8 +404,7 @@ const DirectMessage = () => {
                         <h3>No messages yet</h3>
                         <p>Start your conversation with {recipient?.name || 'them'}.</p>
                     </div>
-                ) : (
-                    messages.map((message) => {
+                 ) : (\n                    visibleMessages.map((message) => {
                         const isMe = message.user_id === user.id;
 
                         return (
@@ -503,3 +502,4 @@ const DirectMessage = () => {
 };
 
 export default DirectMessage;
+

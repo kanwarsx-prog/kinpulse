@@ -388,6 +388,8 @@ const FamilyChat = () => {
         return <LoadingSpinner size="md" message="Loading chat..." />;
     }
 
+    const visibleMessages = messages.filter((m) => m.content || m.photo_url || m.audio_url);
+
     return (
         <div className="family-chat page fade-in">
             <header className="chat-header">
@@ -424,7 +426,7 @@ const FamilyChat = () => {
                                     : 'Several people are typing...'}
                             </div>
                         )}
-                        {messages.map((message) => {
+                        {visibleMessages.map((message) => {
                             const isMe = message.user_id === user.id;
                             const profile = profiles[message.user_id];
 
