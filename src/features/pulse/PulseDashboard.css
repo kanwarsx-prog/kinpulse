@@ -183,10 +183,11 @@
 
 .section-actions {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 8px;
     width: 100%;
     align-items: center;
+    overflow-x: auto;
 }
 
 .online-chip {
