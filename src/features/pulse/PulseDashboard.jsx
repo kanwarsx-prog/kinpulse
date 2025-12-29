@@ -69,6 +69,9 @@ const PulseDashboard = () => {
     const [showPulseForm, setShowPulseForm] = useState(false);
     const pulseFormRef = React.useRef(null);
     const [showStories, setShowStories] = useState(false);
+    const [historyUser, setHistoryUser] = useState(null);
+    const [historyItems, setHistoryItems] = useState([]);
+    const [historyLoading, setHistoryLoading] = useState(false);
 
     const hasFamily = !!user?.family_id;
 
@@ -302,6 +305,25 @@ const PulseDashboard = () => {
         setRefreshing(false);
     };
 
+    const openHistory = async (userId) => {
+        setHistoryUser(userId);
+        setHistoryLoading(true);
+        const { data } = await supabase
+            .from('pulses')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('family_id', user.family_id)
+            .order('created_at', { ascending: false })
+            .limit(20);
+        setHistoryItems(data || []);
+        setHistoryLoading(false);
+    };
+
+    const closeHistory = () => {
+        setHistoryUser(null);
+        setHistoryItems([]);
+    };
+
     const pulseCards = useMemo(
         () =>
             pulses.map((pulse) => {
@@ -370,6 +392,19 @@ const PulseDashboard = () => {
                                 <>
                                     <StatusBadge status={pulse.state} />
                                     <PulseReaction pulseId={pulse.id} profiles={profiles} />
+                                    <button
+                                        className="history-btn"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            openHistory(pulse.user_id);
+                                        }}
+                                        aria-label="View history"
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M12 8v4l3 3" />
+                                            <circle cx="12" cy="12" r="9" />
+                                        </svg>
+                                    </button>
                                 </>
                             ) : (
                                 <span className="no-pulse">No pulse yet</span>
@@ -491,6 +526,43 @@ const PulseDashboard = () => {
                     onClose={() => setShowStories(false)}
                     onReply={(userId) => navigate(`/chat/${userId}`)}
                 />
+            )}
+
+            {historyUser && (
+                <div className="history-modal-backdrop" onClick={closeHistory}>
+                    <div className="history-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="history-header">
+                            <div>
+                                <p className="history-title">{profiles[historyUser]?.name || 'Family member'}</p>
+                                <p className="history-sub">Recent pulses</p>
+                            </div>
+                            <button className="history-close" onClick={closeHistory} aria-label="Close">×</button>
+                        </div>
+                        {historyLoading ? (
+                            <p className="history-loading">Loading…</p>
+                        ) : historyItems.length === 0 ? (
+                            <p className="history-empty">No history yet.</p>
+                        ) : (
+                            <div className="history-list">
+                                {historyItems.map((item) => {
+                                    const date = item.created_at
+                                        ? new Date(item.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                                        : '';
+                                    return (
+                                        <div key={item.id} className="history-item">
+                                            <div className="history-meta">
+                                                <StatusBadge status={item.state} />
+                                                <span className="history-date">{date}</span>
+                                            </div>
+                                            {item.note && <p className="history-note">{item.note}</p>}
+                                            {item.photo_url && <img src={item.photo_url} alt="Pulse" className="history-photo" />}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                </div>
             )}
         </div>
     );
