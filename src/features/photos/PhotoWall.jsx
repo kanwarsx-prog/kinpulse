@@ -51,7 +51,7 @@ export default function PhotoWall() {
 
             const { data: chatPhotos } = await supabase
                 .from('messages')
-                .select('photo_url, created_at, sender_id, id')
+                .select('photo_url, created_at, user_id, id')
                 .eq('family_id', user.family_id)
                 .not('photo_url', 'is', null)
                 .not('photo_url', 'eq', '')
@@ -71,7 +71,7 @@ export default function PhotoWall() {
                     url: m.photo_url,
                     signedUrl: m.photo_url,
                     created_at: m.created_at,
-                    user_id: m.sender_id,
+                    user_id: m.user_id,
                     source: 'chat'
                 }))
             ];
