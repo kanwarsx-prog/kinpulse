@@ -13,6 +13,7 @@ import ProfileSettings from '../profile/ProfileSettings';
 import ShareInvite from '../family/ShareInvite';
 import Avatar from '../../components/ui/Avatar';
 import FitnessWidget from './FitnessWidget';
+import StoryCarousel from './StoryCarousel';
 import './PulseDashboard.css';
 import './FitnessWidget.css';
 
@@ -67,6 +68,7 @@ const PulseDashboard = () => {
     const [showPulseReminder, setShowPulseReminder] = useState(false);
     const [showPulseForm, setShowPulseForm] = useState(false);
     const pulseFormRef = React.useRef(null);
+    const [showStories, setShowStories] = useState(false);
 
     const hasFamily = !!user?.family_id;
 
@@ -228,7 +230,7 @@ const PulseDashboard = () => {
                         body: {
                             user_id: user.id,
                             title: 'Quick pulse check',
-                            body: 'Share how you’re feeling today.',
+                            body: 'Share how you're feeling today.',
                             url: '/'
                         }
                     })
@@ -347,7 +349,7 @@ const PulseDashboard = () => {
                             </div>
                             {timeText && (
                                 <span className="time">
-                                    {dateText} · {timeText}
+                                    {dateText} | {timeText}
                                 </span>
                             )}
                             {hasPulse && pulse.note && <p className="pulse-note">{pulse.note}</p>}
@@ -402,7 +404,7 @@ const PulseDashboard = () => {
                     <div className="pulse-reminder">
                         <div>
                             <p className="reminder-title">Share your pulse</p>
-                            <p className="reminder-text">You haven’t checked in for 24 hours. How are you feeling?</p>
+                            <p className="reminder-text">You have not checked in for 24 hours. How are you feeling?</p>
                         </div>
                         <button
                             className="reminder-btn"
@@ -415,6 +417,15 @@ const PulseDashboard = () => {
                         >
                             Update now
                         </button>
+                    </div>
+                )}
+                {pulses.filter((p) => p.state || p.note || p.photo_url).length > 0 && (
+                    <div className="stories-cta">
+                        <div>
+                            <p className="stories-title">Today's stories</p>
+                            <p className="stories-sub">Swipe through everyone's latest pulse, notes, and photos.</p>
+                        </div>
+                        <button className="reminder-btn" onClick={() => setShowStories(true)}>View stories</button>
                     </div>
                 )}
                 <div className="section-header stacked">
@@ -475,6 +486,15 @@ const PulseDashboard = () => {
             {showSettings && <ProfileSettings onClose={() => setShowSettings(false)} />}
 
             {showInvite && <ShareInvite isOpen={showInvite} onClose={() => setShowInvite(false)} />}
+
+            {showStories && (
+                <StoryCarousel
+                    pulses={pulses.filter((p) => p.state || p.note || p.photo_url)}
+                    profiles={profiles}
+                    onClose={() => setShowStories(false)}
+                    onReply={(userId) => navigate(`/chat/${userId}`)}
+                />
+            )}
         </div>
     );
 };
@@ -488,8 +508,8 @@ const SmartNudge = ({ stale, recentMood, fitnessToday, onUpdate }) => {
 
     const title = stale ? 'Take a quick pulse' : 'Slow day?';
     const body = stale
-        ? 'It’s been a while since you checked in. Share how you’re feeling.'
-        : 'Activity looks low today. Want to log how you’re doing?';
+        ? "It's been a while since you checked in. Share how you're feeling."
+        : "Activity looks low today. Want to log how you're doing?";
 
     return (
         <div className="pulse-reminder">
@@ -499,15 +519,16 @@ const SmartNudge = ({ stale, recentMood, fitnessToday, onUpdate }) => {
                 {recentMood && <p className="reminder-sub">Last mood: {scoreLabel(scoreMap[recentMood] || 0)}</p>}
                 {fitnessToday && (
                     <p className="reminder-sub">
-                        Today: {fitnessToday.steps || 0} steps · {fitnessToday.active_minutes || 0} active mins
+                        Today: {fitnessToday.steps || 0} steps / {fitnessToday.active_minutes || 0} active mins
                     </p>
                 )}
             </div>
-            <button className="reminder-btn" onClick={onUpdate}>Update now</button>
+            <button className="reminder-btn" onClick={onUpdate}>
+                Update now
+            </button>
         </div>
     );
 };
-
 const scoreMap = {
     great: 5,
     good: 4,
@@ -579,3 +600,23 @@ const PulseInsights = ({ history }) => {
         </div>
     );
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
