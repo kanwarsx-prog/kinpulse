@@ -5,29 +5,17 @@ export const useReactions = ({ messageId, pulseId }) => {
     const { supabase, user } = useSupabase();
     const [reactions, setReactions] = useState([]);
     const [loading, setLoading] = useState(true);
-    const validMessageId = messageId && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(messageId);
 
     useEffect(() => {
         if (!messageId && !pulseId) return;
-        if (messageId && !validMessageId) {
-            setLoading(false);
-            return;
-        }
 
         fetchReactions();
-        subscribeToReactions();
-
-        return () => {
-            // Cleanup subscription
-        };
-    }, [messageId, pulseId, validMessageId]);
+        const unsubscribe = subscribeToReactions();
+        return () => unsubscribe?.();
+    }, [messageId, pulseId]);
 
     const fetchReactions = async () => {
         try {
-            if (messageId && !validMessageId) {
-                setLoading(false);
-                return;
-            }
             const query = supabase
                 .from('reactions')
                 .select('id, user_id, reaction_type, created_at');
@@ -72,7 +60,7 @@ export const useReactions = ({ messageId, pulseId }) => {
     };
 
     const toggleReaction = async () => {
-        if (!user || (messageId && !validMessageId)) return;
+        if (!user) return;
 
         const hasReacted = reactions.some(r => r.user_id === user.id);
 
