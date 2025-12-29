@@ -4,38 +4,85 @@ import ReactionButton from './ReactionButton';
 import './ReactionButton.css';
 
 const PulseReaction = ({ pulseId, profiles = {} }) => {
-    const { reactions, hasUserReacted, reactionCount, toggleReaction, loading } = useReactions({ pulseId });
+    const { groupedReactions, hasUserReacted, reactionCount, toggleReaction, userReactionType, loading } = useReactions({ pulseId });
+    const [showPicker, setShowPicker] = useState(false);
     const [showList, setShowList] = useState(false);
 
-    const likedBy = useMemo(() => reactions.map((r) => {
-        const p = profiles[r.user_id];
-        if (!p) return 'Someone';
-        return p.name || p.email?.split('@')[0] || 'Someone';
-    }), [reactions, profiles]);
+    const likedBy = useMemo(
+        () =>
+            groupedReactions.flatMap((gr) =>
+                (gr.reacted && profiles[pulseId]?.name) ? [profiles[pulseId].name] : []
+            ),
+        [groupedReactions, profiles, pulseId]
+    );
 
     useEffect(() => {
-        if (reactionCount === 0) {
-            setShowList(false);
-        }
+        if (reactionCount === 0) setShowList(false);
     }, [reactionCount]);
 
-    const handleShortPress = () => {
-        toggleReaction();
-        setShowList(true);
-    };
-
-    const handleLongPress = () => {
-        toggleReaction();
-        setShowList(true);
-    };
+    const emojiOptions = ['❤️','👍','😂','🎉','😢','😮','😡','🙏','👏','🔥','😊','🤔','💤','🤯','🥳','🙌','🍕','☕','🫶','👀','🎯','🌟'];
 
     return (
         <div className="reaction-wrapper" onMouseLeave={() => setShowList(false)} onClick={(e) => e.stopPropagation()}>
+            <div className="reaction-pills">
+                {groupedReactions.map((r) => (
+                    <button
+                        key={r.type}
+                        className={`reaction-pill ${r.reacted ? 'active' : ''}`}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            toggleReaction(r.type);
+                            setShowList(true);
+                        }}
+                        disabled={loading}
+                        aria-label={`React with ${r.type}`}
+                    >
+                        <span className="emoji">{r.type}</span>
+                        <span className="count">{r.count}</span>
+                    </button>
+                ))}
+                <button
+                    className="reaction-pill add"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setShowPicker((s) => !s);
+                    }}
+                    disabled={loading}
+                    aria-label="Add reaction"
+                >
+                    <span className="emoji">{userReactionType || '＋'}</span>
+                    <span className="count">React</span>
+                </button>
+            </div>
+            {showPicker && (
+                <div className="reaction-picker" onMouseLeave={() => setShowPicker(false)}>
+                    {emojiOptions.map((emoji) => (
+                        <button
+                            key={emoji}
+                            className="reaction-option"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                toggleReaction(emoji);
+                                setShowPicker(false);
+                                setShowList(true);
+                            }}
+                        >
+                            {emoji}
+                        </button>
+                    ))}
+                </div>
+            )}
             <ReactionButton
                 hasReacted={hasUserReacted}
                 count={reactionCount}
-                onShortPress={handleShortPress}
-                onLongPress={handleLongPress}
+                onShortPress={() => {
+                    toggleReaction(userReactionType || '❤️');
+                    setShowList(true);
+                }}
+                onLongPress={() => {
+                    toggleReaction(userReactionType || '❤️');
+                    setShowList(true);
+                }}
                 disabled={loading}
             />
             {showList && reactionCount > 0 && (

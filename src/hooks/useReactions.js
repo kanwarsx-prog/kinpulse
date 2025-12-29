@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSupabase } from '../contexts/SupabaseContext';
 
 export const useReactions = ({ messageId, pulseId }) => {
@@ -59,30 +59,29 @@ export const useReactions = ({ messageId, pulseId }) => {
         return () => supabase.removeChannel(channel);
     };
 
-    const toggleReaction = async () => {
+    const toggleReaction = async (reactionType = '❤️') => {
         if (!user) return;
 
-        const hasReacted = reactions.some(r => r.user_id === user.id);
+        const existing = reactions.find((r) => r.user_id === user.id);
 
         try {
-            if (hasReacted) {
+            if (existing && existing.reaction_type === reactionType) {
                 // Remove reaction
-                const reaction = reactions.find(r => r.user_id === user.id);
-                await supabase
-                    .from('reactions')
-                    .delete()
-                    .eq('id', reaction.id);
+                await supabase.from('reactions').delete().eq('id', existing.id);
+            } else if (existing) {
+                // Update to new emoji
+                await supabase.from('reactions').update({ reaction_type: reactionType }).eq('id', existing.id);
             } else {
                 // Add reaction
-                await supabase
-                    .from('reactions')
-                    .insert([{
+                await supabase.from('reactions').insert([
+                    {
                         user_id: user.id,
                         family_id: user.family_id,
                         message_id: messageId || null,
                         pulse_id: pulseId || null,
-                        reaction_type: 'heart'
-                    }]);
+                        reaction_type: reactionType
+                    }
+                ]);
             }
 
             // Optimistic update
@@ -92,13 +91,27 @@ export const useReactions = ({ messageId, pulseId }) => {
         }
     };
 
-    const hasUserReacted = reactions.some(r => r.user_id === user?.id);
+    const hasUserReacted = reactions.some((r) => r.user_id === user?.id);
     const reactionCount = reactions.length;
+    const userReactionType = reactions.find((r) => r.user_id === user?.id)?.reaction_type || null;
+
+    const groupedReactions = useMemo(() => {
+        const map = new Map();
+        reactions.forEach((r) => {
+            const current = map.get(r.reaction_type) || { type: r.reaction_type, count: 0, reacted: false };
+            current.count += 1;
+            if (r.user_id === user?.id) current.reacted = true;
+            map.set(r.reaction_type, current);
+        });
+        return Array.from(map.values()).sort((a, b) => b.count - a.count);
+    }, [reactions, user?.id]);
 
     return {
         reactions,
         hasUserReacted,
         reactionCount,
+        userReactionType,
+        groupedReactions,
         toggleReaction,
         loading
     };

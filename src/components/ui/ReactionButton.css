@@ -96,3 +96,69 @@
     color: #111827;
     max-width: 100%;
 }
+
+/* Emoji reaction chips */
+.reaction-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.reaction-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #f9fafb;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.reaction-pill .emoji {
+    font-size: 14px;
+    line-height: 1;
+}
+
+.reaction-pill .count {
+    font-weight: 600;
+    color: #111827;
+}
+
+.reaction-pill.active {
+    border-color: #2563eb;
+    background: #e0ecff;
+    color: #1d4ed8;
+}
+
+.reaction-pill.add {
+    border-style: dashed;
+    color: #6b7280;
+    background: transparent;
+}
+
+.reaction-picker {
+    position: absolute;
+    top: 32px;
+    left: 0;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 8px;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    z-index: 20;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+.reaction-option {
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 6px;
+    font-size: 16px;
+    cursor: pointer;
+}
