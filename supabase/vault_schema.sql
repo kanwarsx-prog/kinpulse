@@ -64,6 +64,8 @@ drop policy if exists "vault_files_insert" on storage.objects;
 drop policy if exists "vault_files_delete" on storage.objects;
 drop policy if exists "fitness_select" on fitness_metrics;
 drop policy if exists "fitness_write" on fitness_metrics;
+drop policy if exists "reactions_select" on reactions;
+drop policy if exists "reactions_write" on reactions;
 
 create policy "vault_files_select" on storage.objects
   for select using (
@@ -101,6 +103,34 @@ create policy "fitness_select" on fitness_metrics
 create policy "fitness_write" on fitness_metrics
   for insert, update, delete using (user_id = auth.uid())
   with check (user_id = auth.uid());
+
+-- Reactions (likes on pulses/messages)
+create table if not exists reactions (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null,
+  family_id uuid not null,
+  message_id uuid references messages(id) on delete cascade,
+  pulse_id uuid references pulses(id) on delete cascade,
+  reaction_type text not null default 'heart',
+  created_at timestamptz default now(),
+  check (
+    (message_id is not null and pulse_id is null)
+    or (message_id is null and pulse_id is not null)
+  ),
+  unique (user_id, message_id, pulse_id)
+);
+
+alter table reactions enable row level security;
+
+create policy "reactions_select" on reactions
+  for select using (
+    family_id = (select family_id from profiles where id = auth.uid())
+  );
+
+create policy "reactions_write" on reactions
+  for all
+  using (family_id = (select family_id from profiles where id = auth.uid()))
+  with check (family_id = (select family_id from profiles where id = auth.uid()));
 
 -- Push subscriptions (web push)
 create table if not exists push_subscriptions (
