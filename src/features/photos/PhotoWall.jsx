@@ -46,6 +46,7 @@ export default function PhotoWall() {
                 .select('photo_url, created_at, user_id, id')
                 .eq('family_id', user.family_id)
                 .not('photo_url', 'is', null)
+                .not('photo_url', 'eq', '')
                 .order('created_at', { ascending: false });
 
             const { data: chatPhotos } = await supabase
@@ -53,6 +54,7 @@ export default function PhotoWall() {
                 .select('photo_url, created_at, sender_id, id')
                 .eq('family_id', user.family_id)
                 .not('photo_url', 'is', null)
+                .not('photo_url', 'eq', '')
                 .order('created_at', { ascending: false });
 
             const allPhotos = [
