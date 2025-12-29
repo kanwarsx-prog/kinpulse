@@ -419,20 +419,17 @@ const PulseDashboard = () => {
                         </button>
                     </div>
                 )}
-                {pulses.filter((p) => p.state || p.note || p.photo_url).length > 0 && (
-                    <div className="stories-cta">
-                        <div>
-                            <p className="stories-title">Today's stories</p>
-                            <p className="stories-sub">Swipe through everyone's latest pulse, notes, and photos.</p>
-                        </div>
-                        <button className="reminder-btn" onClick={() => setShowStories(true)}>View stories</button>
-                    </div>
-                )}
                 <div className="section-header stacked">
                     <h3 className="section-title" style={{ marginBottom: 6 }}>Family Pulse</h3>
                     <div className="section-actions">
-                        {onlineCount > 0 && (
-                            <span className="online-chip">{onlineCount} online</span>
+                        {onlineCount > 0 && <span className="online-chip">{onlineCount} online</span>}
+                        {pulses.some((p) => p.state || p.note || p.photo_url) && (
+                            <button className="request-pulse-btn" onClick={() => setShowStories(true)}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M5 12l5 5 9-9" />
+                                </svg>
+                                Stories
+                            </button>
                         )}
                         <button className="request-pulse-btn" onClick={() => navigate('/pulse-history')}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

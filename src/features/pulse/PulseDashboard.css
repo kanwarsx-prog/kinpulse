@@ -182,10 +182,11 @@
 }
 
 .section-actions {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
     width: 100%;
+    align-items: center;
 }
 
 .online-chip {
