@@ -370,6 +370,8 @@ const DirectMessage = () => {
         return <LoadingSpinner size="md" message="Loading conversation..." />;
     }
 
+    const visibleMessages = messages.filter((m) => m.content || m.photo_url || m.audio_url);
+
     return (
         <div className="direct-message page fade-in">
             <header className="dm-header">
@@ -404,7 +406,8 @@ const DirectMessage = () => {
                         <h3>No messages yet</h3>
                         <p>Start your conversation with {recipient?.name || 'them'}.</p>
                     </div>
-                 ) : (\n                    visibleMessages.map((message) => {
+                ) : (
+                    visibleMessages.map((message) => {
                         const isMe = message.user_id === user.id;
 
                         return (
