@@ -20,6 +20,7 @@ const PulseReaction = ({ pulseId, profiles = {} }) => {
     }, [reactionCount]);
 
     const handleShortPress = () => {
+        toggleReaction();
         setShowList(true);
     };
 
