@@ -147,12 +147,15 @@ const PulseDashboard = () => {
     };
 
     const fetchFitness = async () => {
-        if (!user?.id) return;
+        const { data: sessionData } = await supabase.auth.getSession();
+        const sessionUser = sessionData?.session?.user;
+        if (!sessionUser?.id) return;
+
         const today = new Date().toISOString().slice(0, 10);
         const { data } = await supabase
             .from('fitness_metrics')
             .select('*')
-            .eq('user_id', user.id)
+            .eq('user_id', sessionUser.id)
             .eq('metric_date', today)
             .single();
         if (data) setFitnessToday(data);
