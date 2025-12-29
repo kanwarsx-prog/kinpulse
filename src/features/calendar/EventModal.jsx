@@ -5,19 +5,24 @@ const EventModal = ({ event, initialDate, onSave, onDelete, onClose }) => {
     const [title, setTitle] = useState(event?.title || '');
     const [description, setDescription] = useState(event?.description || '');
     const [location, setLocation] = useState(event?.location || '');
+    const toLocalInputValue = (date) => {
+        const d = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+        return d.toISOString().slice(0, 16);
+    };
+
     const [startTime, setStartTime] = useState(
         event?.start_time
-            ? new Date(event.start_time).toISOString().slice(0, 16)
+            ? toLocalInputValue(new Date(event.start_time))
             : initialDate
-                ? new Date(initialDate.setHours(9, 0)).toISOString().slice(0, 16)
-                : new Date().toISOString().slice(0, 16)
+                ? toLocalInputValue(new Date(initialDate.setHours(9, 0)))
+                : toLocalInputValue(new Date())
     );
     const [endTime, setEndTime] = useState(
         event?.end_time
-            ? new Date(event.end_time).toISOString().slice(0, 16)
+            ? toLocalInputValue(new Date(event.end_time))
             : initialDate
-                ? new Date(initialDate.setHours(10, 0)).toISOString().slice(0, 16)
-                : new Date(Date.now() + 3600000).toISOString().slice(0, 16)
+                ? toLocalInputValue(new Date(initialDate.setHours(10, 0)))
+                : toLocalInputValue(new Date(Date.now() + 3600000))
     );
     const [allDay, setAllDay] = useState(event?.all_day || false);
     const [eventType, setEventType] = useState(event?.event_type || 'general');
@@ -30,12 +35,18 @@ const EventModal = ({ event, initialDate, onSave, onDelete, onClose }) => {
             return;
         }
 
+        const toLocalISOString = (value) => {
+            const d = new Date(value);
+            const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+            return local.toISOString();
+        };
+
         const eventData = {
             title: title.trim(),
             description: description.trim(),
             location: location.trim(),
-            start_time: new Date(startTime).toISOString(),
-            end_time: new Date(endTime).toISOString(),
+            start_time: toLocalISOString(startTime),
+            end_time: toLocalISOString(endTime),
             all_day: allDay,
             event_type: eventType
         };

@@ -6,6 +6,11 @@ export const useCalendar = ({ startDate, endDate }) => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const toLocalISOString = (date) => {
+        const d = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+        return d.toISOString();
+    };
+
     useEffect(() => {
         if (!user?.family_id || !startDate || !endDate) return;
 
@@ -25,8 +30,8 @@ export const useCalendar = ({ startDate, endDate }) => {
                 .from('events')
                 .select('*, created_by_profile:profiles!created_by(id, name, email)')
                 .eq('family_id', user.family_id)
-                .gte('start_time', startDate.toISOString())
-                .lte('start_time', endDate.toISOString())
+                .gte('start_time', toLocalISOString(startDate))
+                .lte('start_time', toLocalISOString(endDate))
                 .order('start_time', { ascending: true });
 
             if (error) throw error;
@@ -113,7 +118,7 @@ export const useCalendar = ({ startDate, endDate }) => {
     };
 
     const getEventsForDate = (date) => {
-        const dateStr = date.toISOString().split('T')[0];
+        const dateStr = toLocalISOString(date).split('T')[0];
         return events.filter(event => {
             const eventDate = (event.start_time || '').slice(0, 10);
             return eventDate === dateStr;
