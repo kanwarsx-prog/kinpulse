@@ -152,12 +152,15 @@ const PulseDashboard = () => {
         if (!sessionUser?.id) return;
 
         const today = new Date().toISOString().slice(0, 10);
-        const { data } = await supabase
+        const { data, error } = await supabase
             .from('fitness_metrics')
             .select('*')
             .eq('user_id', sessionUser.id)
             .eq('metric_date', today)
-            .single();
+            .maybeSingle();
+        if (error && error.code !== 'PGRST116') {
+            console.error('Fitness fetch error', error);
+        }
         if (data) setFitnessToday(data);
     };
 
