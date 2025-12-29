@@ -230,7 +230,7 @@ const PulseDashboard = () => {
                         body: {
                             user_id: user.id,
                             title: 'Quick pulse check',
-                            body: 'Share how you're feeling today.',
+                            body: "Share how you're feeling today.",
                             url: '/'
                         }
                     })
