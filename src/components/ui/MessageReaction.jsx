@@ -56,13 +56,6 @@ const MessageReaction = ({ messageId }) => {
                     ))}
                 </div>
             )}
-            <ReactionButton
-                hasReacted={hasUserReacted}
-                count={reactionCount}
-                onShortPress={() => toggleReaction(userReactionType || '❤️')}
-                onLongPress={() => toggleReaction(userReactionType || '❤️')}
-                disabled={loading}
-            />
         </div>
     );
 };

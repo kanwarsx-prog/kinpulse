@@ -1,26 +1,38 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useReactions } from '../../hooks/useReactions';
-import ReactionButton from './ReactionButton';
 import './ReactionButton.css';
 
+const emojiPalette = [
+    '\u2764\uFE0F', // heart
+    '\u{1F44D}', // thumbs up
+    '\u{1F602}', // laugh
+    '\u{1F389}', // party
+    '\u{1F622}', // sad
+    '\u{1F62E}', // wow
+    '\u{1F64F}', // pray
+    '\u{1F44F}', // clap
+    '\u{1F525}', // fire
+    '\u{1F929}', // star-struck
+    '\u{1F440}', // eyes
+    '\u2B50' // star
+];
+
 const PulseReaction = ({ pulseId, profiles = {} }) => {
-    const { groupedReactions, hasUserReacted, reactionCount, toggleReaction, userReactionType, loading } = useReactions({ pulseId });
+    const { groupedReactions, reactionCount, toggleReaction, userReactionType, loading } = useReactions({ pulseId });
     const [showPicker, setShowPicker] = useState(false);
     const [showList, setShowList] = useState(false);
 
-    const likedBy = useMemo(
-        () =>
-            groupedReactions.flatMap((gr) =>
-                (gr.reacted && profiles[pulseId]?.name) ? [profiles[pulseId].name] : []
-            ),
-        [groupedReactions, profiles, pulseId]
-    );
+    const likedBy = useMemo(() => {
+        const names = [];
+        groupedReactions.forEach((gr) => {
+            gr.reacted && profiles[pulseId]?.name && names.push(profiles[pulseId].name);
+        });
+        return names;
+    }, [groupedReactions, profiles, pulseId]);
 
     useEffect(() => {
         if (reactionCount === 0) setShowList(false);
     }, [reactionCount]);
-
-    const emojiOptions = ['❤️','👍','😂','🎉','😢','😮','😡','🙏','👏','🔥','😊','🤔','💤','🤯','🥳','🙌','🍕','☕','🫶','👀','🎯','🌟'];
 
     return (
         <div className="reaction-wrapper" onMouseLeave={() => setShowList(false)} onClick={(e) => e.stopPropagation()}>
@@ -55,7 +67,7 @@ const PulseReaction = ({ pulseId, profiles = {} }) => {
             </div>
             {showPicker && (
                 <div className="reaction-picker" onMouseLeave={() => setShowPicker(false)}>
-                    {emojiOptions.map((emoji) => (
+                    {emojiPalette.map((emoji) => (
                         <button
                             key={emoji}
                             className="reaction-option"
@@ -71,19 +83,6 @@ const PulseReaction = ({ pulseId, profiles = {} }) => {
                     ))}
                 </div>
             )}
-            <ReactionButton
-                hasReacted={hasUserReacted}
-                count={reactionCount}
-                onShortPress={() => {
-                    toggleReaction(userReactionType || '❤️');
-                    setShowList(true);
-                }}
-                onLongPress={() => {
-                    toggleReaction(userReactionType || '❤️');
-                    setShowList(true);
-                }}
-                disabled={loading}
-            />
             {showList && reactionCount > 0 && (
                 <div className="reaction-popover">
                     <p className="reaction-popover-title">Liked by</p>
