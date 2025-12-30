@@ -40,6 +40,8 @@ const RitualDetail = () => {
 
     const participants = Array.from(new Set((responses || []).map((r) => r.user_id)));
     const joined = participants.includes(user.id);
+    const familyCount = Math.max(Object.keys(profiles || {}).length || 0, participants.length || 1);
+    const progressPct = Math.round((participants.length / familyCount) * 100);
 
     const handleJoin = async () => {
         if (joined || joining) return;
@@ -92,6 +94,14 @@ const RitualDetail = () => {
             <section className="prompt-section">
                 <h1 className="prompt-text">{ritual.prompt}</h1>
                 <p className="ritual-meta">{ritual.title}</p>
+                <div className="progress-row">
+                    <div className="progress-text">
+                        <strong>{participants.length}</strong> joined of <strong>{familyCount}</strong>
+                    </div>
+                    <div className="progress-bar">
+                        <div className="progress-fill" style={{ width: `${progressPct}%` }} />
+                    </div>
+                </div>
                 <div className="participants">
                     <div className="participant-chip">{participants.length} joined</div>
                     {!joined && (
@@ -148,3 +158,5 @@ const RitualDetail = () => {
 };
 
 export default RitualDetail;
+
+
