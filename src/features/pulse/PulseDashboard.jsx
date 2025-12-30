@@ -14,6 +14,7 @@ import ShareInvite from '../family/ShareInvite';
 import Avatar from '../../components/ui/Avatar';
 import FitnessWidget from './FitnessWidget';
 import StoryCarousel from './StoryCarousel';
+import VibeTicker from './VibeTicker';
 import './PulseDashboard.css';
 import './FitnessWidget.css';
 
@@ -473,6 +474,8 @@ const PulseDashboard = () => {
                     </button>
                 </div>
             )}
+
+            <VibeTicker pulses={pulses} profiles={profiles} onReply={(uid) => navigate(`/chat/${uid}`)} />
 
             <section className="family-stream">
                 {/* Hide fitness for now until auto-sync is ready */}
