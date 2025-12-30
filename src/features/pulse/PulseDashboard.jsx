@@ -75,8 +75,13 @@ const PulseDashboard = () => {
 
     const hasFamily = !!user?.family_id;
 
+    const toLocalDateStr = (d) => {
+        const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+        return local.toISOString().slice(0, 10);
+    };
     const lastPulseDate = myPulse?.created_at ? new Date(myPulse.created_at) : null;
-    const stalePulse = !lastPulseDate || Date.now() - lastPulseDate.getTime() > 24 * 60 * 60 * 1000;
+    const todayStr = toLocalDateStr(new Date());
+    const stalePulse = !lastPulseDate || toLocalDateStr(lastPulseDate) !== todayStr;
     const recentMood = myPulseHistory?.[0]?.state;
     const lowActivity = fitnessToday && (fitnessToday.steps || 0) < 2000;
     const showSmartNudge = stalePulse || lowActivity;
@@ -227,12 +232,12 @@ const PulseDashboard = () => {
     useEffect(() => {
         if (loading || !user) return;
         const last = myPulse?.created_at ? new Date(myPulse.created_at) : null;
-        const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
-        const stale = !last || last.getTime() < twentyFourHoursAgo;
+        const todayKeyDate = toLocalDateStr(new Date());
+        const stale = !last || toLocalDateStr(last) !== todayKeyDate;
         setShowPulseReminder(stale);
 
         if (stale) {
-            const todayKey = `kp_pulse_reminder_${user.id}_${new Date().toISOString().slice(0, 10)}`;
+            const todayKey = `kp_pulse_reminder_${user.id}_${todayKeyDate}`;
             if (typeof localStorage !== 'undefined' && !localStorage.getItem(todayKey)) {
                 supabase.functions
                     .invoke('send-push-notification', {
