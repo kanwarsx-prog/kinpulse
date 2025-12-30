@@ -88,7 +88,7 @@ const RitualDetail = () => {
     };
 
     if (loading) return <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>;
-    if (!ritual) return <div style={{ padding: '20px', textAlign: 'center' }}>Ritual not found</div>;
+    if (!ritual) return <div style={{ padding: '20px', textAlign: 'center' }}>Goal not found</div>;
 
     return (
         <div className="ritual-detail fade-in">

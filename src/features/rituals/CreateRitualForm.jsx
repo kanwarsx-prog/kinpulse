@@ -41,22 +41,22 @@ const CreateRitualForm = ({ onClose, onCreated }) => {
     return (
         <div className="create-ritual-overlay">
             <div className="create-ritual-form">
-                <h2>Create New Ritual</h2>
+                <h2>Create New Goal</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label>Ritual Name</label>
+                        <label>Goal Name</label>
                         <input
                             type="text"
-                            placeholder="e.g., Weekly Check-in"
+                            placeholder="e.g., Fitness together, Reunion prep"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             required
                         />
                     </div>
                     <div className="form-group">
-                        <label>Prompt</label>
+                        <label>Goal prompt / description</label>
                         <textarea
-                            placeholder="e.g., What's one thing that went well this week?"
+                            placeholder="e.g., 5k steps per day for 5 days, or Share one photo daily."
                             value={prompt}
                             onChange={(e) => setPrompt(e.target.value)}
                             required
@@ -69,7 +69,7 @@ const CreateRitualForm = ({ onClose, onCreated }) => {
                             Cancel
                         </button>
                         <button type="submit" disabled={loading}>
-                            {loading ? 'Creating...' : 'Create Ritual'}
+                            {loading ? 'Creating...' : 'Create Goal'}
                         </button>
                     </div>
                 </form>
