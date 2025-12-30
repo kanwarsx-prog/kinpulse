@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+﻿import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -283,6 +283,23 @@ const PulseDashboard = () => {
             note: pulseData.note,
             photo_url: pulseData.photo_url
         });
+        // Notify family about new pulse
+        try {
+            const targetIds = Object.keys(profiles || {}).filter((id) => id !== user.id);
+            if (targetIds.length) {
+                const title = profiles[user.id]?.name ? `${profiles[user.id].name} shared a pulse` : 'New family pulse';
+                const body = pulseData.state ? `Feeling ${pulseData.state}` : 'Shared an update';
+                await Promise.allSettled(
+                    targetIds.map((uid) =>
+                        supabase.functions.invoke('send-push-notification', {
+                            body: { user_id: uid, title, body, url: '/' }
+                        }).catch((err) => console.error('Pulse push error', err))
+                    )
+                );
+            }
+        } catch (err) {
+            console.error('Pulse push notify error', err);
+        }
 
         if (error) {
             console.error('Pulse submit error:', error);
@@ -556,10 +573,10 @@ const PulseDashboard = () => {
                                 <p className="history-title">{profiles[historyUser]?.name || 'Family member'}</p>
                                 <p className="history-sub">Recent pulses</p>
                             </div>
-                            <button className="history-close" onClick={closeHistory} aria-label="Close">×</button>
+                            <button className="history-close" onClick={closeHistory} aria-label="Close">Ã—</button>
                         </div>
                         {historyLoading ? (
-                            <p className="history-loading">Loading…</p>
+                            <p className="history-loading">Loadingâ€¦</p>
                         ) : historyItems.length === 0 ? (
                             <p className="history-empty">No history yet.</p>
                         ) : (
@@ -698,6 +715,7 @@ const PulseInsights = ({ history }) => {
         </div>
     );
 };
+
 
 
 
