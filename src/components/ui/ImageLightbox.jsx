@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import './ImageLightbox.css';
 
 const ImageLightbox = ({ src, onClose }) => {
@@ -6,8 +6,6 @@ const ImageLightbox = ({ src, onClose }) => {
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const [start, setStart] = useState({ x: 0, y: 0 });
-
-  if (!src) return null;
 
   const clampScale = (val) => Math.min(3, Math.max(0.5, val));
 
@@ -50,6 +48,8 @@ const ImageLightbox = ({ src, onClose }) => {
     }
   };
 
+  if (!src) return null;
+
   return (
     <div className="lightbox-backdrop" onClick={onClose}>
       <div
@@ -71,7 +71,7 @@ const ImageLightbox = ({ src, onClose }) => {
           draggable={false}
         />
         <button className="lightbox-close" onClick={onClose} aria-label="Close">
-          ×
+          Ã—
         </button>
         <div className="lightbox-controls">
           <button type="button" onClick={zoomOut} aria-label="Zoom out">
@@ -90,3 +90,4 @@ const ImageLightbox = ({ src, onClose }) => {
 };
 
 export default ImageLightbox;
+
