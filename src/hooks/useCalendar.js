@@ -26,12 +26,20 @@ export const useCalendar = ({ startDate, endDate }) => {
         if (!user?.family_id) return;
 
         try {
+            const startIso = toLocalISOString(startDate);
+            const endIso = toLocalISOString(endDate);
             const { data, error } = await supabase
                 .from('events')
                 .select('*, created_by_profile:profiles!created_by(id, name, email)')
                 .eq('family_id', user.family_id)
-                .gte('start_time', toLocalISOString(startDate))
-                .lte('start_time', toLocalISOString(endDate))
+                .or(
+                    [
+                        `and(start_time.gte.${startIso},start_time.lte.${endIso})`,
+                        `and(end_time.gte.${startIso},end_time.lte.${endIso})`,
+                        `and(start_time.lte.${startIso},end_time.gte.${startIso})`,
+                        `and(start_time.lte.${startIso},end_time.is.null)`
+                    ].join(',')
+                )
                 .order('start_time', { ascending: true });
 
             if (error) throw error;
