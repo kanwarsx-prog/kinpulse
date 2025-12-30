@@ -1,6 +1,6 @@
 ﻿import React from 'react';
 
-const RitualCard = ({ ritual, onClick }) => {
+const RitualCard = ({ ritual, onClick, participants = 0, joined = false, onJoin }) => {
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         const now = new Date();
@@ -44,12 +44,50 @@ const RitualCard = ({ ritual, onClick }) => {
             </p>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '13px', color: '#6366f1', fontWeight: 500 }}>
-                    View & accept</span>
+                <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                    <strong style={{ color: '#111827' }}>{participants}</strong> joined
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onJoin?.(ritual.id);
+                        }}
+                        style={{
+                            padding: '6px 10px',
+                            borderRadius: '10px',
+                            border: joined ? '1px solid #d1d5db' : '1px solid #6366f1',
+                            background: joined ? '#f3f4f6' : '#eef2ff',
+                            color: joined ? '#374151' : '#4338ca',
+                            fontWeight: 700,
+                            cursor: 'pointer'
+                        }}
+                    >
+                        {joined ? 'Joined' : 'Join'}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onClick(ritual);
+                        }}
+                        style={{
+                            padding: '6px 10px',
+                            borderRadius: '10px',
+                            border: '1px solid #e5e7eb',
+                            background: '#fff',
+                            color: '#111827',
+                            fontWeight: 600,
+                            cursor: 'pointer'
+                        }}
+                    >
+                        View
+                    </button>
+                </div>
             </div>
         </div>
     );
 };
 
 export default RitualCard;
-

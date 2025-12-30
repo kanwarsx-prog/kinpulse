@@ -9,6 +9,8 @@ const RitualsList = () => {
     const navigate = useNavigate();
     const [rituals, setRituals] = useState([]);
     const [showCreateForm, setShowCreateForm] = useState(false);
+    const [participantCounts, setParticipantCounts] = useState({});
+    const [joinedIds, setJoinedIds] = useState(new Set());
 
     useEffect(() => {
         fetchRituals();
@@ -26,6 +28,21 @@ const RitualsList = () => {
         if (data) {
             setRituals(data);
         }
+
+        const { data: responses } = await supabase
+            .from('ritual_responses')
+            .select('ritual_id,user_id');
+
+        if (responses) {
+            const counts = {};
+            const mine = new Set();
+            responses.forEach((r) => {
+                counts[r.ritual_id] = (counts[r.ritual_id] || 0) + 1;
+                if (r.user_id === user.id) mine.add(r.ritual_id);
+            });
+            setParticipantCounts(counts);
+            setJoinedIds(mine);
+        }
     };
 
     const handleRitualClick = (ritual) => {
@@ -34,6 +51,19 @@ const RitualsList = () => {
 
     const handleRitualCreated = (newRitual) => {
         setRituals([newRitual, ...rituals]);
+    };
+
+    const handleJoin = async (ritualId) => {
+        if (joinedIds.has(ritualId)) return;
+        const { error } = await supabase.from('ritual_responses').insert({
+            ritual_id: ritualId,
+            user_id: user.id,
+            response: 'accepted'
+        });
+        if (!error) {
+            setParticipantCounts((prev) => ({ ...prev, [ritualId]: (prev[ritualId] || 0) + 1 }));
+            setJoinedIds((prev) => new Set([...prev, ritualId]));
+        }
     };
 
     return (
@@ -66,7 +96,10 @@ const RitualsList = () => {
                     <RitualCard
                         key={ritual.id}
                         ritual={ritual}
+                        participants={participantCounts[ritual.id] || 0}
+                        joined={joinedIds.has(ritual.id)}
                         onClick={handleRitualClick}
+                        onJoin={handleJoin}
                     />
                 ))}
                 {rituals.length === 0 && (
