@@ -12,7 +12,6 @@ const RitualDetail = () => {
     const [responses, setResponses] = useState([]);
     const [profiles, setProfiles] = useState({});
     const [response, setResponse] = useState('');
-    const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(true);
     const [joining, setJoining] = useState(false);
 
@@ -33,12 +32,6 @@ const RitualDetail = () => {
                 .order('created_at', { ascending: true });
 
             setResponses(responseData || []);
-
-            const myRes = responseData?.find((r) => r.user_id === user.id);
-            if (myRes) {
-                setSubmitted(true);
-                setResponse(myRes.response);
-            }
 
             setLoading(false);
         };
@@ -73,7 +66,6 @@ const RitualDetail = () => {
             });
 
             if (!error) {
-                setSubmitted(true);
                 setResponses([
                     ...responses,
                     {
@@ -149,3 +141,4 @@ const RitualDetail = () => {
 };
 
 export default RitualDetail;
+
