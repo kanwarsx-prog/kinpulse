@@ -89,7 +89,7 @@ const PulseDashboard = () => {
     const gapDays = lastPulseDate
         ? Math.floor((startOfLocalDay(today) - startOfLocalDay(lastPulseDate)) / (24 * 60 * 60 * 1000))
         : null;
-    const stalePulse = gapDays === null || gapDays >= 0;
+    const stalePulse = gapDays === null || gapDays > 0;
     const recentMood = myPulseHistory?.[0]?.state;
     const lowActivity = fitnessToday && (fitnessToday.steps || 0) < 2000;
     const showSmartNudge = stalePulse || lowActivity;
@@ -241,7 +241,7 @@ const PulseDashboard = () => {
         if (loading || !user) return;
         const last = myPulse?.created_at ? new Date(myPulse.created_at) : null;
         const todayKeyDate = toLocalDateStr(new Date());
-        const stale = gapDays === null || gapDays >= 0;
+        const stale = gapDays === null || gapDays > 0;
         setShowPulseReminder(stale);
 
         if (stale) {
