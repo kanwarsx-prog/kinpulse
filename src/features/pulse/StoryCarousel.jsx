@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import Avatar from '../../components/ui/Avatar';
 import StatusBadge from '../../components/ui/StatusBadge';
 import './StoryCarousel.css';
@@ -25,7 +25,7 @@ const StoryCarousel = ({ pulses, profiles, onClose, onReply }) => {
     return (
         <div className="story-backdrop" onClick={onClose}>
             <div className="story-body" onClick={(e) => e.stopPropagation()}>
-                <button className="story-close" onClick={onClose} aria-label="Close">�</button>
+                <button className="story-close" onClick={onClose} aria-label="Close">×</button>
                 <div className="story-top">
                     <Avatar name={profile.name} email={profile.email} />
                     <div className="story-meta">
@@ -58,3 +58,5 @@ const StoryCarousel = ({ pulses, profiles, onClose, onReply }) => {
 };
 
 export default StoryCarousel;
+
+
