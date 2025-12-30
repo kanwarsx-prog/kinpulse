@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Avatar from '../../components/ui/Avatar';
 import './VibeTicker.css';
 
@@ -13,30 +13,33 @@ const statusEmoji = {
 
 const VibeTicker = ({ pulses, profiles, onReply }) => {
   const [focus, setFocus] = useState(null);
-
   const vibes = useMemo(() => {
     const cutoff = Date.now() - 24 * 60 * 60 * 1000;
-    const base = (pulses || [])
-      .filter((p) => p.created_at && new Date(p.created_at).getTime() >= cutoff && (p.state || p.note || p.photo_url));
+    const base = (pulses || []).filter(
+      (p) => p.created_at && new Date(p.created_at).getTime() >= cutoff && (p.state || p.note || p.photo_url)
+    );
     if (!base.length) return [];
     return [...base, ...base]; // duplicate for seamless loop
   }, [pulses]);
 
   if (!vibes.length) return null;
 
-  const duration = Math.max(12, vibes.length * 2);\n  const [paused, setPaused] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const duration = Math.max(12, vibes.length * 2);
 
   const renderCard = (vibe) => {
     const profile = profiles?.[vibe.user_id] || {};
     const label = profile.name || profile.email || 'Family';
-    const time = vibe.created_at
-      ? new Date(vibe.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      : '';
+    const time = vibe.created_at ? new Date(vibe.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
     const emoji = vibe.state ? statusEmoji[vibe.state] || '🙂' : '📷';
     const note = vibe.note || (vibe.photo_url ? 'Shared a photo' : 'Shared an update');
-
     return (
-      <button key={`${vibe.id}-${time}`} className="vibe-card" onClick={() => setFocus(vibe)} aria-label={`Open ${label} update`}>
+      <button
+        key={`${vibe.id}-${time}`}
+        className="vibe-card"
+        onClick={() => setFocus(vibe)}
+        aria-label={`Open ${label} update`}
+      >
         <div className="vibe-avatar">
           <Avatar name={profile.name} email={profile.email} />
           <span className="vibe-emoji">{emoji}</span>
@@ -95,10 +98,20 @@ const VibeTicker = ({ pulses, profiles, onReply }) => {
     );
   };
 
-  const marqueeStyle = paused ? { animationPlayState: "paused" } : {};\n\n  return (\n    <>\n      <div className="vibe-ticker">
+  const marqueeStyle = paused ? { animationPlayState: 'paused' } : {};
+
+  return (
+    <>
+      <div className="vibe-ticker">
         <div className="vibe-label">Today’s vibe</div>
-        <div className="vibe-marquee">
-          <div className="vibe-marquee-track" style={{ animationDuration: `${duration}s` }}>
+        <div
+          className="vibe-marquee"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          onTouchStart={() => setPaused(true)}
+          onTouchEnd={() => setPaused(false)}
+        >
+          <div className="vibe-marquee-track" style={{ animationDuration: `${duration}s`, ...marqueeStyle }}>
             {vibes.map(renderCard)}
           </div>
         </div>
@@ -109,4 +122,3 @@ const VibeTicker = ({ pulses, profiles, onReply }) => {
 };
 
 export default VibeTicker;
-
