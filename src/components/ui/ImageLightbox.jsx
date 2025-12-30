@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import './ImageLightbox.css';
 
 const ImageLightbox = ({ src, onClose }) => {
@@ -18,8 +18,10 @@ const ImageLightbox = ({ src, onClose }) => {
     setPos({ x: 0, y: 0 });
   };
 
+  const canPan = useMemo(() => scale > 1.01, [scale]);
+
   const handleMouseDown = (e) => {
-    if (scale <= 1) return;
+    if (!canPan) return;
     setDragging(true);
     setStart({ x: e.clientX - pos.x, y: e.clientY - pos.y });
   };
@@ -31,6 +33,23 @@ const ImageLightbox = ({ src, onClose }) => {
 
   const handleMouseUp = () => setDragging(false);
 
+  const handleWheel = (e) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.25 : 0.25;
+    setScale((s) => clampScale(s + delta));
+    if (Math.abs(scale + delta - 1) < 0.05) {
+      setPos({ x: 0, y: 0 });
+    }
+  };
+
+  const handleDoubleClick = () => {
+    if (scale > 1.5) {
+      reset();
+    } else {
+      setScale(2);
+    }
+  };
+
   return (
     <div className="lightbox-backdrop" onClick={onClose}>
       <div
@@ -39,10 +58,14 @@ const ImageLightbox = ({ src, onClose }) => {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onWheel={handleWheel}
+        onDoubleClick={handleDoubleClick}
+        role="presentation"
       >
         <img
           src={src}
           alt="Preview"
+          className={canPan ? 'can-pan' : ''}
           style={{ transform: `translate(${pos.x}px, ${pos.y}px) scale(${scale})` }}
           onMouseDown={handleMouseDown}
           draggable={false}
