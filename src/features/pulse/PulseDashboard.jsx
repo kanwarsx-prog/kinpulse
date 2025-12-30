@@ -272,6 +272,7 @@ const PulseDashboard = () => {
             created_at: new Date().toISOString()
         };
         setMyPulse(newPulse);
+        setShowPulseReminder(false);
         setShowPulseForm(false);
 
         const { error } = await supabase.from('pulses').insert({
