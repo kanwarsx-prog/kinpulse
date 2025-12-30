@@ -32,7 +32,6 @@ const RitualDetail = () => {
                 .order('created_at', { ascending: true });
 
             setResponses(responseData || []);
-
             setLoading(false);
         };
 
@@ -75,6 +74,7 @@ const RitualDetail = () => {
                         created_at: new Date().toISOString()
                     }
                 ]);
+                setResponse('');
             }
         }
     };
@@ -100,6 +100,13 @@ const RitualDetail = () => {
                         </button>
                     )}
                 </div>
+                <div className="participant-list">
+                    {participants.map((pid, idx) => (
+                        <span key={pid} className="participant-pill">
+                            {profiles[pid]?.username || profiles[pid]?.name || `Member ${idx + 1}`}
+                        </span>
+                    ))}
+                </div>
             </section>
 
             <section className="response-section">
@@ -109,14 +116,14 @@ const RitualDetail = () => {
                         placeholder="Share your update..."
                         value={response}
                         onChange={(e) => setResponse(e.target.value)}
-                        rows={4}
+                        rows={3}
                     />
                     <button type="submit" className="submit-response-btn" disabled={!response.trim()}>
-                        Share
+                        Share update
                     </button>
                 </form>
                 <div className="members-responses">
-                    {responses.map((res, idx) => {
+                    {responses.filter((res) => res.response).map((res, idx) => {
                         const isMe = res.user_id === user.id;
                         const profile = profiles[res.user_id];
 
@@ -141,4 +148,3 @@ const RitualDetail = () => {
 };
 
 export default RitualDetail;
-
