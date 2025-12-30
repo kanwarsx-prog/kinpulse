@@ -1,4 +1,4 @@
-.vibe-ticker {
+﻿.vibe-ticker {
     margin: 8px 0 12px;
     padding: 8px 6px;
     background: transparent;
@@ -11,18 +11,21 @@
     margin: 0 0 6px 4px;
 }
 
-.vibe-row {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(200px, 1fr);
-    gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    scrollbar-width: none;
+.vibe-marquee {
+    overflow: hidden;
+    position: relative;
 }
 
-.vibe-row::-webkit-scrollbar {
-    display: none;
+.vibe-marquee-track {
+    display: inline-flex;
+    gap: 8px;
+    animation: vibe-scroll linear infinite;
+    will-change: transform;
+}
+
+@keyframes vibe-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
 }
 
 .vibe-card {
@@ -35,6 +38,7 @@
     cursor: pointer;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.04);
     text-align: left;
+    min-width: 200px;
 }
 
 .vibe-card:active {
