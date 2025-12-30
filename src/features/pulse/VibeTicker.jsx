@@ -24,7 +24,7 @@ const VibeTicker = ({ pulses, profiles, onReply }) => {
 
   if (!vibes.length) return null;
 
-  const duration = Math.max(12, vibes.length * 2);
+  const duration = Math.max(12, vibes.length * 2);\n  const [paused, setPaused] = useState(false);
 
   const renderCard = (vibe) => {
     const profile = profiles?.[vibe.user_id] || {};
@@ -95,9 +95,7 @@ const VibeTicker = ({ pulses, profiles, onReply }) => {
     );
   };
 
-  return (
-    <>
-      <div className="vibe-ticker">
+  const marqueeStyle = paused ? { animationPlayState: "paused" } : {};\n\n  return (\n    <>\n      <div className="vibe-ticker">
         <div className="vibe-label">Today’s vibe</div>
         <div className="vibe-marquee">
           <div className="vibe-marquee-track" style={{ animationDuration: `${duration}s` }}>
@@ -111,3 +109,4 @@ const VibeTicker = ({ pulses, profiles, onReply }) => {
 };
 
 export default VibeTicker;
+

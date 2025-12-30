@@ -21,6 +21,7 @@
     gap: 8px;
     animation: vibe-scroll linear infinite;
     will-change: transform;
+    animation-play-state: running;
 }
 
 @keyframes vibe-scroll {
