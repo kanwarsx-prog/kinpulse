@@ -86,11 +86,11 @@
 }
 
 .splash-drawer-card {
-  width: 100%;
-  background: #fff;
-  border-radius: 18px 18px 0 0;
-  padding: 16px;
-  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
+    width: 100%;
+    background: #fff;
+    border-radius: 18px 18px 0 0;
+    padding: 16px;
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
 }
 
 .splash-drawer-header {
@@ -137,9 +137,9 @@
 }
 
 .splash-actions {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
 }
 
 .splash-btn {
@@ -168,5 +168,53 @@
 }
 
 .splash-btn:active {
-  transform: translateY(1px);
+    transform: translateY(1px);
+}
+
+.splash-checklist {
+    margin-top: 12px;
+    padding: 10px;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    border-radius: 12px;
+    background: #f8fafc;
+}
+
+.splash-checklist-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.splash-checklist-title {
+    margin: 0;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.splash-remind-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: #334155;
+}
+
+.splash-checklist-items {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.splash-task {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.splash-task.done {
+    color: #6b7280;
+    text-decoration: line-through;
 }
