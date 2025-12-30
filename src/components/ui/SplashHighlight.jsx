@@ -170,14 +170,6 @@ const SplashHighlight = () => {
               <button className="splash-btn primary" onClick={handleAddCalendar}>Add to calendar</button>
               <button className="splash-btn ghost" onClick={() => handleSnooze(3)}>Snooze 3d</button>
               <button className="splash-btn ghost" onClick={() => handleSnooze(30)}>Skip this event</button>
-            </div><div className="splash-checklist-items">
-                {tasks.map((task, idx) => (
-                  <label key={idx} className={`splash-task ${task.done ? 'done' : ''}`}>
-                    <input type="checkbox" checked={task.done} onChange={() => toggleTask(idx)} />
-                    <span>{task.label}</span>
-                  </label>
-                ))}
-              </div>
             </div>
           </div>
         </div>
