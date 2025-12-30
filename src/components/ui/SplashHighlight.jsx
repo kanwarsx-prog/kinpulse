@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import './SplashHighlight.css';
 
@@ -23,6 +24,7 @@ const formatCountdown = (target) => {
 
 const SplashHighlight = () => {
   const { supabase, user } = useSupabase();
+  const navigate = useNavigate();
   const [featured, setFeatured] = useState(null);
   const [countdown, setCountdown] = useState('');
   const [hidden, setHidden] = useState(false);
@@ -103,6 +105,26 @@ const SplashHighlight = () => {
 
   const handleCloseDrawer = () => setDrawerOpen(false);
 
+  const handleAddCalendar = () => {
+    if (!featured?.start_time) return;
+    const start = new Date(featured.start_time);
+    const end = new Date(featured.start_time);
+    end.setHours(end.getHours() + 1);
+    const fmt = (d) => {
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
+    };
+    const url = [
+      'https://calendar.google.com/calendar/render?action=TEMPLATE',
+      `text=${encodeURIComponent(featured.title)}`,
+      `details=${encodeURIComponent(featured.description || '')}`,
+      `dates=${fmt(start)}/${fmt(end)}`
+    ].join('&');
+    window.open(url, '_blank', 'noopener');
+  };
+
+  const handleOpenCalendar = () => navigate('/calendar');
+
   return (
     <>
       <div className="splash-highlight">
@@ -146,7 +168,8 @@ const SplashHighlight = () => {
             {featured.description && <p className="splash-desc">{featured.description}</p>}
 
             <div className="splash-actions">
-              <button className="splash-btn primary">Add to calendar</button>
+              <button className="splash-btn primary" onClick={handleAddCalendar}>Add to calendar</button>
+              <button className="splash-btn ghost" onClick={handleOpenCalendar}>Open calendar</button>
               <button className="splash-btn ghost" onClick={() => handleSnooze(3)}>Snooze 3d</button>
               <button className="splash-btn ghost" onClick={() => handleSnooze(7)}>Snooze 7d</button>
               <button className="splash-btn ghost" onClick={() => handleSnooze(30)}>Skip this event</button>
