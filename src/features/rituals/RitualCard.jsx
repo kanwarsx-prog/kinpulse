@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 
 const RitualCard = ({ ritual, onClick }) => {
     const formatDate = (dateString) => {
@@ -43,13 +43,13 @@ const RitualCard = ({ ritual, onClick }) => {
                 {ritual.prompt}
             </p>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '13px', color: '#6366f1', fontWeight: 500 }}>
-                    Tap to respond →
-                </span>
+                    View & accept</span>
             </div>
         </div>
     );
 };
 
 export default RitualCard;
+

@@ -39,8 +39,8 @@ const RitualsList = () => {
     return (
         <div style={{ padding: 'var(--space-md)' }} className="fade-in">
             <header style={{ marginBottom: 'var(--space-lg)', textAlign: 'center' }}>
-                <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'hsl(var(--color-text-primary))' }}>Rituals</h1>
-                <p style={{ fontSize: '0.875rem', color: 'hsl(var(--color-text-secondary))' }}>Shared moments</p>
+                <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'hsl(var(--color-text-primary))' }}>Family Goals</h1>
+                <p style={{ fontSize: '0.875rem', color: 'hsl(var(--color-text-secondary))' }}>Pick a goal together and share progress.</p>
                 <button
                     onClick={() => setShowCreateForm(true)}
                     style={{
@@ -54,8 +54,11 @@ const RitualsList = () => {
                         cursor: 'pointer'
                     }}
                 >
-                    + Create Ritual
+                    + Create Goal
                 </button>
+                <div style={{ marginTop: '12px', color: 'hsl(var(--color-text-secondary))', fontSize: '0.85rem' }}>
+                    Categories: Fitness • Reunion • Photo Story • Kindness • Planning
+                </div>
             </header>
 
             <div className="rituals-feed">
@@ -68,7 +71,7 @@ const RitualsList = () => {
                 ))}
                 {rituals.length === 0 && (
                     <p style={{ textAlign: 'center', color: '#888', marginTop: '20px' }}>
-                        No rituals yet. Create one to get started!
+                        No goals yet. Create one to get started!
                     </p>
                 )}
             </div>
