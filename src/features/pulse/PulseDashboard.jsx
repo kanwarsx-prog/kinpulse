@@ -460,7 +460,8 @@ const PulseDashboard = () => {
             )}
 
             <section className="family-stream">
-                <FitnessWidget />
+                {/* Hide fitness for now until auto-sync is ready */}
+                {/* <FitnessWidget /> */}
                 <div className="section-header stacked">
                     <h3 className="section-title" style={{ marginBottom: 6 }}>Family Pulse</h3>
                     <div className="section-actions">
