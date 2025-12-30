@@ -79,9 +79,17 @@ const PulseDashboard = () => {
         const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
         return local.toISOString().slice(0, 10);
     };
+    const startOfLocalDay = (d) => {
+        const copy = new Date(d);
+        copy.setHours(0, 0, 0, 0);
+        return copy;
+    };
     const lastPulseDate = myPulse?.created_at ? new Date(myPulse.created_at) : null;
-    const todayStr = toLocalDateStr(new Date());
-    const stalePulse = !lastPulseDate || toLocalDateStr(lastPulseDate) !== todayStr;
+    const today = new Date();
+    const gapDays = lastPulseDate
+        ? Math.floor((startOfLocalDay(today) - startOfLocalDay(lastPulseDate)) / (24 * 60 * 60 * 1000))
+        : null;
+    const stalePulse = gapDays === null || gapDays >= 0;
     const recentMood = myPulseHistory?.[0]?.state;
     const lowActivity = fitnessToday && (fitnessToday.steps || 0) < 2000;
     const showSmartNudge = stalePulse || lowActivity;
@@ -233,7 +241,7 @@ const PulseDashboard = () => {
         if (loading || !user) return;
         const last = myPulse?.created_at ? new Date(myPulse.created_at) : null;
         const todayKeyDate = toLocalDateStr(new Date());
-        const stale = !last || toLocalDateStr(last) !== todayKeyDate;
+        const stale = gapDays === null || gapDays >= 0;
         setShowPulseReminder(stale);
 
         if (stale) {
@@ -436,6 +444,7 @@ const PulseDashboard = () => {
             {showSmartNudge && (
                 <SmartNudge
                     stale={stalePulse}
+                    gapDays={gapDays}
                     recentMood={recentMood}
                     fitnessToday={fitnessToday}
                     onUpdate={() => {
@@ -577,15 +586,24 @@ const PulseDashboard = () => {
 
 export default PulseDashboard;
 
-const SmartNudge = ({ stale, recentMood, fitnessToday, onUpdate }) => {
+const SmartNudge = ({ stale, gapDays, recentMood, fitnessToday, onUpdate }) => {
     const lowActivity = fitnessToday && (fitnessToday.steps || 0) < 2000;
 
     if (!stale && !lowActivity) return null;
 
-    const title = stale ? 'Take a quick pulse' : 'Slow day?';
-    const body = stale
-        ? "It's been a while since you checked in. Share how you're feeling."
-        : "Activity looks low today. Want to log how you're doing?";
+    const longGap = gapDays === null || gapDays >= 2;
+    const missedToday = gapDays !== null && gapDays >= 0;
+
+    let title = 'Take a quick pulse';
+    let body = "It's been a while since you checked in. Share how you're feeling.";
+
+    if (lowActivity && !stale) {
+        title = 'Slow day?';
+        body = "Activity looks low today. Want to log how you're doing?";
+    } else if (missedToday && !longGap) {
+        title = 'Share your pulse today';
+        body = "You haven't checked in yet today. How are you feeling?";
+    }
 
     return (
         <div className="pulse-reminder">
