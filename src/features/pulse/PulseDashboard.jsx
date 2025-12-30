@@ -428,38 +428,39 @@ const PulseDashboard = () => {
 
     return (
         <div className="pulse-dashboard page fade-in">
+            {showSmartNudge && (
+                <SmartNudge
+                    stale={stalePulse}
+                    recentMood={recentMood}
+                    fitnessToday={fitnessToday}
+                    onUpdate={() => {
+                        setShowPulseForm(true);
+                        setTimeout(() => pulseFormRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+                    }}
+                />
+            )}
+            {showPulseReminder && !showSmartNudge && (
+                <div className="pulse-reminder">
+                    <div>
+                        <p className="reminder-title">Share your pulse</p>
+                        <p className="reminder-text">You have not checked in for 24 hours. How are you feeling?</p>
+                    </div>
+                    <button
+                        className="reminder-btn"
+                        onClick={() => {
+                            setShowPulseForm(true);
+                            setTimeout(() => {
+                                pulseFormRef.current?.scrollIntoView({ behavior: 'smooth' });
+                            }, 50);
+                        }}
+                    >
+                        Update now
+                    </button>
+                </div>
+            )}
+
             <section className="family-stream">
                 <FitnessWidget />
-                {showSmartNudge && (
-                    <SmartNudge
-                        stale={stalePulse}
-                        recentMood={recentMood}
-                        fitnessToday={fitnessToday}
-                        onUpdate={() => {
-                            setShowPulseForm(true);
-                            setTimeout(() => pulseFormRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
-                        }}
-                    />
-                )}
-                {showPulseReminder && !showSmartNudge && (
-                    <div className="pulse-reminder">
-                        <div>
-                            <p className="reminder-title">Share your pulse</p>
-                            <p className="reminder-text">You have not checked in for 24 hours. How are you feeling?</p>
-                        </div>
-                        <button
-                            className="reminder-btn"
-                            onClick={() => {
-                                setShowPulseForm(true);
-                                setTimeout(() => {
-                                    pulseFormRef.current?.scrollIntoView({ behavior: 'smooth' });
-                                }, 50);
-                            }}
-                        >
-                            Update now
-                        </button>
-                    </div>
-                )}
                 <div className="section-header stacked">
                     <h3 className="section-title" style={{ marginBottom: 6 }}>Family Pulse</h3>
                     <div className="section-actions">
