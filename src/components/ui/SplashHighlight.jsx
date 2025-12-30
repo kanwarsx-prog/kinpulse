@@ -5,15 +5,6 @@ import './SplashHighlight.css';
 
 const DISMISS_PREFIX = 'splash_hide_';
 const SNOOZE_PREFIX = 'splash_snooze_';
-const TASK_PREFIX = 'splash_tasks_';
-const REMIND_PREFIX = 'splash_remind_';
-
-const defaultTasks = [
-  'Add to calendar',
-  'Share details with family',
-  'Prep what you need'
-];
-
 const formatCountdown = (target) => {
   const diff = new Date(target) - new Date();
   if (diff <= 0) return 'Happening now';
@@ -38,8 +29,6 @@ const SplashHighlight = () => {
   const [hidden, setHidden] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [tasks, setTasks] = useState([]);
-  const [remind, setRemind] = useState(false);
 
   const isDismissed = useMemo(() => {
     if (!featured?.id) return false;
@@ -93,16 +82,6 @@ const SplashHighlight = () => {
     return () => clearInterval(id);
   }, [featured?.start_time, hidden, isDismissed, snoozedUntil]);
 
-  useEffect(() => {
-    if (!featured?.id) return;
-    const taskKey = `${TASK_PREFIX}${featured.id}`;
-    const stored = localStorage.getItem(taskKey);
-    const initialTasks = stored ? JSON.parse(stored) : defaultTasks.map((t) => ({ label: t, done: false }));
-    setTasks(initialTasks);
-    const remindKey = `${REMIND_PREFIX}${featured.id}`;
-    setRemind(localStorage.getItem(remindKey) === 'true');
-  }, [featured?.id]);
-
   if (loading || hidden || isDismissed || !featured) return null;
   if (snoozedUntil && snoozedUntil > new Date()) return null;
 
@@ -144,22 +123,6 @@ const SplashHighlight = () => {
   };
 
   const handleOpenCalendar = () => navigate('/calendar');
-
-  const toggleTask = (idx) => {
-    const nextTasks = tasks.map((t, i) => (i === idx ? { ...t, done: !t.done } : t));
-    setTasks(nextTasks);
-    if (featured?.id) {
-      localStorage.setItem(`${TASK_PREFIX}${featured.id}`, JSON.stringify(nextTasks));
-    }
-  };
-
-  const toggleRemind = () => {
-    const next = !remind;
-    setRemind(next);
-    if (featured?.id) {
-      localStorage.setItem(`${REMIND_PREFIX}${featured.id}`, next ? 'true' : 'false');
-    }
-  };
 
   return (
     <>
@@ -207,17 +170,7 @@ const SplashHighlight = () => {
               <button className="splash-btn primary" onClick={handleAddCalendar}>Add to calendar</button>
               <button className="splash-btn ghost" onClick={() => handleSnooze(3)}>Snooze 3d</button>
               <button className="splash-btn ghost" onClick={() => handleSnooze(30)}>Skip this event</button>
-            </div>
-
-            <div className="splash-checklist">
-              <div className="splash-checklist-header">
-                <p className="splash-checklist-title">Prep list</p>
-                <label className="splash-remind-toggle">
-                  <input type="checkbox" checked={remind} onChange={toggleRemind} />
-                  <span>Remind me day-of</span>
-                </label>
-              </div>
-              <div className="splash-checklist-items">
+            </div><div className="splash-checklist-items">
                 {tasks.map((task, idx) => (
                   <label key={idx} className={`splash-task ${task.done ? 'done' : ''}`}>
                     <input type="checkbox" checked={task.done} onChange={() => toggleTask(idx)} />
@@ -234,3 +187,4 @@ const SplashHighlight = () => {
 };
 
 export default SplashHighlight;
+
