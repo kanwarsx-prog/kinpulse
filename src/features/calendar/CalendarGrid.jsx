@@ -13,8 +13,11 @@ const CalendarGrid = ({ currentDate, events, onDateClick, onEventClick }) => {
 
     // Build calendar grid
     const days = [];
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    const toLocalDateStr = (d) => {
+        const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+        return local.toISOString().split('T')[0];
+    };
+    const todayStr = toLocalDateStr(new Date());
 
     // Add empty cells for days before month starts
     for (let i = 0; i < startingDayOfWeek; i++) {
@@ -24,7 +27,7 @@ const CalendarGrid = ({ currentDate, events, onDateClick, onEventClick }) => {
     // Add days of month
     for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(year, month, day);
-        const dateStr = date.toISOString().split('T')[0];
+        const dateStr = toLocalDateStr(date);
         const isToday = dateStr === todayStr;
 
         // Get events for this day
