@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import './CreateRitualForm.css';
 
-const CreateRitualForm = ({ onClose, onCreated }) => {
+const CreateRitualForm = ({ onClose, onCreated, initialName = '', initialPrompt = '' }) => {
     const { supabase, user } = useSupabase();
-    const [name, setName] = useState('');
-    const [prompt, setPrompt] = useState('');
+    const [name, setName] = useState(initialName);
+    const [prompt, setPrompt] = useState(initialPrompt);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 

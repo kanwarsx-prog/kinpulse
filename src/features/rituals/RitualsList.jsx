@@ -9,8 +9,10 @@ const RitualsList = () => {
     const navigate = useNavigate();
     const [rituals, setRituals] = useState([]);
     const [showCreateForm, setShowCreateForm] = useState(false);
+    const [template, setTemplate] = useState(null);
     const [participantCounts, setParticipantCounts] = useState({});
     const [joinedIds, setJoinedIds] = useState(new Set());
+    const [familyCount, setFamilyCount] = useState(0);
 
     useEffect(() => {
         fetchRituals();
@@ -28,6 +30,12 @@ const RitualsList = () => {
         if (data) {
             setRituals(data);
         }
+
+        const { data: profileData } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('family_id', user.family_id);
+        setFamilyCount(profileData?.length || 0);
 
         const { data: responses } = await supabase
             .from('ritual_responses')
@@ -66,13 +74,20 @@ const RitualsList = () => {
         }
     };
 
+    const templates = [
+        { name: 'Fitness together', prompt: 'Hit 5k steps per day for 5 days this week. Share your best walk pic.' },
+        { name: 'Reunion countdown', prompt: 'Prep for the reunion: travel booked? gifts? Share one thing you’re bringing.' },
+        { name: 'Photo story week', prompt: 'Share one photo per day for 7 days. Theme: small joys.' },
+        { name: 'Acts of kindness', prompt: 'Log 3 acts of kindness this week. Share a short note or photo.' },
+    ];
+
     return (
         <div style={{ padding: 'var(--space-md)' }} className="fade-in">
             <header style={{ marginBottom: 'var(--space-lg)', textAlign: 'center' }}>
                 <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'hsl(var(--color-text-primary))' }}>Family Goals</h1>
                 <p style={{ fontSize: '0.875rem', color: 'hsl(var(--color-text-secondary))' }}>Pick a goal together and share progress.</p>
                 <button
-                    onClick={() => setShowCreateForm(true)}
+                    onClick={() => { setTemplate(null); setShowCreateForm(true); }}
                     style={{
                         marginTop: '16px',
                         padding: '10px 20px',
@@ -89,6 +104,26 @@ const RitualsList = () => {
                 <div style={{ marginTop: '12px', color: 'hsl(var(--color-text-secondary))', fontSize: '0.85rem' }}>
                     Categories: Fitness • Reunion • Photo Story • Kindness • Planning
                 </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginTop: 12 }}>
+                    {templates.map((t, i) => (
+                        <button
+                            key={i}
+                            onClick={() => { setTemplate(t); setShowCreateForm(true); }}
+                            style={{
+                                padding: '10px 12px',
+                                borderRadius: '10px',
+                                border: '1px solid #e5e7eb',
+                                background: '#f8fafc',
+                                cursor: 'pointer',
+                                textAlign: 'left',
+                                fontWeight: 600
+                            }}
+                        >
+                            {t.name}
+                            <div style={{ fontSize: '0.85rem', color: '#6b7280', marginTop: 4 }}>{t.prompt.slice(0, 60)}...</div>
+                        </button>
+                    ))}
+                </div>
             </header>
 
             <div className="rituals-feed">
@@ -97,6 +132,7 @@ const RitualsList = () => {
                         key={ritual.id}
                         ritual={ritual}
                         participants={participantCounts[ritual.id] || 0}
+                        familyCount={familyCount}
                         joined={joinedIds.has(ritual.id)}
                         onClick={handleRitualClick}
                         onJoin={handleJoin}
@@ -113,6 +149,8 @@ const RitualsList = () => {
                 <CreateRitualForm
                     onClose={() => setShowCreateForm(false)}
                     onCreated={handleRitualCreated}
+                    initialName={template?.name}
+                    initialPrompt={template?.prompt}
                 />
             )}
         </div>

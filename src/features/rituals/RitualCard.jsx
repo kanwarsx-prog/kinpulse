@@ -1,6 +1,6 @@
 ﻿import React from 'react';
 
-const RitualCard = ({ ritual, onClick, participants = 0, joined = false, onJoin }) => {
+const RitualCard = ({ ritual, onClick, participants = 0, familyCount = 0, joined = false, onJoin }) => {
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         const now = new Date();
@@ -45,7 +45,8 @@ const RitualCard = ({ ritual, onClick, participants = 0, joined = false, onJoin 
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                    <strong style={{ color: '#111827' }}>{participants}</strong> joined
+                    <strong style={{ color: '#111827' }}>{participants}</strong>
+                    {familyCount ? ` / ${familyCount}` : ''} joined
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                     <button
