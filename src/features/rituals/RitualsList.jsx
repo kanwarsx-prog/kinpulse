@@ -101,9 +101,6 @@ const RitualsList = () => {
                 >
                     + Create Goal
                 </button>
-                <div style={{ marginTop: '12px', color: 'hsl(var(--color-text-secondary))', fontSize: '0.85rem' }}>
-                    Categories: Fitness • Reunion • Photo Story • Kindness • Planning
-                </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginTop: 12 }}>
                     {templates.map((t, i) => (
                         <button
