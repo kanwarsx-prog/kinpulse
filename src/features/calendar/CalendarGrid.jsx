@@ -17,6 +17,11 @@ const CalendarGrid = ({ currentDate, events, onDateClick, onEventClick }) => {
         const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
         return local.toISOString().split('T')[0];
     };
+    const eventCoversDate = (dayStr, event) => {
+        const startStr = event.start_time ? toLocalDateStr(new Date(event.start_time)) : dayStr;
+        const endStr = event.end_time ? toLocalDateStr(new Date(event.end_time)) : startStr;
+        return dayStr >= startStr && dayStr <= endStr;
+    };
     const todayStr = toLocalDateStr(new Date());
 
     // Add empty cells for days before month starts
@@ -31,10 +36,7 @@ const CalendarGrid = ({ currentDate, events, onDateClick, onEventClick }) => {
         const isToday = dateStr === todayStr;
 
         // Get events for this day
-        const dayEvents = events.filter(event => {
-            const eventDate = (event.start_time || '').slice(0, 10);
-            return eventDate === dateStr;
-        });
+        const dayEvents = events.filter(event => eventCoversDate(dateStr, event));
 
         days.push(
             <div
