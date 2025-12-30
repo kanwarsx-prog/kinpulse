@@ -205,9 +205,7 @@ const SplashHighlight = () => {
 
             <div className="splash-actions">
               <button className="splash-btn primary" onClick={handleAddCalendar}>Add to calendar</button>
-              <button className="splash-btn ghost" onClick={handleOpenCalendar}>Open calendar</button>
               <button className="splash-btn ghost" onClick={() => handleSnooze(3)}>Snooze 3d</button>
-              <button className="splash-btn ghost" onClick={() => handleSnooze(7)}>Snooze 7d</button>
               <button className="splash-btn ghost" onClick={() => handleSnooze(30)}>Skip this event</button>
             </div>
 

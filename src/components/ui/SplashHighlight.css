@@ -137,8 +137,8 @@
 }
 
 .splash-actions {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 8px;
 }
 
@@ -149,6 +149,7 @@
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.1s ease, box-shadow 0.2s ease;
+  flex: 1 1 140px;
 }
 
 .splash-btn.primary {
