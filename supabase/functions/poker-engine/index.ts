@@ -231,7 +231,8 @@ serve(async (req) => {
             street: hand.street,
           });
 
-        const currentIdx = activeSeats.findIndex((s) => s.seat_no === hand.turn_seat_no);
+        const currentIdxRaw = activeSeats.findIndex((s) => s.seat_no === hand.turn_seat_no);
+        const currentIdx = currentIdxRaw >= 0 ? currentIdxRaw : 0;
         const nextSeat = activeSeats[(currentIdx + 1) % activeSeats.length];
         const firstSeatNo = activeSeats[0].seat_no;
 
