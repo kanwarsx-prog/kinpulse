@@ -238,22 +238,26 @@ const PokerLobby = () => {
 
     return (
         <div className={`poker-page fade-in ${selected ? 'fullscreen' : ''} ${fullView ? 'landscape' : ''}`}>
-            <header className="poker-header">
-                <div>
-                    <p className="eyebrow">Family game</p>
-                    <h1>Poker Night (beta)</h1>
-                    <p className="subtle">Async, low-stakes Holdem for the family.</p>
-                </div>
-            </header>
+            {!selected && (
+                <header className="poker-header">
+                    <div>
+                        <p className="eyebrow">Family game</p>
+                        <h1>Poker Night (beta)</h1>
+                        <p className="subtle">Async, low-stakes Holdem for the family.</p>
+                    </div>
+                </header>
+            )}
 
-            <section className="poker-create">
-                <input
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    placeholder="Table name"
-                />
-                <button onClick={handleCreate} disabled={creating}>{creating ? 'Creating...' : 'Create table'}</button>
-            </section>
+            {!selected && (
+                <section className="poker-create">
+                    <input
+                        value={newName}
+                        onChange={(e) => setNewName(e.target.value)}
+                        placeholder="Table name"
+                    />
+                    <button onClick={handleCreate} disabled={creating}>{creating ? 'Creating...' : 'Create table'}</button>
+                </section>
+            )}
 
             {message && <div className="poker-message">{message}</div>}
 
@@ -298,38 +302,45 @@ const PokerLobby = () => {
 
             {selected && (
                 <section className="table-panel">
-                    <div className="panel-head">
-                        <div>
-                            <p className="eyebrow">Table</p>
-                            <h3>{selected.name}</h3>
+                    <div className="felt-top-bar">
+                        <button className="ghost exit-btn" onClick={exitTable}>✕</button>
+                        <div className="felt-title">
+                            <div className="card-title">{selected.name}</div>
+                            <div className="card-meta">Pot {pot} • {street}</div>
                         </div>
-                        <div className="panel-actions">
+                        <div className="panel-actions compact">
                             <button className="ghost" onClick={() => setFullView((v) => !v)} disabled={busy}>{fullView ? 'Exit full screen' : 'Full screen'}</button>
-                            <button className="ghost" onClick={exitTable} disabled={busy}>Back</button>
-                            <button onClick={startHand} disabled={busy || status === 'betting' || selected.status === 'finished'}>Start hand</button>
+                            <button onClick={startHand} disabled={busy || status === 'betting' || selected.status === 'finished'}>Start</button>
                             {selected.created_by === user.id && (
-                                <button className="ghost" onClick={handleCloseTable} disabled={busy}>Close table</button>
+                                <button className="ghost" onClick={handleCloseTable} disabled={busy}>Close</button>
                             )}
                         </div>
                     </div>
 
                     <div className="seats-row ring">
                         <div className="table-felt">
-                            <div className="pot-badge">Pot {pot}</div>
-                            <div className="board label">Board • {street}</div>
-                            <div className="card-row board-cards">
-                                {currentBoard.length
-                                    ? currentBoard.map((c, i) => <CardFace key={i} value={c} />)
-                                    : <span className="muted">No cards yet</span>}
+                            <div className="board-row">
+                                <div className="board label">Board</div>
+                                <div className="card-row board-cards">
+                                    {currentBoard.length
+                                        ? currentBoard.map((c, i) => <CardFace key={i} value={c} />)
+                                        : <span className="muted">No cards yet</span>}
+                                </div>
                             </div>
                             <div className="seat-ring">
-                                {seats.map((s) => {
+                                {seats.map((s, idx) => {
                                     const profile = profilesMap[s.user_id];
                                     const name = profile?.full_name || `Seat ${s.seat_no}`;
                                     const initials = name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
                                     const isTurn = handState?.hand?.turn_seat_no === s.seat_no;
+                                    const pos = ['50% 6%', '88% 20%', '88% 75%', '50% 90%', '12% 75%', '12% 20%'][idx] || '50% 6%';
+                                    const [left, top] = pos.split(' ');
                                     return (
-                                        <div key={s.id} className={`seat ${s.user_id === user.id ? 'mine' : ''} ${isTurn ? 'turn' : ''}`}>
+                                        <div
+                                            key={s.id}
+                                            className={`seat circle ${s.user_id === user.id ? 'mine' : ''} ${isTurn ? 'turn' : ''}`}
+                                            style={{ left, top, position: 'absolute', transform: 'translate(-50%, -50%)' }}
+                                        >
                                             <div className="seat-avatar">{initials}</div>
                                             <div className="seat-name">{name}</div>
                                             <div className="seat-chip">{s.chips}</div>
