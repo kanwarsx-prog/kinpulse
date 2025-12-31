@@ -102,6 +102,7 @@ const PokerLobby = () => {
             await loadTables();
         }
         const seat = seatsData.find((s) => s.user_id === user.id);
+        setSelected(table);
         await fetchState(table.id, seat?.id);
         setBusy(false);
     };
@@ -232,45 +233,45 @@ const PokerLobby = () => {
                     </div>
 
                     <div className="seats-row ring">
-                        {seats.map((s) => (
-                            <div key={s.id} className={`seat ${s.user_id === user.id ? 'mine' : ''} ${handState?.hand?.turn_seat_no === s.seat_no ? 'turn' : ''}`}>
-                                <div className="seat-name">Seat {s.seat_no}</div>
-                                <div className="seat-chips">{s.chips} chips</div>
-                                {handState?.hand?.turn_seat_no === s.seat_no && <div className="badge">Your turn</div>}
+                        <div className="table-felt">
+                            <div className="pot-badge">Pot {pot}</div>
+                            <div className="board label">Board • {street}</div>
+                            <div className="card-row board-cards">
+                                {currentBoard.length
+                                    ? currentBoard.map((c, i) => <span key={i} className="card">{c}</span>)
+                                    : <span className="muted">No cards yet</span>}
                             </div>
-                        ))}
-                    </div>
-
-                    <div className="hand-state">
-                        <div className="board">
-                            <div className="label">Board • {street} • Pot {pot}</div>
-                            <div className="card-row">
-                                {currentBoard.length ? currentBoard.map((c, i) => <span key={i} className="card">{c}</span>) : <span className="muted">No cards yet</span>}
+                            <div className="seat-ring">
+                                {seats.map((s) => (
+                                    <div key={s.id} className={`seat ${s.user_id === user.id ? 'mine' : ''} ${handState?.hand?.turn_seat_no === s.seat_no ? 'turn' : ''}`}>
+                                        <div className="seat-chip">{s.chips}</div>
+                                        <div className="seat-name">Seat {s.seat_no}</div>
+                                        {handState?.hand?.turn_seat_no === s.seat_no && <div className="badge">Your turn</div>}
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="my-cards">
+                                <div className="label">Your cards</div>
+                                <div className="card-row">
+                                    {myCards.length ? myCards.map((c, i) => <span key={i} className="card mine">{c}</span>) : <span className="muted">Waiting for deal</span>}
+                                </div>
                             </div>
                         </div>
-
-                        {mySeat && (
-                            <div className="hand-meta">
-                                <div>
-                                    <div className="label">Your cards</div>
-                                    <div className="card-row">
-                                        {myCards.length ? myCards.map((c, i) => <span key={i} className="card mine">{c}</span>) : <span className="muted">Waiting for deal</span>}
-                                    </div>
-                                </div>
-                                <div className="actions">
-                                    <button onClick={() => act('check')} disabled={busy || !isMyTurn}>Check/Call</button>
-                                    <button onClick={() => act('bet', Math.max(10, Math.floor((handState?.hand?.pot || 0) / 2)))} disabled={busy || !isMyTurn}>Half-pot</button>
-                                    <button onClick={() => act('fold')} disabled={busy || !isMyTurn} className="ghost">Fold</button>
-                                </div>
-                            </div>
-                        )}
-                        {status === 'complete' && (
-                            <div className="hand-complete">
-                                <div>Hand complete. Start the next hand.</div>
-                                <button onClick={startHand} disabled={busy}>Start next hand</button>
-                            </div>
-                        )}
                     </div>
+
+                    {mySeat && (
+                        <div className="actions action-bar">
+                            <button onClick={() => act('check')} disabled={busy || !isMyTurn}>Check/Call</button>
+                            <button onClick={() => act('bet', Math.max(10, Math.floor((handState?.hand?.pot || 0) / 2)))} disabled={busy || !isMyTurn}>Half-pot</button>
+                            <button onClick={() => act('fold')} disabled={busy || !isMyTurn} className="ghost">Fold</button>
+                        </div>
+                    )}
+                    {status === 'complete' && (
+                        <div className="hand-complete">
+                            <div>Hand complete. Start the next hand.</div>
+                            <button onClick={startHand} disabled={busy}>Start next hand</button>
+                        </div>
+                    )}
                 </section>
             )}
         </div>
