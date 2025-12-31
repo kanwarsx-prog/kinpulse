@@ -15,6 +15,7 @@ const PokerLobby = () => {
     const [message, setMessage] = useState('');
 
     const mySeat = useMemo(() => seats.find((s) => s.user_id === user?.id), [seats, user?.id]);
+    const isMyTurn = handState?.hand && mySeat && handState.hand.turn_seat_no === mySeat.seat_no && handState.hand.status !== 'complete';
 
     useEffect(() => {
         if (user?.family_id) {
@@ -126,6 +127,9 @@ const PokerLobby = () => {
 
     const currentBoard = handState?.hand?.board_cards || [];
     const myCards = handState?.hole_cards || [];
+    const street = handState?.hand?.street || 'preflop';
+    const status = handState?.hand?.status || 'dealing';
+    const pot = handState?.hand?.pot || 0;
 
     return (
         <div className="poker-page fade-in">
@@ -178,21 +182,22 @@ const PokerLobby = () => {
                             <p className="eyebrow">Table</p>
                             <h3>{selected.name}</h3>
                         </div>
-                        <button onClick={startHand} disabled={busy}>Start hand</button>
+                        <button onClick={startHand} disabled={busy || status === 'betting'}>Start hand</button>
                     </div>
 
-                    <div className="seats-row">
+                    <div className="seats-row ring">
                         {seats.map((s) => (
-                            <div key={s.id} className={`seat ${s.user_id === user.id ? 'mine' : ''}`}>
+                            <div key={s.id} className={`seat ${s.user_id === user.id ? 'mine' : ''} ${handState?.hand?.turn_seat_no === s.seat_no ? 'turn' : ''}`}>
                                 <div className="seat-name">Seat {s.seat_no}</div>
                                 <div className="seat-chips">{s.chips} chips</div>
+                                {handState?.hand?.turn_seat_no === s.seat_no && <div className="badge">Your turn</div>}
                             </div>
                         ))}
                     </div>
 
                     <div className="hand-state">
                         <div className="board">
-                            <div className="label">Board</div>
+                            <div className="label">Board • {street} • Pot {pot}</div>
                             <div className="card-row">
                                 {currentBoard.length ? currentBoard.map((c, i) => <span key={i} className="card">{c}</span>) : <span className="muted">No cards yet</span>}
                             </div>
@@ -207,10 +212,16 @@ const PokerLobby = () => {
                                     </div>
                                 </div>
                                 <div className="actions">
-                                    <button onClick={() => act('check')} disabled={busy}>Check/Call</button>
-                                    <button onClick={() => act('bet', Math.max(10, Math.floor((handState?.hand?.pot || 0) / 2)))} disabled={busy}>Half-pot</button>
-                                    <button onClick={() => act('fold')} disabled={busy} className="ghost">Fold</button>
+                                    <button onClick={() => act('check')} disabled={busy || !isMyTurn}>Check/Call</button>
+                                    <button onClick={() => act('bet', Math.max(10, Math.floor((handState?.hand?.pot || 0) / 2)))} disabled={busy || !isMyTurn}>Half-pot</button>
+                                    <button onClick={() => act('fold')} disabled={busy || !isMyTurn} className="ghost">Fold</button>
                                 </div>
+                            </div>
+                        )}
+                        {status === 'complete' && (
+                            <div className="hand-complete">
+                                <div>Hand complete. Start the next hand.</div>
+                                <button onClick={startHand} disabled={busy}>Start next hand</button>
                             </div>
                         )}
                     </div>

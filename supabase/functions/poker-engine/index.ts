@@ -60,7 +60,14 @@ serve(async (req) => {
   }
 
   try {
-    const body = (await req.json()) as RequestBody;
+    let body: RequestBody | undefined;
+    try {
+      body = (await req.json()) as RequestBody;
+    } catch (_err) {
+      return json({ error: 'Invalid JSON body' }, 400);
+    }
+
+    if (!body) return json({ error: 'Missing body' }, 400);
     const { op } = body;
 
     if (!op) return json({ error: 'Missing op' }, 400);
@@ -193,7 +200,7 @@ serve(async (req) => {
 
         const { data: hand, error: hErr } = await supabase
           .from('poker_hands')
-          .select('id, table_id, turn_seat_no, pot, street, status')
+          .select('id, table_id, turn_seat_no, pot, street, status, deck, board_cards')
           .eq('id', hand_id)
           .single();
         if (hErr || !hand) return json({ error: 'Hand not found' }, 404);
@@ -205,6 +212,15 @@ serve(async (req) => {
           .single();
         if (sErr || !seat) return json({ error: 'Seat not found' }, 404);
 
+        const activeSeatsResp = await supabase
+          .from('poker_seats')
+          .select('id, seat_no, status')
+          .eq('table_id', hand.table_id)
+          .eq('status', 'active')
+          .order('seat_no');
+        const activeSeats = activeSeatsResp.data ?? [];
+        if (!activeSeats.length) return json({ error: 'No active seats' }, 400);
+
         await supabase
           .from('poker_actions')
           .insert({
@@ -215,27 +231,43 @@ serve(async (req) => {
             street: hand.street,
           });
 
-        const { data: seats } = await supabase
-          .from('poker_seats')
-          .select('id, seat_no, status')
-          .eq('table_id', hand.table_id)
-          .eq('status', 'active')
-          .order('seat_no');
-
-        const activeSeats = seats ?? [];
         const currentIdx = activeSeats.findIndex((s) => s.seat_no === hand.turn_seat_no);
         const nextSeat = activeSeats[(currentIdx + 1) % activeSeats.length];
+        const firstSeatNo = activeSeats[0].seat_no;
+
+        // Simple street progression: once action wraps to first seat, move to next street
+        let { street, board_cards, deck } = hand as any;
+        let status = hand.status;
+        if (nextSeat?.seat_no === firstSeatNo) {
+          if (street === 'preflop') {
+            street = 'flop';
+            board_cards = [...(board_cards ?? []), deck.pop(), deck.pop(), deck.pop()];
+          } else if (street === 'flop') {
+            street = 'turn';
+            board_cards = [...(board_cards ?? []), deck.pop()];
+          } else if (street === 'turn') {
+            street = 'river';
+            board_cards = [...(board_cards ?? []), deck.pop()];
+          } else if (street === 'river') {
+            street = 'done';
+            status = 'complete';
+          }
+        }
 
         await supabase
           .from('poker_hands')
           .update({
             pot: (hand.pot ?? 0) + amount,
             turn_seat_no: nextSeat?.seat_no ?? hand.turn_seat_no,
+            street,
+            status,
+            deck,
+            board_cards,
             updated_at: new Date().toISOString(),
           })
           .eq('id', hand_id);
 
-        return json({ ok: true, next_seat: nextSeat?.seat_no ?? hand.turn_seat_no });
+        return json({ ok: true, next_seat: nextSeat?.seat_no ?? hand.turn_seat_no, street, status, board_cards });
       }
 
       case 'state': {
