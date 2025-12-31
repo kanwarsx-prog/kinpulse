@@ -84,10 +84,24 @@ const PokerLobby = () => {
     const handleJoin = async (table) => {
         if (busy) return;
         setBusy(true);
-        const { data: seatsForTable } = await supabase
+        const { data: seatsForTable, error: seatsErr } = await supabase
             .from('poker_seats')
-            .select('seat_no')
+            .select('id, seat_no, user_id, chips')
             .eq('table_id', table.id);
+        if (seatsErr) {
+            setMessage(seatsErr.message);
+            setBusy(false);
+            return;
+        }
+
+        const existingSeat = seatsForTable?.find((s) => s.user_id === user.id);
+        if (existingSeat) {
+            setSelected(table);
+            await fetchState(table.id, existingSeat.id);
+            setBusy(false);
+            return;
+        }
+
         const nextSeat = seatsForTable?.length ? Math.max(...seatsForTable.map((s) => s.seat_no)) + 1 : 1;
         const { error } = await supabase.from('poker_seats').insert({
             table_id: table.id,
@@ -95,7 +109,20 @@ const PokerLobby = () => {
             seat_no: nextSeat,
             chips: table.starting_chips,
         });
-        if (error) setMessage(error.message);
+        if (error) {
+            // duplicate seat (race/double click) -> just load the existing seat
+            if (error.code === '23505') {
+                const refreshedSeats = await loadSeats(table.id);
+                const seat = refreshedSeats.find((s) => s.user_id === user.id);
+                if (seat) {
+                    setSelected(table);
+                    await fetchState(table.id, seat.id);
+                    setBusy(false);
+                    return;
+                }
+            }
+            setMessage(error.message);
+        }
         const seatsData = await loadSeats(table.id);
         if ((seatsData?.length || 0) >= 2 && table.status !== 'active') {
             await supabase.from('poker_tables').update({ status: 'active', updated_at: new Date().toISOString() }).eq('id', table.id);
@@ -104,6 +131,7 @@ const PokerLobby = () => {
         const seat = seatsData.find((s) => s.user_id === user.id);
         setSelected(table);
         await fetchState(table.id, seat?.id);
+        setMessage('');
         setBusy(false);
     };
 
@@ -159,13 +187,20 @@ const PokerLobby = () => {
     const status = handState?.hand?.status || 'dealing';
     const pot = handState?.hand?.pot || 0;
 
+    const exitTable = () => {
+        setSelected(null);
+        setSeats([]);
+        setHandState(null);
+        setMessage('');
+    };
+
     return (
-        <div className="poker-page fade-in">
+        <div className={`poker-page fade-in ${selected ? 'fullscreen' : ''}`}>
             <header className="poker-header">
                 <div>
                     <p className="eyebrow">Family game</p>
                     <h1>Poker Night (beta)</h1>
-                    <p className="subtle">Async, low-stakes Hold’em for the family.</p>
+                    <p className="subtle">Async, low-stakes Holdem for the family.</p>
                 </div>
             </header>
 
@@ -180,42 +215,44 @@ const PokerLobby = () => {
 
             {message && <div className="poker-message">{message}</div>}
 
-            <section className="poker-grid">
-                {loading && <div className="muted">Loading tables…</div>}
-                {!loading && !tables.length && <div className="muted">No tables yet. Create one!</div>}
-                {tables.map((table) => {
-                    const isMine = seats.find((s) => s.user_id === user.id && s.table_id === table.id);
-                    return (
-                        <div
-                            key={table.id}
-                            className={`poker-card ${selected?.id === table.id ? 'active' : ''}`}
-                            onClick={() => handleSelect(table)}
-                        >
-                            <div className="card-head">
-                                <div>
-                                    <div className="card-title">{table.name}</div>
-                                    <div className="card-meta">{table.status}</div>
+            {!selected && (
+                <section className="poker-grid">
+                    {loading && <div className="muted">Loading tables…</div>}
+                    {!loading && !tables.length && <div className="muted">No tables yet. Create one!</div>}
+                    {tables.map((table) => {
+                        const isMine = seats.find((s) => s.user_id === user.id && s.table_id === table.id);
+                        return (
+                            <div
+                                key={table.id}
+                                className={`poker-card ${selected?.id === table.id ? 'active' : ''}`}
+                                onClick={() => handleSelect(table)}
+                            >
+                                <div className="card-head">
+                                    <div>
+                                        <div className="card-title">{table.name}</div>
+                                        <div className="card-meta">{table.status}</div>
+                                    </div>
+                                    <span className="pill">{table.variant}</span>
                                 </div>
-                                <span className="pill">{table.variant}</span>
+                                <div className="card-actions">
+                                    {!isMine && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleJoin(table);
+                                            }}
+                                            disabled={busy}
+                                        >
+                                            Join
+                                        </button>
+                                    )}
+                                    {isMine && <span className="pill subtle">Joined</span>}
+                                </div>
                             </div>
-                            <div className="card-actions">
-                                {!isMine && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleJoin(table);
-                                        }}
-                                        disabled={busy}
-                                    >
-                                        Join
-                                    </button>
-                                )}
-                                {isMine && <span className="pill subtle">Joined</span>}
-                            </div>
-                        </div>
-                    );
-                })}
-            </section>
+                        );
+                    })}
+                </section>
+            )}
 
             {selected && (
                 <section className="table-panel">
@@ -225,6 +262,7 @@ const PokerLobby = () => {
                             <h3>{selected.name}</h3>
                         </div>
                         <div className="panel-actions">
+                            <button className="ghost" onClick={exitTable} disabled={busy}>Back</button>
                             <button onClick={startHand} disabled={busy || status === 'betting' || selected.status === 'finished'}>Start hand</button>
                             {selected.created_by === user.id && (
                                 <button className="ghost" onClick={handleCloseTable} disabled={busy}>Close table</button>
