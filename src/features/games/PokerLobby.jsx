@@ -97,6 +97,10 @@ const PokerLobby = () => {
         });
         if (error) setMessage(error.message);
         const seatsData = await loadSeats(table.id);
+        if ((seatsData?.length || 0) >= 2 && table.status !== 'active') {
+            await supabase.from('poker_tables').update({ status: 'active', updated_at: new Date().toISOString() }).eq('id', table.id);
+            await loadTables();
+        }
         const seat = seatsData.find((s) => s.user_id === user.id);
         await fetchState(table.id, seat?.id);
         setBusy(false);
@@ -181,7 +185,11 @@ const PokerLobby = () => {
                 {tables.map((table) => {
                     const isMine = seats.find((s) => s.user_id === user.id && s.table_id === table.id);
                     return (
-                        <div key={table.id} className={`poker-card ${selected?.id === table.id ? 'active' : ''}`}>
+                        <div
+                            key={table.id}
+                            className={`poker-card ${selected?.id === table.id ? 'active' : ''}`}
+                            onClick={() => handleSelect(table)}
+                        >
                             <div className="card-head">
                                 <div>
                                     <div className="card-title">{table.name}</div>
@@ -190,8 +198,18 @@ const PokerLobby = () => {
                                 <span className="pill">{table.variant}</span>
                             </div>
                             <div className="card-actions">
-                                <button onClick={() => handleSelect(table)}>Open</button>
-                                {!isMine && <button onClick={() => handleJoin(table)} disabled={busy}>Join</button>}
+                                {!isMine && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleJoin(table);
+                                        }}
+                                        disabled={busy}
+                                    >
+                                        Join
+                                    </button>
+                                )}
+                                {isMine && <span className="pill subtle">Joined</span>}
                             </div>
                         </div>
                     );
