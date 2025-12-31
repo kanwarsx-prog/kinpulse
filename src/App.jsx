@@ -19,6 +19,7 @@ import LoadingSpinner from './components/ui/LoadingSpinner';
 import VaultHome from './features/vault/VaultHome';
 import AdminConsole from './features/admin/AdminConsole';
 import PokerLobby from './features/games/PokerLobby';
+import Arena from './features/games/Arena';
 
 const AppRoutes = () => {
   const { session, user, loading } = useSupabase();
@@ -55,6 +56,7 @@ const AuthenticatedRoutes = () => {
         <Route path="vault" element={<VaultHome />} />
         <Route path="admin" element={<AdminConsole />} />
         <Route path="poker" element={<PokerLobby />} />
+        <Route path="arena" element={<Arena />} />
       </Route>
     </Routes>
   );

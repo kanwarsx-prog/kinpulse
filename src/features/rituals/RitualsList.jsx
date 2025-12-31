@@ -102,6 +102,21 @@ const RitualsList = () => {
                     + Create Goal
                 </button>
                 <button
+                    onClick={() => navigate('/arena')}
+                    style={{
+                        marginTop: '8px',
+                        marginLeft: '8px',
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb',
+                        background: '#f8fafc',
+                        cursor: 'pointer',
+                        fontWeight: 600
+                    }}
+                >
+                    Family Arena
+                </button>
+                <button
                     onClick={() => navigate('/poker')}
                     style={{
                         marginTop: '8px',
