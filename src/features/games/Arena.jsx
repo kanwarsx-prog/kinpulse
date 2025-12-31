@@ -54,6 +54,7 @@ const Arena = () => {
         .from('poker_tables')
         .select('id, name, status, created_at')
         .eq('family_id', user.family_id)
+        .in('status', ['open', 'active'])
         .order('created_at', { ascending: false });
       if (!error) setPokerTables(data || []);
       setLoadingPoker(false);
@@ -72,6 +73,13 @@ const Arena = () => {
   const handleQuickPoker = async () => {
     if (!user?.family_id || creatingPoker) return;
     setCreatingPoker(true);
+    // Close any existing open/active tables for this family
+    await supabase
+      .from('poker_tables')
+      .update({ status: 'finished', updated_at: new Date().toISOString() })
+      .eq('family_id', user.family_id)
+      .neq('status', 'finished');
+
     await supabase
       .from('poker_tables')
       .insert({

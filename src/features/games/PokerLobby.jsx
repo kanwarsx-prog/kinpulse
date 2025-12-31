@@ -30,6 +30,7 @@ const PokerLobby = () => {
             .from('poker_tables')
             .select('*')
             .eq('family_id', user.family_id)
+            .in('status', ['open', 'active'])
             .order('created_at', { ascending: false });
         if (!error) setTables(data || []);
         setLoading(false);
@@ -55,6 +56,13 @@ const PokerLobby = () => {
     const handleCreate = async () => {
         if (!newName.trim()) return;
         setCreating(true);
+        // Close existing open/active tables for this family
+        await supabase
+            .from('poker_tables')
+            .update({ status: 'finished', updated_at: new Date().toISOString() })
+            .eq('family_id', user.family_id)
+            .neq('status', 'finished');
+
         const { data, error } = await supabase
             .from('poker_tables')
             .insert({
