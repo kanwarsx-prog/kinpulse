@@ -1,15 +1,5 @@
 -- Family Poker schema (tables + RLS)
 
--- Drop policies for repeatable runs
-drop policy if exists "poker_tables_family" on poker_tables;
-drop policy if exists "poker_tables_write" on poker_tables;
-drop policy if exists "poker_seats_family" on poker_seats;
-drop policy if exists "poker_seats_write" on poker_seats;
-drop policy if exists "poker_hands_family" on poker_hands;
-drop policy if exists "poker_hands_write" on poker_hands;
-drop policy if exists "poker_actions_family" on poker_actions;
-drop policy if exists "poker_actions_write" on poker_actions;
-
 -- Tables
 create table if not exists poker_tables (
   id uuid primary key default uuid_generate_v4(),
@@ -68,6 +58,16 @@ alter table poker_tables enable row level security;
 alter table poker_seats enable row level security;
 alter table poker_hands enable row level security;
 alter table poker_actions enable row level security;
+
+-- Drop policies for repeatable runs (now that tables exist)
+drop policy if exists "poker_tables_family" on poker_tables;
+drop policy if exists "poker_tables_write" on poker_tables;
+drop policy if exists "poker_seats_family" on poker_seats;
+drop policy if exists "poker_seats_write" on poker_seats;
+drop policy if exists "poker_hands_family" on poker_hands;
+drop policy if exists "poker_hands_write" on poker_hands;
+drop policy if exists "poker_actions_family" on poker_actions;
+drop policy if exists "poker_actions_write" on poker_actions;
 
 create policy "poker_tables_family" on poker_tables
   for select using (family_id = (select family_id from profiles where id = auth.uid()));

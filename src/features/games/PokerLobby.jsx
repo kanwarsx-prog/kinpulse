@@ -41,12 +41,14 @@ const PokerLobby = () => {
             .eq('table_id', tableId)
             .order('seat_no');
         setSeats(data || []);
+        return data || [];
     };
 
     const handleSelect = async (table) => {
         setSelected(table);
-        await loadSeats(table.id);
-        await fetchState(table.id);
+        const seatsData = await loadSeats(table.id);
+        const seat = seatsData.find((s) => s.user_id === user.id);
+        await fetchState(table.id, seat?.id);
     };
 
     const handleCreate = async () => {
@@ -85,13 +87,15 @@ const PokerLobby = () => {
             chips: table.starting_chips,
         });
         if (error) setMessage(error.message);
-        await loadSeats(table.id);
+        const seatsData = await loadSeats(table.id);
+        const seat = seatsData.find((s) => s.user_id === user.id);
+        await fetchState(table.id, seat?.id);
         setBusy(false);
     };
 
-    const fetchState = async (tableId) => {
+    const fetchState = async (tableId, seatIdOverride) => {
         const { data, error } = await supabase.functions.invoke('poker-engine', {
-            body: { op: 'state', table_id: tableId, seat_id: mySeat?.id },
+            body: { op: 'state', table_id: tableId, seat_id: seatIdOverride || mySeat?.id },
         });
         if (!error) {
             setHandState(data);
@@ -105,7 +109,7 @@ const PokerLobby = () => {
             body: { op: 'start_hand', table_id: selected.id },
         });
         if (error) setMessage(error.message);
-        await fetchState(selected.id);
+        await fetchState(selected.id, mySeat?.id);
         setBusy(false);
     };
 
