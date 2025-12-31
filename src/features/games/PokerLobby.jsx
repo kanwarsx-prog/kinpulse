@@ -68,6 +68,7 @@ const PokerLobby = () => {
 
     const handleSelect = async (table) => {
         setSelected(table);
+        setFullView(true);
         const seatsData = await loadSeats(table.id);
         const seat = seatsData.find((s) => s.user_id === user.id);
         await fetchState(table.id, seat?.id);
@@ -333,8 +334,10 @@ const PokerLobby = () => {
                                     const name = profile?.full_name || `Seat ${s.seat_no}`;
                                     const initials = name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
                                     const isTurn = handState?.hand?.turn_seat_no === s.seat_no;
-                                    const pos = ['50% 6%', '88% 20%', '88% 75%', '50% 90%', '12% 75%', '12% 20%'][idx] || '50% 6%';
-                                    const [left, top] = pos.split(' ');
+                                    const radius = 38; // percent
+                                    const angle = (Math.PI * 2 * idx) / Math.max(seats.length, 4);
+                                    const left = `${50 + radius * Math.cos(angle)}%`;
+                                    const top = `${50 + radius * Math.sin(angle)}%`;
                                     return (
                                         <div
                                             key={s.id}
