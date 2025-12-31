@@ -14,6 +14,7 @@ const PokerLobby = () => {
     const [handState, setHandState] = useState(null);
     const [busy, setBusy] = useState(false);
     const [message, setMessage] = useState('');
+    const [fullView, setFullView] = useState(false);
 
     const mySeat = useMemo(() => seats.find((s) => s.user_id === user?.id), [seats, user?.id]);
     const isMyTurn = handState?.hand && mySeat && handState.hand.turn_seat_no === mySeat.seat_no && handState.hand.status !== 'complete';
@@ -221,8 +222,22 @@ const PokerLobby = () => {
         setMessage('');
     };
 
+    const CardFace = ({ value, mine }) => {
+        if (!value) return null;
+        const rank = value.slice(0, -1).toUpperCase();
+        const suitCode = value.slice(-1).toLowerCase();
+        const suitMap = { h: '♥', d: '♦', c: '♣', s: '♠' };
+        const isRed = suitCode === 'h' || suitCode === 'd';
+        return (
+            <div className={`card-face ${mine ? 'mine' : ''} ${isRed ? 'red' : ''}`}>
+                <div className="rank">{rank}</div>
+                <div className="suit">{suitMap[suitCode] || '?'}</div>
+            </div>
+        );
+    };
+
     return (
-        <div className={`poker-page fade-in ${selected ? 'fullscreen' : ''}`}>
+        <div className={`poker-page fade-in ${selected ? 'fullscreen' : ''} ${fullView ? 'landscape' : ''}`}>
             <header className="poker-header">
                 <div>
                     <p className="eyebrow">Family game</p>
@@ -289,6 +304,7 @@ const PokerLobby = () => {
                             <h3>{selected.name}</h3>
                         </div>
                         <div className="panel-actions">
+                            <button className="ghost" onClick={() => setFullView((v) => !v)} disabled={busy}>{fullView ? 'Exit full screen' : 'Full screen'}</button>
                             <button className="ghost" onClick={exitTable} disabled={busy}>Back</button>
                             <button onClick={startHand} disabled={busy || status === 'betting' || selected.status === 'finished'}>Start hand</button>
                             {selected.created_by === user.id && (
@@ -303,7 +319,7 @@ const PokerLobby = () => {
                             <div className="board label">Board • {street}</div>
                             <div className="card-row board-cards">
                                 {currentBoard.length
-                                    ? currentBoard.map((c, i) => <span key={i} className="card">{c}</span>)
+                                    ? currentBoard.map((c, i) => <CardFace key={i} value={c} />)
                                     : <span className="muted">No cards yet</span>}
                             </div>
                             <div className="seat-ring">
@@ -325,7 +341,7 @@ const PokerLobby = () => {
                             <div className="my-cards">
                                 <div className="label">Your cards</div>
                                 <div className="card-row">
-                                    {myCards.length ? myCards.map((c, i) => <span key={i} className="card mine">{c}</span>) : <span className="muted">Waiting for deal</span>}
+                                    {myCards.length ? myCards.map((c, i) => <CardFace key={i} value={c} mine />) : <span className="muted">Waiting for deal</span>}
                                 </div>
                             </div>
                         </div>
