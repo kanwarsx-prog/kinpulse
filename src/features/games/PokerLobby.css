@@ -151,6 +151,7 @@
     border-radius: 10px;
     border: 1px solid #e5e7eb;
     min-width: 120px;
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .seat.mine {
@@ -170,6 +171,19 @@
     padding: 4px 8px;
     border-radius: 999px;
     font-size: 0.75rem;
+}
+
+.seat-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #0ea5e9;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    margin-bottom: 6px;
 }
 
 .hand-state .label {

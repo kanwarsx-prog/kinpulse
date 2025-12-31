@@ -10,6 +10,7 @@ const PokerLobby = () => {
     const [newName, setNewName] = useState('Poker night');
     const [selected, setSelected] = useState(null);
     const [seats, setSeats] = useState([]);
+    const [profilesMap, setProfilesMap] = useState({});
     const [handState, setHandState] = useState(null);
     const [busy, setBusy] = useState(false);
     const [message, setMessage] = useState('');
@@ -52,6 +53,15 @@ const PokerLobby = () => {
             .eq('table_id', tableId)
             .order('seat_no');
         setSeats(data || []);
+        if (data?.length) {
+            const ids = [...new Set(data.map((s) => s.user_id))];
+            const { data: profiles } = await supabase.from('profiles').select('id, full_name, avatar_url').in('id', ids);
+            const map = {};
+            (profiles || []).forEach((p) => {
+                map[p.id] = p;
+            });
+            setProfilesMap(map);
+        }
         return data || [];
     };
 
@@ -166,6 +176,13 @@ const PokerLobby = () => {
         if (!error) {
             setHandState(data);
             if (data?.seats) setSeats(data.seats);
+            if (data?.seats?.length) {
+                const ids = [...new Set(data.seats.map((s) => s.user_id))];
+                const { data: profiles } = await supabase.from('profiles').select('id, full_name, avatar_url').in('id', ids);
+                const map = {};
+                (profiles || []).forEach((p) => { map[p.id] = p; });
+                setProfilesMap(map);
+            }
         }
     };
 
@@ -290,13 +307,20 @@ const PokerLobby = () => {
                                     : <span className="muted">No cards yet</span>}
                             </div>
                             <div className="seat-ring">
-                                {seats.map((s) => (
-                                    <div key={s.id} className={`seat ${s.user_id === user.id ? 'mine' : ''} ${handState?.hand?.turn_seat_no === s.seat_no ? 'turn' : ''}`}>
-                                        <div className="seat-chip">{s.chips}</div>
-                                        <div className="seat-name">Seat {s.seat_no}</div>
-                                        {handState?.hand?.turn_seat_no === s.seat_no && <div className="badge">Your turn</div>}
-                                    </div>
-                                ))}
+                                {seats.map((s) => {
+                                    const profile = profilesMap[s.user_id];
+                                    const name = profile?.full_name || `Seat ${s.seat_no}`;
+                                    const initials = name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
+                                    const isTurn = handState?.hand?.turn_seat_no === s.seat_no;
+                                    return (
+                                        <div key={s.id} className={`seat ${s.user_id === user.id ? 'mine' : ''} ${isTurn ? 'turn' : ''}`}>
+                                            <div className="seat-avatar">{initials}</div>
+                                            <div className="seat-name">{name}</div>
+                                            <div className="seat-chip">{s.chips}</div>
+                                            {isTurn && <div className="badge">{s.user_id === user.id ? 'Your turn' : 'Their turn'}</div>}
+                                        </div>
+                                    );
+                                })}
                             </div>
                             <div className="my-cards">
                                 <div className="label">Your cards</div>

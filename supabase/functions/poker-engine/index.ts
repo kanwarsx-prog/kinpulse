@@ -255,6 +255,7 @@ serve(async (req) => {
         // Simple street progression: once action wraps to first seat, move to next street
         let { street, board_cards, deck } = hand as any;
         let status = hand.status;
+        let winnerSeatId: string | undefined;
         if (nextSeat?.seat_no === firstSeatNo) {
           if (street === 'preflop') {
             street = 'flop';
@@ -268,13 +269,20 @@ serve(async (req) => {
           } else if (street === 'river') {
             street = 'done';
             status = 'complete';
+            // naive payout: first active seat wins full pot
+            winnerSeatId = activeSeats[0]?.id;
+            if (winnerSeatId) {
+              const winner = activeSeats.find((s) => s.id === winnerSeatId);
+              const newChips = (winner?.chips ?? 0) + (hand.pot ?? 0) + spend;
+              await supabase.from('poker_seats').update({ chips: newChips }).eq('id', winnerSeatId);
+            }
           }
         }
 
         await supabase
           .from('poker_hands')
           .update({
-            pot: (hand.pot ?? 0) + spend,
+            pot: status === 'complete' ? 0 : (hand.pot ?? 0) + spend,
             turn_seat_no: nextSeat?.seat_no ?? hand.turn_seat_no,
             street,
             status,
@@ -284,7 +292,14 @@ serve(async (req) => {
           })
           .eq('id', hand_id);
 
-        return json({ ok: true, next_seat: nextSeat?.seat_no ?? hand.turn_seat_no, street, status, board_cards });
+        return json({
+          ok: true,
+          next_seat: nextSeat?.seat_no ?? hand.turn_seat_no,
+          street,
+          status,
+          board_cards,
+          winner_seat_id: winnerSeatId,
+        });
       }
 
       case 'state': {
