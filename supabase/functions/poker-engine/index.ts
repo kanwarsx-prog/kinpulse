@@ -214,12 +214,28 @@ serve(async (req) => {
 
         const activeSeatsResp = await supabase
           .from('poker_seats')
-          .select('id, seat_no, status')
+          .select('id, seat_no, status, chips')
           .eq('table_id', hand.table_id)
           .eq('status', 'active')
           .order('seat_no');
         const activeSeats = activeSeatsResp.data ?? [];
         if (!activeSeats.length) return json({ error: 'No active seats' }, 400);
+
+        if (hand.status === 'complete' || hand.status === 'done') {
+          return json({ error: 'Hand already complete' }, 400);
+        }
+        if (hand.turn_seat_no !== seat.seat_no) {
+          return json({ error: 'Not your turn' }, 400);
+        }
+
+        const spend = Math.max(0, Math.min(amount, seat.chips ?? 0));
+
+        if (spend > 0) {
+          await supabase
+            .from('poker_seats')
+            .update({ chips: (seat.chips ?? 0) - spend, last_action_at: new Date().toISOString() })
+            .eq('id', seat_id);
+        }
 
         await supabase
           .from('poker_actions')
@@ -258,7 +274,7 @@ serve(async (req) => {
         await supabase
           .from('poker_hands')
           .update({
-            pot: (hand.pot ?? 0) + amount,
+            pot: (hand.pot ?? 0) + spend,
             turn_seat_no: nextSeat?.seat_no ?? hand.turn_seat_no,
             street,
             status,
