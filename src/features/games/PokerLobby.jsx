@@ -24,6 +24,15 @@ const PokerLobby = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.family_id]);
 
+    useEffect(() => {
+        if (!selected) return undefined;
+        const interval = setInterval(() => {
+            fetchState(selected.id, mySeat?.id);
+        }, 3000);
+        return () => clearInterval(interval);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selected?.id, mySeat?.id]);
+
     const loadTables = async () => {
         setLoading(true);
         const { data, error } = await supabase
@@ -298,11 +307,15 @@ const PokerLobby = () => {
                         </div>
                     </div>
 
-                    {mySeat && (
+                    {mySeat ? (
                         <div className="actions action-bar">
                             <button onClick={() => act('check')} disabled={busy || !isMyTurn}>Check/Call</button>
                             <button onClick={() => act('bet', Math.max(10, Math.floor((handState?.hand?.pot || 0) / 2)))} disabled={busy || !isMyTurn}>Half-pot</button>
                             <button onClick={() => act('fold')} disabled={busy || !isMyTurn} className="ghost">Fold</button>
+                        </div>
+                    ) : (
+                        <div className="actions action-bar">
+                            <span className="muted">Join the table to act</span>
                         </div>
                     )}
                     {status === 'complete' && (
