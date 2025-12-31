@@ -156,6 +156,7 @@ const PokerLobby = () => {
         });
         if (!error) {
             setHandState(data);
+            if (data?.seats) setSeats(data.seats);
         }
     };
 
