@@ -307,7 +307,7 @@ const PokerLobby = () => {
                         <button className="ghost exit-btn" onClick={exitTable}>✕</button>
                         <div className="felt-title">
                             <div className="card-title">{selected.name}</div>
-                            <div className="card-meta">Pot {pot} • {street}</div>
+                            <div className="card-meta">Pot {pot} � {street}</div>
                         </div>
                         <div className="panel-actions compact">
                             <button className="ghost" onClick={() => setFullView((v) => !v)} disabled={busy}>{fullView ? 'Exit full screen' : 'Full screen'}</button>
@@ -320,6 +320,7 @@ const PokerLobby = () => {
 
                     <div className="seats-row ring">
                         <div className="table-felt">
+                            <div className="pot-badge">Pot {pot}</div>
                             <div className="board-row">
                                 <div className="board label">Board</div>
                                 <div className="card-row board-cards">
@@ -329,20 +330,15 @@ const PokerLobby = () => {
                                 </div>
                             </div>
                             <div className="seat-ring">
-                                {seats.map((s, idx) => {
+                                {seats.map((s) => {
                                     const profile = profilesMap[s.user_id];
                                     const name = profile?.full_name || `Seat ${s.seat_no}`;
                                     const initials = name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
                                     const isTurn = handState?.hand?.turn_seat_no === s.seat_no;
-                                    const radius = 38; // percent
-                                    const angle = (Math.PI * 2 * idx) / Math.max(seats.length, 4);
-                                    const left = `${50 + radius * Math.cos(angle)}%`;
-                                    const top = `${50 + radius * Math.sin(angle)}%`;
                                     return (
                                         <div
                                             key={s.id}
-                                            className={`seat circle ${s.user_id === user.id ? 'mine' : ''} ${isTurn ? 'turn' : ''}`}
-                                            style={{ left, top, position: 'absolute', transform: 'translate(-50%, -50%)' }}
+                                            className={`seat ${s.user_id === user.id ? 'mine' : ''} ${isTurn ? 'turn' : ''}`}
                                         >
                                             <div className="seat-avatar">{initials}</div>
                                             <div className="seat-name">{name}</div>
