@@ -94,6 +94,21 @@ const PokerLobby = () => {
         setBusy(false);
     };
 
+    const handleCloseTable = async () => {
+        if (!selected || busy || selected.created_by !== user.id) return;
+        setBusy(true);
+        const { error } = await supabase
+            .from('poker_tables')
+            .update({ status: 'finished', updated_at: new Date().toISOString() })
+            .eq('id', selected.id);
+        if (error) setMessage(error.message);
+        await loadTables();
+        setSelected(null);
+        setSeats([]);
+        setHandState(null);
+        setBusy(false);
+    };
+
     const fetchState = async (tableId, seatIdOverride) => {
         const { data, error } = await supabase.functions.invoke('poker-engine', {
             body: { op: 'state', table_id: tableId, seat_id: seatIdOverride || mySeat?.id },
@@ -182,7 +197,12 @@ const PokerLobby = () => {
                             <p className="eyebrow">Table</p>
                             <h3>{selected.name}</h3>
                         </div>
-                        <button onClick={startHand} disabled={busy || status === 'betting'}>Start hand</button>
+                        <div className="panel-actions">
+                            <button onClick={startHand} disabled={busy || status === 'betting' || selected.status === 'finished'}>Start hand</button>
+                            {selected.created_by === user.id && (
+                                <button className="ghost" onClick={handleCloseTable} disabled={busy}>Close table</button>
+                            )}
+                        </div>
                     </div>
 
                     <div className="seats-row ring">
