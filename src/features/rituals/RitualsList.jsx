@@ -101,6 +101,21 @@ const RitualsList = () => {
                 >
                     + Create Goal
                 </button>
+                <button
+                    onClick={() => navigate('/poker')}
+                    style={{
+                        marginTop: '8px',
+                        marginLeft: '8px',
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb',
+                        background: '#f8fafc',
+                        cursor: 'pointer',
+                        fontWeight: 600
+                    }}
+                >
+                    Poker Night (beta)
+                </button>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginTop: 12 }}>
                     {templates.map((t, i) => (
                         <button

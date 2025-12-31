@@ -29,6 +29,26 @@ const CreateRitualForm = ({ onClose, onCreated, initialName = '', initialPrompt 
 
             if (ritualError) throw ritualError;
 
+            // Notify family about new goal
+            try {
+                const { data: familyProfiles } = await supabase
+                    .from('profiles')
+                    .select('id,name')
+                    .eq('family_id', user.family_id);
+                const targets = (familyProfiles || []).filter((p) => p.id !== user.id).map((p) => p.id);
+                const title = name || 'New family goal';
+                const body = prompt ? prompt.slice(0, 80) : 'Tap to join';
+                await Promise.allSettled(
+                    targets.map((uid) =>
+                        supabase.functions.invoke('send-push-notification', {
+                            body: { user_id: uid, title, body, url: '/rituals' }
+                        }).catch((err) => console.error('Goal push error', err))
+                    )
+                );
+            } catch (err) {
+                console.error('Goal push notify error', err);
+            }
+
             onCreated(data);
             onClose();
         } catch (err) {
