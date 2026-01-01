@@ -225,23 +225,29 @@ const PokerLobby = () => {
         console.log('My seat:', mySeat);
 
         try {
-            const response = await supabase.functions.invoke('poker-engine', {
-                body: requestBody,
+            // Use direct fetch to get error response body
+            const response = await fetch(`${supabase.supabaseUrl}/functions/v1/poker-engine`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+                    'apikey': supabase.supabaseKey
+                },
+                body: JSON.stringify(requestBody)
             });
 
-            console.log('Full response:', response);
-            console.log('Response data:', response.data);
-            console.log('Response error:', response.error);
+            const data = await response.json();
 
-            if (response.error) {
-                const errorMsg = response.error.message || JSON.stringify(response.error);
+            console.log('Full response:', response);
+            console.log('Response status:', response.status);
+            console.log('Response data:', data);
+
+            if (!response.ok) {
+                const errorMsg = data.error || `HTTP ${response.status}`;
                 console.error('Poker action error:', errorMsg);
                 setMessage(`Error: ${errorMsg}`);
-            } else if (response.data?.error) {
-                console.error('Poker engine returned error:', response.data.error);
-                setMessage(`Poker error: ${response.data.error}`);
             } else {
-                console.log('Action successful:', response.data);
+                console.log('Action successful:', data);
                 setMessage('');
             }
         } catch (err) {
