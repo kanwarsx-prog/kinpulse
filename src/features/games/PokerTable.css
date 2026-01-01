@@ -1,0 +1,382 @@
+/* Realistic Poker Table Styles */
+
+.table-felt {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    aspect-ratio: 16 / 10;
+    background:
+        radial-gradient(ellipse at center, #1a5f3a 0%, #0d3d24 100%);
+    border-radius: 50% / 40%;
+    padding: 40px 60px;
+    color: white;
+    position: relative;
+    box-shadow:
+        inset 0 0 60px rgba(0, 0, 0, 0.5),
+        0 10px 40px rgba(0, 0, 0, 0.3);
+    border: 12px solid #8b4513;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Felt texture overlay */
+.table-felt::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-image:
+        repeating-linear-gradient(45deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 0, 0, 0.03) 2px,
+            rgba(0, 0, 0, 0.03) 4px);
+    pointer-events: none;
+}
+
+/* Pot display in center */
+.pot-badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.4);
+    padding: 12px 24px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #fef08a;
+    border: 2px solid rgba(254, 240, 138, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Board cards in center */
+.board-row {
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.board-row .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.board-cards {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+/* Player seats positioned around oval table */
+.seat-ring {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.seat {
+    position: absolute;
+    min-width: 140px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+/* Position seats around the table */
+.seat:nth-child(1) {
+    bottom: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.seat:nth-child(2) {
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.seat:nth-child(3) {
+    left: -70px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.seat:nth-child(4) {
+    right: -70px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.seat:nth-child(5) {
+    bottom: 20%;
+    left: 10%;
+}
+
+.seat:nth-child(6) {
+    bottom: 20%;
+    right: 10%;
+}
+
+.seat:nth-child(7) {
+    top: 20%;
+    left: 10%;
+}
+
+.seat:nth-child(8) {
+    top: 20%;
+    right: 10%;
+}
+
+/* Highlight current player's seat */
+.seat.mine {
+    border-color: #60a5fa;
+    background: rgba(96, 165, 250, 0.25);
+    box-shadow: 0 0 20px rgba(96, 165, 250, 0.4);
+}
+
+/* Highlight whose turn it is */
+.seat.turn {
+    border-color: #f97316;
+    background: rgba(249, 115, 22, 0.25);
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
+    }
+
+    50% {
+        box-shadow: 0 0 30px rgba(249, 115, 22, 0.8);
+    }
+}
+
+/* Seat avatar */
+.seat-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0ea5e9, #06b6d4);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.seat-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.seat-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.seat-chip {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #fef08a;
+}
+
+/* Turn badge */
+.seat .badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #f97316;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Card styling */
+.card-face {
+    width: 50px;
+    height: 70px;
+    border-radius: 8px;
+    background: linear-gradient(145deg, #ffffff, #f1f5f9);
+    color: #0f172a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    font-weight: 700;
+    position: relative;
+    transition: transform 0.2s ease;
+}
+
+.card-face:hover {
+    transform: translateY(-4px);
+}
+
+.card-face .rank {
+    font-size: 18px;
+    line-height: 20px;
+}
+
+.card-face .suit {
+    font-size: 16px;
+    margin-top: 2px;
+}
+
+.card-face.red {
+    color: #dc2626;
+}
+
+.card-face.mine {
+    border: 2px solid #7c3aed;
+    box-shadow:
+        0 4px 8px rgba(124, 58, 237, 0.3),
+        0 0 20px rgba(124, 58, 237, 0.2);
+}
+
+/* My cards section */
+.my-cards {
+    position: absolute;
+    bottom: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.my-cards .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Action buttons */
+.action-bar {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    padding: 16px 24px;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    z-index: 10;
+}
+
+.action-bar button {
+    padding: 12px 24px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #0ea5e9, #06b6d4);
+    color: white;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+.action-bar button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(14, 165, 233, 0.4);
+}
+
+.action-bar button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.action-bar button.ghost {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.action-bar button.ghost:hover:not(:disabled) {
+    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .table-felt {
+        max-width: 100%;
+        padding: 30px 40px;
+        border-width: 8px;
+    }
+
+    .seat {
+        min-width: 110px;
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+
+    .seat-avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+
+    .card-face {
+        width: 42px;
+        height: 58px;
+    }
+
+    .action-bar {
+        bottom: 70px;
+        padding: 12px 16px;
+        gap: 8px;
+    }
+
+    .action-bar button {
+        padding: 10px 16px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Fullscreen mode */
+.poker-page.fullscreen .table-felt {
+    max-width: 1100px;
+    min-height: 600px;
+}
+
+.poker-page.fullscreen .action-bar {
+    bottom: 90px;
+}

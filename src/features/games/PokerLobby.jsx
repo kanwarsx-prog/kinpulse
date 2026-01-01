@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import './PokerLobby.css';
+import './PokerTable.css';
 
 const PokerLobby = () => {
     const { supabase, user } = useSupabase();
