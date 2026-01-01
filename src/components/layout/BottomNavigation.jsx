@@ -59,11 +59,14 @@ const BottomNavigation = () => {
                 className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
             >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M4 16l8-8 8 8" />
-                    <path d="M12 8v12" />
-                    <path d="M2 20h20" />
+                    <rect x="4" y="10" width="16" height="7" rx="2" />
+                    <path d="M6 10V9a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v1" />
+                    <path d="M4 17v2" />
+                    <path d="M20 17v2" />
+                    <path d="M8 17v2" />
+                    <path d="M16 17v2" />
                 </svg>
-                <span className="label">Arena</span>
+                <span className="label">Living room</span>
             </NavLink>
         </nav>
     );

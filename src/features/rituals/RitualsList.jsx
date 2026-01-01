@@ -114,7 +114,7 @@ const RitualsList = () => {
                         fontWeight: 600
                     }}
                 >
-                    Family Arena
+                    Living Room
                 </button>
                 <button
                     onClick={() => navigate('/poker')}
