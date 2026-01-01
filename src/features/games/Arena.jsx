@@ -10,6 +10,8 @@ const Arena = () => {
   const [loadingPoker, setLoadingPoker] = useState(true);
   const [creatingPoker, setCreatingPoker] = useState(false);
   const [newPokerName, setNewPokerName] = useState('Poker night');
+  const [chessGames, setChessGames] = useState([]);
+  const [loadingChess, setLoadingChess] = useState(true);
 
   const games = useMemo(() => ([
     {
@@ -23,9 +25,9 @@ const Arena = () => {
     {
       name: 'Chess Clash',
       tag: 'Strategy',
-      status: 'Coming soon',
+      status: loadingChess ? 'Loading...' : `Active games: ${chessGames.length}`,
       description: 'Async chess · 2 players · daily moves',
-      action: null,
+      action: '/games/chess',
       accent: 'chess'
     },
     {
@@ -44,7 +46,7 @@ const Arena = () => {
       action: null,
       accent: 'trivia'
     }
-  ]), [loadingPoker, pokerTables.length]);
+  ]), [loadingPoker, pokerTables.length, loadingChess, chessGames.length]);
 
   useEffect(() => {
     const loadPoker = async () => {
@@ -59,7 +61,22 @@ const Arena = () => {
       if (!error) setPokerTables(data || []);
       setLoadingPoker(false);
     };
+
+    const loadChess = async () => {
+      if (!user?.family_id) return;
+      setLoadingChess(true);
+      const { data, error } = await supabase
+        .from('chess_games')
+        .select('id, white_player_id, black_player_id, status, created_at')
+        .eq('family_id', user.family_id)
+        .in('status', ['active'])
+        .order('created_at', { ascending: false });
+      if (!error) setChessGames(data || []);
+      setLoadingChess(false);
+    };
+
     loadPoker();
+    loadChess();
   }, [supabase, user?.family_id]);
 
   const ongoingPoker = pokerTables.slice(0, 6).map((t) => ({
