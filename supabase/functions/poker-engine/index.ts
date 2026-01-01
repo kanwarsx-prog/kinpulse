@@ -405,6 +405,8 @@ serve(async (req) => {
           entry.amount += betAmt;
           newCurrentBet = Math.max(newCurrentBet, entry.amount);
           message = action === 'bet' ? 'bet' : 'raised';
+          // Track last aggressor for betting round completion
+          lastAggressorSeatNo = seat.seat_no;
         } else {
           return json({ error: 'Unsupported action' }, 400);
         }
@@ -422,14 +424,16 @@ serve(async (req) => {
         });
 
         const activeRemaining = activeSeats.filter((s) => !(committed[s.id]?.folded));
-        let street = hand.street;
-        let status = hand.status;
+        const newPot = (hand.pot ?? 0) + spend;
+        let street = hand.street ?? 'preflop';
+        let status = hand.status ?? 'betting';
         let board_cards = hand.board_cards ?? [];
         let deck = hand.deck ?? [];
-        let pot = (hand.pot ?? 0) + spend;
         let winnerSeatId: string | undefined;
         let winnerSeatIds: string[] = [];
         let nextTurnSeatNo = hand.turn_seat_no;
+        let lastAggressorSeatNo = hand.last_aggressor_seat_no ?? null;
+
 
         // if only one player left, award pot
         if (activeRemaining.length <= 1) {
@@ -445,7 +449,7 @@ serve(async (req) => {
           nextTurnSeatNo = nextSeat?.seat_no ?? hand.turn_seat_no;
 
           // Check if betting round is complete
-          // Round is complete when all active players have matched the current bet (or are all-in)
+          // All players must have matched the current bet (or be all-in)
           const allMatched = activeRemaining.every((s) => {
             const entryS = committed[s.id] || { amount: 0 };
             const seatChip = s.chips ?? 0;
@@ -453,13 +457,22 @@ serve(async (req) => {
             return entryS.amount >= target || seatChip === 0 || entryS.folded;
           });
 
-          // Check if everyone has acted this street
-          // Simple approach: if all bets matched and next player would be someone who already matched, advance
-          const nextPlayerEntry = committed[nextSeat?.id || ''] || { amount: 0 };
-          const nextPlayerMatched = nextPlayerEntry.amount >= newCurrentBet || (nextSeat?.chips ?? 0) === 0;
+          // Determine if betting round is complete
+          // Round ends when action returns to last aggressor (or dealer if no raises)
+          let roundComplete = false;
+          if (allMatched) {
+            if (lastAggressorSeatNo === null) {
+              // No one has bet/raised this street - round ends when back to dealer
+              const dealerSeat = ordered.find((s) => s.seat_no === hand.dealer_seat_no);
+              roundComplete = nextTurnSeatNo === dealerSeat?.seat_no;
+            } else {
+              // Someone bet/raised - round ends when action returns to them
+              roundComplete = nextTurnSeatNo === lastAggressorSeatNo;
+            }
+          }
 
-          // Advance street if all matched AND we're about to go to someone who already acted
-          if (allMatched && nextPlayerMatched) {
+          // Advance street if betting round is complete
+          if (roundComplete) {
             // advance street
             if (street === 'preflop') {
               street = 'flop';
@@ -479,6 +492,7 @@ serve(async (req) => {
               committed[k].amount = committed[k].folded ? committed[k].amount : 0;
             });
             newCurrentBet = 0;
+            lastAggressorSeatNo = null; // Reset for new street
             // Start next street with player after dealer
             const dealerIdx = ordered.findIndex((s) => s.seat_no === hand.dealer_seat_no);
             const firstPlayer = ordered[(dealerIdx + 1) % ordered.length];
@@ -520,19 +534,20 @@ serve(async (req) => {
                 winnerSeatIds.push(s.id);
               }
             }
-            await awardChips(winnerSeatIds, pot);
+            await awardChips(winnerSeatIds, newPot);
             winnerSeatId = winnerSeatIds[0];
           } else {
             winnerSeatIds = [winnerSeatId];
-            await awardChips(winnerSeatIds, pot);
+            await awardChips(winnerSeatIds, newPot);
           }
-          pot = 0;
+          // Pot is distributed, so it becomes 0
+          // pot = 0; // This line is no longer needed as newPot is used for awardChips
         }
 
         await supabase
           .from('poker_hands')
           .update({
-            pot,
+            pot: newPot,
             turn_seat_no: nextTurnSeatNo,
             street,
             status,
@@ -540,6 +555,7 @@ serve(async (req) => {
             board_cards,
             current_bet: newCurrentBet,
             committed,
+            last_aggressor_seat_no: lastAggressorSeatNo,
             updated_at: new Date().toISOString(),
           })
           .eq('id', hand_id);
