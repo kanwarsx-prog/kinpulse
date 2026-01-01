@@ -88,7 +88,7 @@ const ChessBoard = () => {
     };
 
     const handleSquareClick = (square) => {
-        if (!isMyTurn()) return;
+        if (!isPlayer() || !isMyTurn()) return;
 
         if (selectedSquare) {
             // Try to make move
@@ -187,6 +187,11 @@ const ChessBoard = () => {
         );
     };
 
+    const isPlayer = () => {
+        if (!game) return false;
+        return game.white_player_id === user.id || game.black_player_id === user.id;
+    };
+
     const renderBoard = () => {
         const board = [];
         const squares = chess.board();
@@ -281,11 +286,16 @@ const ChessBoard = () => {
                         </div>
                     </div>
 
-                    {!gameOver && (
+                    {!gameOver && isPlayer() && (
                         <div className="game-actions">
                             <button onClick={handleResign} className="resign-btn">
                                 Resign
                             </button>
+                        </div>
+                    )}
+                    {!isPlayer() && (
+                        <div className="muted">
+                            Spectating
                         </div>
                     )}
                 </div>
