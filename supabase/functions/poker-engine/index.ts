@@ -227,7 +227,7 @@ serve(async (req) => {
           .select('family_id, starting_chips')
           .eq('id', table_id)
           .single();
-        if (tErr || !table) return json({ error: 'Table not found' }, 404);
+        if (tErr || !table) return json({ error: 'Table not found' }, 200);
 
         const { data: profile, error: pErr } = await supabase
           .from('profiles')
@@ -342,7 +342,7 @@ serve(async (req) => {
           .select('seat_no, chips')
           .eq('id', seat_id)
           .single();
-        if (sErr || !seat) return json({ error: 'Seat not found' }, 404);
+        if (sErr || !seat) return json({ error: 'Seat not found' }, 200);
 
         const { data: table } = await supabase
           .from('poker_tables')
