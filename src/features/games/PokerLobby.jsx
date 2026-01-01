@@ -131,7 +131,6 @@ const PokerLobby = () => {
             chips: table.starting_chips,
         });
         if (error) {
-            // duplicate seat (race/double click) -> just load the existing seat
             if (error.code === '23505') {
                 const refreshedSeats = await loadSeats(table.id);
                 const seat = refreshedSeats.find((s) => s.user_id === user.id);
@@ -215,6 +214,9 @@ const PokerLobby = () => {
     const street = handState?.hand?.street || 'preflop';
     const status = handState?.hand?.status || 'dealing';
     const pot = handState?.hand?.pot || 0;
+    const currentBet = handState?.hand?.current_bet || 0;
+    const turnSeatNo = handState?.hand?.turn_seat_no;
+    const turnSeatName = turnSeatNo ? seats.find((s) => s.seat_no === turnSeatNo)?.seat_no : null;
 
     const exitTable = () => {
         setSelected(null);
@@ -227,7 +229,7 @@ const PokerLobby = () => {
         if (!value) return null;
         const rank = value.slice(0, -1).toUpperCase();
         const suitCode = value.slice(-1).toLowerCase();
-        const suitMap = { h: '♥', d: '♦', c: '♣', s: '♠' };
+        const suitMap = { h: '?', d: '?', c: '?', s: '?' };
         const isRed = suitCode === 'h' || suitCode === 'd';
         return (
             <div className={`card-face ${mine ? 'mine' : ''} ${isRed ? 'red' : ''}`}>
@@ -238,17 +240,7 @@ const PokerLobby = () => {
     };
 
     return (
-        <div className={`poker-page fade-in ${selected ? 'fullscreen' : ''} ${fullView ? 'landscape' : ''}`}>
-            {!selected && (
-                <header className="poker-header">
-                    <div>
-                        <p className="eyebrow">Family game</p>
-                        <h1>Poker Night (beta)</h1>
-                        <p className="subtle">Async, low-stakes Holdem for the family.</p>
-                    </div>
-                </header>
-            )}
-
+        <div className={`poker-shell ${fullView ? 'full' : ''}`}>
             {!selected && (
                 <section className="poker-create">
                     <input
@@ -264,7 +256,7 @@ const PokerLobby = () => {
 
             {!selected && (
                 <section className="poker-grid">
-                    {loading && <div className="muted">Loading tables…</div>}
+                    {loading && <div className="muted">Loading tables...</div>}
                     {!loading && !tables.length && <div className="muted">No tables yet. Create one!</div>}
                     {tables.map((table) => {
                         const isMine = seats.find((s) => s.user_id === user.id && s.table_id === table.id);
@@ -304,10 +296,10 @@ const PokerLobby = () => {
             {selected && (
                 <section className="table-panel">
                     <div className="felt-top-bar">
-                        <button className="ghost exit-btn" onClick={exitTable}>✕</button>
+                        <button className="ghost exit-btn" onClick={exitTable}>Exit</button>
                         <div className="felt-title">
                             <div className="card-title">{selected.name}</div>
-                            <div className="card-meta">Pot {pot} � {street}</div>
+                            <div className="card-meta">Pot {pot} � {street}</div>
                         </div>
                         <div className="panel-actions compact">
                             <button className="ghost" onClick={() => setFullView((v) => !v)} disabled={busy}>{fullView ? 'Exit full screen' : 'Full screen'}</button>

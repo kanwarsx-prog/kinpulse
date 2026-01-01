@@ -33,10 +33,13 @@ create table if not exists poker_hands (
   hand_no integer not null,
   board_cards jsonb not null default '[]'::jsonb,
   hole_cards jsonb not null default '{}'::jsonb, -- seat_id -> [card, card]
+  committed jsonb not null default '{}'::jsonb, -- seat_id -> { amount, folded }
+  current_bet integer not null default 0,
   pot integer not null default 0,
   deck jsonb not null default '[]'::jsonb,
   street text not null default 'preflop' check (street in ('preflop','flop','turn','river','done')),
   status text not null default 'dealing' check (status in ('dealing','betting','showdown','complete')),
+  dealer_seat_no integer,
   turn_seat_no integer,
   created_at timestamptz default now(),
   updated_at timestamptz default now(),

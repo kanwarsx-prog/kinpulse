@@ -20,6 +20,8 @@ import VaultHome from './features/vault/VaultHome';
 import AdminConsole from './features/admin/AdminConsole';
 import PokerLobby from './features/games/PokerLobby';
 import Arena from './features/games/Arena';
+import ChessLobby from './features/games/ChessLobby';
+import ChessBoard from './features/games/ChessBoard';
 
 const AppRoutes = () => {
   const { session, user, loading } = useSupabase();
@@ -57,6 +59,8 @@ const AuthenticatedRoutes = () => {
         <Route path="admin" element={<AdminConsole />} />
         <Route path="poker" element={<PokerLobby />} />
         <Route path="arena" element={<Arena />} />
+        <Route path="games/chess" element={<ChessLobby />} />
+        <Route path="games/chess/:gameId" element={<ChessBoard />} />
       </Route>
     </Routes>
   );

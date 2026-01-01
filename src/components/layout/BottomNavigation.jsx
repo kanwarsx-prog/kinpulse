@@ -45,6 +45,16 @@ const BottomNavigation = () => {
             </NavLink>
 
             <NavLink
+                to="/rituals"
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+            >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 21s-6-4.35-9-9a5.25 5.25 0 0 1 8.25-6.5L12 7l.75-1.5a5.25 5.25 0 0 1 8.25 6.5c-3 4.65-9 9-9 9z" />
+                </svg>
+                <span className="label">Goals</span>
+            </NavLink>
+
+            <NavLink
                 to="/arena"
                 className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
             >
