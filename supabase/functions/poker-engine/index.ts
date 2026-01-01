@@ -335,7 +335,7 @@ serve(async (req) => {
           )
           .eq('id', hand_id)
           .single();
-        if (hErr || !hand) return json({ error: 'Hand not found' }, 404);
+        if (hErr || !hand) return json({ error: 'Hand not found' }, 200);
 
         const { data: seat, error: sErr } = await supabase
           .from('poker_seats')
@@ -554,7 +554,9 @@ serve(async (req) => {
         else if (table_id) handQuery.eq('table_id', table_id);
 
         const { data: hand, error } = await handQuery.single();
-        if (error || !hand) return json({ error: 'Hand not found' }, 404);
+        if (error || !hand) {
+          return json({ error: 'Hand not found', hand: null, seats: [] }, 200);
+        }
 
         const { data: seats } = await supabase
           .from('poker_seats')
