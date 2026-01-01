@@ -324,8 +324,20 @@ const PokerLobby = () => {
                             <div className="seat-ring">
                                 {seats.map((s) => {
                                     const profile = profilesMap[s.user_id];
-                                    const name = profile?.full_name || `Seat ${s.seat_no}`;
-                                    const initials = name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
+                                    const displayName =
+                                        profile?.full_name ||
+                                        profile?.username ||
+                                        profile?.email?.split('@')[0] ||
+                                        `Player ${s.seat_no}`;
+                                    const initials = profile
+                                        ? displayName
+                                              .split(' ')
+                                              .filter(Boolean)
+                                              .map((n) => n[0])
+                                              .join('')
+                                              .slice(0, 2)
+                                              .toUpperCase()
+                                        : `P${s.seat_no}`;
                                     const isTurn = handState?.hand?.turn_seat_no === s.seat_no;
                                     return (
                                         <div
@@ -333,7 +345,7 @@ const PokerLobby = () => {
                                             className={`seat ${s.user_id === user.id ? 'mine' : ''} ${isTurn ? 'turn' : ''}`}
                                         >
                                             <div className="seat-avatar">{initials}</div>
-                                            <div className="seat-name">{name}</div>
+                                            <div className="seat-name">{displayName}</div>
                                             <div className="seat-chip">{s.chips}</div>
                                             {isTurn && <div className="badge">{s.user_id === user.id ? 'Your turn' : 'Their turn'}</div>}
                                         </div>
