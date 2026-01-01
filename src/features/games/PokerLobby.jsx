@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import './PokerLobby.css';
 
@@ -229,7 +229,7 @@ const PokerLobby = () => {
         if (!value) return null;
         const rank = value.slice(0, -1).toUpperCase();
         const suitCode = value.slice(-1).toLowerCase();
-        const suitMap = { h: '?', d: '?', c: '?', s: '?' };
+        const suitMap = { h: '\u2665', d: '\u2666', c: '\u2663', s: '\u2660' };
         const isRed = suitCode === 'h' || suitCode === 'd';
         return (
             <div className={`card-face ${mine ? 'mine' : ''} ${isRed ? 'red' : ''}`}>
@@ -299,7 +299,7 @@ const PokerLobby = () => {
                         <button className="ghost exit-btn" onClick={exitTable}>Exit</button>
                         <div className="felt-title">
                             <div className="card-title">{selected.name}</div>
-                            <div className="card-meta">Pot {pot} � {street}</div>
+                            <div className="card-meta">Pot {pot} • {street}</div>
                         </div>
                         <div className="panel-actions compact">
                             <button className="ghost" onClick={() => setFullView((v) => !v)} disabled={busy}>{fullView ? 'Exit full screen' : 'Full screen'}</button>
@@ -373,3 +373,7 @@ const PokerLobby = () => {
 };
 
 export default PokerLobby;
+
+
+
+

@@ -50,8 +50,8 @@ const ChessBoard = () => {
             .from('chess_games')
             .select(`
                 *,
-                white_player:white_player_id(full_name),
-                black_player:black_player_id(full_name)
+                white_player:white_player_id(name),
+                black_player:black_player_id(name)
             `)
             .eq('id', gameId)
             .single();

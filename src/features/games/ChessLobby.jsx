@@ -25,8 +25,8 @@ const ChessLobby = () => {
             .from('chess_games')
             .select(`
                 *,
-                white_player:white_player_id(full_name, avatar_url),
-                black_player:black_player_id(full_name, avatar_url)
+                white_player:white_player_id(name),
+                black_player:black_player_id(name)
             `)
             .eq('family_id', user.family_id)
             .in('status', ['active'])
@@ -37,12 +37,14 @@ const ChessLobby = () => {
     };
 
     const loadFamilyMembers = async () => {
-        const { data } = await supabase
+        console.log('Loading family members for family_id:', user.family_id);
+        const { data, error } = await supabase
             .from('profiles')
-            .select('id, full_name, avatar_url')
+            .select('id, name')
             .eq('family_id', user.family_id)
             .neq('id', user.id);
 
+        console.log('Family members result:', { data, error });
         setFamilyMembers(data || []);
     };
 
@@ -95,11 +97,11 @@ const ChessLobby = () => {
         const isBlack = game.black_player_id === user.id;
 
         if (isWhite) {
-            return `vs ${game.black_player?.full_name || 'Opponent'}`;
+            return `vs ${game.black_player?.name || 'Opponent'}`;
         } else if (isBlack) {
-            return `vs ${game.white_player?.full_name || 'Opponent'}`;
+            return `vs ${game.white_player?.name || 'Opponent'}`;
         } else {
-            return `${game.white_player?.full_name} vs ${game.black_player?.full_name}`;
+            return `${game.white_player?.name} vs ${game.black_player?.name}`;
         }
     };
 
@@ -130,7 +132,7 @@ const ChessLobby = () => {
                     <option value="">Select opponent...</option>
                     {familyMembers.map((member) => (
                         <option key={member.id} value={member.id}>
-                            {member.full_name}
+                            {member.name}
                         </option>
                     ))}
                 </select>
