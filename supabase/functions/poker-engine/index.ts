@@ -43,6 +43,11 @@ type CommittedMap = Record<
   }
 >;
 
+type Strength = {
+  rank: number; // 8 straight flush .. 0 high card
+  tiebreak: number[];
+};
+
 const deckCards = () => {
   const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'];
   const suits = ['h', 'd', 'c', 's'];
@@ -59,15 +64,7 @@ const shuffle = (cards: string[]) => {
   return cards;
 };
 
-const json = (data: unknown, status = 200) =>
-  new Response(JSON.stringify(data), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-
-type EvalResult = {
-  rank: number[];
-  best: string[];
-};
-
-const valueMap: Record<string, number> = {
+const rankVal: Record<string, number> = {
   '2': 2,
   '3': 3,
   '4': 4,
@@ -83,99 +80,96 @@ const valueMap: Record<string, number> = {
   A: 14,
 };
 
-const parseCard = (c: string) => ({ v: valueMap[c[0]], s: c[1], raw: c });
-
-const isStraight = (values: number[]) => {
-  const uniq = Array.from(new Set(values)).sort((a, b) => b - a);
-  // wheel
-  if (uniq.includes(14)) uniq.push(1);
-  let run = 1;
-  for (let i = 1; i < uniq.length; i++) {
-    if (uniq[i - 1] - uniq[i] === 1) {
-      run += 1;
-      if (run >= 5) return uniq[i - 4];
-    } else {
-      run = 1;
-    }
-  }
-  return null;
-};
-
-const evalFive = (cards: string[]): EvalResult => {
-  const parsed = cards.map(parseCard);
-  const values = parsed.map((c) => c.v).sort((a, b) => b - a);
-  const suits = parsed.map((c) => c.s);
+const evaluate5 = (cards: string[]): Strength => {
+  const vals = cards.map((c) => rankVal[c[0]]);
+  const suits = cards.map((c) => c[1]);
   const counts: Record<number, number> = {};
-  values.forEach((v) => (counts[v] = (counts[v] ?? 0) + 1));
+  vals.forEach((v) => (counts[v] = (counts[v] ?? 0) + 1));
   const byCount = Object.entries(counts)
-    .map(([v, cnt]) => ({ v: Number(v), cnt }))
-    .sort((a, b) => b.cnt - a.cnt || b.v - a.v);
+    .map(([k, v]) => ({ v: Number(k), c: v }))
+    .sort((a, b) => (b.c === a.c ? b.v - a.v : b.c - a.c));
 
-  const flushSuit = ['h', 'd', 'c', 's'].find((s) => suits.filter((x) => x === s).length === 5);
-  const straightHigh = isStraight(values);
-  const isFlush = !!flushSuit;
-  const isStraightFlush = isFlush && straightHigh !== null;
+  const isFlush = suits.every((s) => s === suits[0]);
+  const uniqVals = [...new Set(vals)].sort((a, b) => b - a);
+  // straight check with wheel
+  const straightHigh = (() => {
+    const v = uniqVals.slice().sort((a, b) => a - b);
+    for (let i = 0; i <= v.length - 5; i++) {
+      const seq = v.slice(i, i + 5);
+      if (seq[4] - seq[0] === 4 && new Set(seq).size === 5) return seq[4];
+    }
+    // wheel A2345
+    if (v.includes(14) && v.includes(2) && v.includes(3) && v.includes(4) && v.includes(5)) return 5;
+    return null;
+  })();
 
-  let rank: number[];
-  if (isStraightFlush) {
-    rank = [8, straightHigh!];
-  } else if (byCount[0].cnt === 4) {
+  if (isFlush && straightHigh) return { rank: 8, tiebreak: [straightHigh] };
+
+  if (byCount[0]?.c === 4) {
     const quad = byCount[0].v;
-    const kicker = byCount.find((x) => x.v !== quad)!.v;
-    rank = [7, quad, kicker];
-  } else if (byCount[0].cnt === 3 && byCount[1]?.cnt === 2) {
-    rank = [6, byCount[0].v, byCount[1].v];
-  } else if (isFlush) {
-    rank = [5, ...values];
-  } else if (straightHigh !== null) {
-    rank = [4, straightHigh];
-  } else if (byCount[0].cnt === 3) {
-    const kickers = byCount.filter((x) => x.cnt === 1).map((x) => x.v).sort((a, b) => b - a);
-    rank = [3, byCount[0].v, ...kickers];
-  } else if (byCount[0].cnt === 2 && byCount[1]?.cnt === 2) {
-    const pairHigh = Math.max(byCount[0].v, byCount[1].v);
-    const pairLow = Math.min(byCount[0].v, byCount[1].v);
-    const kicker = byCount.find((x) => x.cnt === 1)?.v ?? 0;
-    rank = [2, pairHigh, pairLow, kicker];
-  } else if (byCount[0].cnt === 2) {
-    const kickers = byCount.filter((x) => x.cnt === 1).map((x) => x.v).sort((a, b) => b - a);
-    rank = [1, byCount[0].v, ...kickers];
-  } else {
-    rank = [0, ...values];
+    const kicker = uniqVals.find((v) => v !== quad) ?? 0;
+    return { rank: 7, tiebreak: [quad, kicker] };
   }
 
-  return { rank, best: cards };
+  if (byCount[0]?.c === 3 && byCount[1]?.c >= 2) {
+    return { rank: 6, tiebreak: [byCount[0].v, byCount[1].v] };
+  }
+
+  if (isFlush) return { rank: 5, tiebreak: uniqVals };
+  if (straightHigh) return { rank: 4, tiebreak: [straightHigh] };
+
+  if (byCount[0]?.c === 3) {
+    const trips = byCount[0].v;
+    const kickers = uniqVals.filter((v) => v !== trips);
+    return { rank: 3, tiebreak: [trips, ...kickers] };
+  }
+
+  if (byCount[0]?.c === 2 && byCount[1]?.c === 2) {
+    const highPair = Math.max(byCount[0].v, byCount[1].v);
+    const lowPair = Math.min(byCount[0].v, byCount[1].v);
+    const kicker = uniqVals.find((v) => v !== highPair && v !== lowPair) ?? 0;
+    return { rank: 2, tiebreak: [highPair, lowPair, kicker] };
+  }
+
+  if (byCount[0]?.c === 2) {
+    const pair = byCount[0].v;
+    const kickers = uniqVals.filter((v) => v !== pair);
+    return { rank: 1, tiebreak: [pair, ...kickers] };
+  }
+
+  return { rank: 0, tiebreak: uniqVals };
 };
 
-const compareRank = (a: number[], b: number[]) => {
-  const len = Math.max(a.length, b.length);
+const bestOf7 = (cards: string[]): Strength => {
+  if (cards.length < 5) return { rank: -1, tiebreak: [] };
+  let best: Strength | null = null;
+  const n = cards.length;
+  for (let a = 0; a < n - 4; a++)
+    for (let b = a + 1; b < n - 3; b++)
+      for (let c = b + 1; c < n - 2; c++)
+        for (let d = c + 1; d < n - 1; d++)
+          for (let e = d + 1; e < n; e++) {
+            const hand = [cards[a], cards[b], cards[c], cards[d], cards[e]];
+            const s = evaluate5(hand);
+            if (!best || compareStrength(s, best) > 0) {
+              best = s;
+            }
+          }
+  return best ?? { rank: -1, tiebreak: [] };
+};
+
+const compareStrength = (a: Strength, b: Strength) => {
+  if (a.rank !== b.rank) return a.rank - b.rank;
+  const len = Math.max(a.tiebreak.length, b.tiebreak.length);
   for (let i = 0; i < len; i++) {
-    const av = a[i] ?? 0;
-    const bv = b[i] ?? 0;
-    if (av !== bv) return av - bv;
+    const diff = (a.tiebreak[i] ?? 0) - (b.tiebreak[i] ?? 0);
+    if (diff !== 0) return diff;
   }
   return 0;
 };
 
-const bestHand = (allCards: string[]): EvalResult => {
-  // choose best 5 of up to 7 cards
-  let best: EvalResult | null = null;
-  const n = allCards.length;
-  for (let i = 0; i < n; i++) {
-    for (let j = i + 1; j < n; j++) {
-      for (let k = j + 1; k < n; k++) {
-        for (let l = k + 1; l < n; l++) {
-          for (let m = l + 1; m < n; m++) {
-            const subset = [allCards[i], allCards[j], allCards[k], allCards[l], allCards[m]];
-            const evald = evalFive(subset);
-            if (!best || compareRank(evald.rank, best.rank) > 0) best = evald;
-          }
-        }
-      }
-    }
-  }
-  return best ?? { rank: [0], best: allCards.slice(0, 5) };
-};
+const json = (data: unknown, status = 200) =>
+  new Response(JSON.stringify(data), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -501,13 +495,14 @@ serve(async (req) => {
             // showdown: evaluate best hand among surviving non-folded seats
             const survivors = activeSeats.filter((s) => !(committed[s.id]?.folded));
             const board = board_cards ?? [];
-            let bestRank: number[] | null = null;
+            let best: Strength | null = null;
+            winnerSeatIds = [];
             for (const s of survivors) {
               const hole = (hand.hole_cards ?? {})[s.id] ?? [];
-              const evald = bestHand([...board, ...hole]);
-              const cmp = bestRank ? compareRank(evald.rank, bestRank) : 1;
-              if (!bestRank || cmp > 0) {
-                bestRank = evald.rank;
+              const strength = bestOf7([...board, ...hole]);
+              const cmp = best ? compareStrength(strength, best) : 1;
+              if (!best || cmp > 0) {
+                best = strength;
                 winnerSeatIds = [s.id];
               } else if (cmp === 0) {
                 winnerSeatIds.push(s.id);
