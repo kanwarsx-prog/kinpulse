@@ -66,7 +66,7 @@ const BottomNavigation = () => {
                     <path d="M8 17v2" />
                     <path d="M16 17v2" />
                 </svg>
-                <span className="label">Living room</span>
+              <span className="label">Lounge</span>
             </NavLink>
         </nav>
     );

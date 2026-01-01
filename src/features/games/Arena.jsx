@@ -104,7 +104,7 @@ const Arena = () => {
     <div className="arena-page fade-in">
       <section className="arena-hero glass">
         <div>
-          <p className="eyebrow">Family living room</p>
+          <p className="eyebrow">Family lounge</p>
           <h1>Pick a game, invite the fam, and play async.</h1>
           <p className="muted">Quick-start tables, turn alerts, and friendly leaderboards.</p>
           <div className="cta-row">
