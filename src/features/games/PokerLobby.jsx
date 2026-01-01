@@ -407,9 +407,25 @@ const PokerLobby = () => {
 
                     {mySeat ? (
                         <div className="actions action-bar">
-                            <button onClick={() => act('check')} disabled={busy || !isMyTurn}>Check/Call</button>
-                            <button onClick={() => act('bet', Math.max(10, Math.floor((handState?.hand?.pot || 0) / 2)))} disabled={busy || !isMyTurn}>Half-pot</button>
-                            <button onClick={() => act('fold')} disabled={busy || !isMyTurn} className="ghost">Fold</button>
+                            {(() => {
+                                const currentBet = handState?.hand?.current_bet || 0;
+                                const myCommitted = handState?.hand?.committed?.[mySeat.id]?.amount || 0;
+                                const needToCall = currentBet - myCommitted;
+                                const canCheck = needToCall <= 0;
+
+                                return (
+                                    <>
+                                        <button
+                                            onClick={() => act(canCheck ? 'check' : 'call')}
+                                            disabled={busy || !isMyTurn}
+                                        >
+                                            {canCheck ? 'Check' : `Call ${needToCall}`}
+                                        </button>
+                                        <button onClick={() => act('bet', Math.max(10, Math.floor((handState?.hand?.pot || 0) / 2)))} disabled={busy || !isMyTurn}>Half-pot</button>
+                                        <button onClick={() => act('fold')} disabled={busy || !isMyTurn} className="ghost">Fold</button>
+                                    </>
+                                );
+                            })()}
                         </div>
                     ) : (
                         <div className="actions action-bar">
