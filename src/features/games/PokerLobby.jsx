@@ -329,15 +329,10 @@ const PokerLobby = () => {
                                         profile?.username ||
                                         profile?.email?.split('@')[0] ||
                                         `Player ${s.seat_no}`;
-                                    const initials = profile
-                                        ? displayName
-                                              .split(' ')
-                                              .filter(Boolean)
-                                              .map((n) => n[0])
-                                              .join('')
-                                              .slice(0, 2)
-                                              .toUpperCase()
-                                        : `P${s.seat_no}`;
+                                    const nameParts = displayName.split(' ').filter(Boolean);
+                                    const initials = nameParts.length
+                                        ? nameParts.map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+                                        : String(s.seat_no);
                                     const isTurn = handState?.hand?.turn_seat_no === s.seat_no;
                                     return (
                                         <div
