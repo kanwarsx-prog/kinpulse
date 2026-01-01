@@ -437,21 +437,31 @@ serve(async (req) => {
           status = 'complete';
           street = 'done';
         } else {
-          // check if all active matched current bet (or are all-in)
-          const matched = activeRemaining.every((s) => {
-            const entryS = committed[s.id] || { amount: 0 };
-            const seatChip = s.chips ?? 0;
-            const target = newCurrentBet;
-            return entryS.amount >= target || seatChip === 0 || entryS.folded;
-          });
-
+          // Move to next player
           const ordered = activeSeats.filter((s) => !(committed[s.id]?.folded));
           const currentIdxRaw = ordered.findIndex((s) => s.seat_no === hand.turn_seat_no);
           const currentIdx = currentIdxRaw >= 0 ? currentIdxRaw : 0;
           const nextSeat = ordered[(currentIdx + 1) % ordered.length];
           nextTurnSeatNo = nextSeat?.seat_no ?? hand.turn_seat_no;
 
-          if (matched) {
+          // Check if betting round is complete
+          // Round is complete when:
+          // 1. All active players have matched the current bet (or are all-in)
+          // 2. Action has returned to the dealer (or last raiser)
+          const allMatched = activeRemaining.every((s) => {
+            const entryS = committed[s.id] || { amount: 0 };
+            const seatChip = s.chips ?? 0;
+            const target = newCurrentBet;
+            return entryS.amount >= target || seatChip === 0 || entryS.folded;
+          });
+
+          // Check if action has completed a full circle
+          // For simplicity: if next player is the dealer, round is complete
+          const dealerSeat = activeSeats.find((s) => s.seat_no === hand.dealer_seat_no);
+          const actionReturned = nextTurnSeatNo === dealerSeat?.seat_no;
+
+          // Advance street only if all bets matched AND action has gone full circle
+          if (allMatched && actionReturned) {
             // advance street
             if (street === 'preflop') {
               street = 'flop';
@@ -471,6 +481,10 @@ serve(async (req) => {
               committed[k].amount = committed[k].folded ? committed[k].amount : 0;
             });
             newCurrentBet = 0;
+            // Start next street with player after dealer
+            const dealerIdx = ordered.findIndex((s) => s.seat_no === hand.dealer_seat_no);
+            const firstPlayer = ordered[(dealerIdx + 1) % ordered.length];
+            nextTurnSeatNo = firstPlayer?.seat_no ?? nextTurnSeatNo;
           }
         }
 
