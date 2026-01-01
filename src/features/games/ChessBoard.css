@@ -184,22 +184,37 @@
 }
 
 @media (max-width: 768px) {
+    .chess-game {
+        padding: 12px;
+    }
+
     .chess-container {
         grid-template-columns: 1fr;
     }
 
+    .chess-board-wrapper {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+        padding: 0;
+    }
+
     .chess-board {
-        grid-template-columns: repeat(8, 45px);
-        grid-template-rows: repeat(8, 45px);
+        grid-template-columns: repeat(8, 1fr);
+        grid-template-rows: repeat(8, 1fr);
+        width: 100%;
+        max-width: min(100vw - 24px, 400px);
+        aspect-ratio: 1;
+        margin: 0 auto;
     }
 
     .chess-square {
-        width: 45px;
-        height: 45px;
-        font-size: 32px;
+        width: 100%;
+        height: 100%;
+        font-size: clamp(24px, 6vw, 32px);
     }
 
     .piece {
-        font-size: 36px;
+        font-size: clamp(28px, 7vw, 36px);
     }
 }
