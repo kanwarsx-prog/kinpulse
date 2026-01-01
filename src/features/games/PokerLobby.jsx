@@ -373,29 +373,37 @@ const PokerLobby = () => {
                                 </div>
                             </div>
                             <div className="seat-ring">
-                                {seats.map((s) => {
-                                    const profile = profilesMap[s.user_id];
-                                    const displayName =
-                                        profile?.name ||
-                                        profile?.email?.split('@')[0] ||
-                                        `Player ${s.seat_no}`;
-                                    const nameParts = displayName.split(' ').filter(Boolean);
-                                    const initials = nameParts.length
-                                        ? nameParts.map((n) => n[0]).join('').slice(0, 2).toUpperCase()
-                                        : String(s.seat_no);
-                                    const isTurn = handState?.hand?.turn_seat_no === s.seat_no;
-                                    return (
-                                        <div
-                                            key={s.id}
-                                            className={`seat ${s.user_id === user.id ? 'mine' : ''} ${isTurn ? 'turn' : ''}`}
-                                        >
-                                            <div className="seat-avatar">{initials}</div>
-                                            <div className="seat-name">{displayName}</div>
-                                            <div className="seat-chip">{s.chips}</div>
-                                            {isTurn && <div className="badge">{s.user_id === user.id ? 'Your turn' : 'Their turn'}</div>}
-                                        </div>
-                                    );
-                                })}
+                                {(() => {
+                                    // Reorder seats so current player is always first (bottom position)
+                                    const myIndex = seats.findIndex(s => s.user_id === user.id);
+                                    const reorderedSeats = myIndex >= 0
+                                        ? [...seats.slice(myIndex), ...seats.slice(0, myIndex)]
+                                        : seats;
+
+                                    return reorderedSeats.map((s) => {
+                                        const profile = profilesMap[s.user_id];
+                                        const displayName =
+                                            profile?.name ||
+                                            profile?.email?.split('@')[0] ||
+                                            `Player ${s.seat_no}`;
+                                        const nameParts = displayName.split(' ').filter(Boolean);
+                                        const initials = nameParts.length
+                                            ? nameParts.map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+                                            : String(s.seat_no);
+                                        const isTurn = handState?.hand?.turn_seat_no === s.seat_no;
+                                        return (
+                                            <div
+                                                key={s.id}
+                                                className={`seat ${s.user_id === user.id ? 'mine' : ''} ${isTurn ? 'turn' : ''}`}
+                                            >
+                                                <div className="seat-avatar">{initials}</div>
+                                                <div className="seat-name">{displayName}</div>
+                                                <div className="seat-chip">{s.chips}</div>
+                                                {isTurn && <div className="badge">{s.user_id === user.id ? 'Your turn' : 'Their turn'}</div>}
+                                            </div>
+                                        );
+                                    });
+                                })()}
                             </div>
                             <div className="my-cards">
                                 <div className="label">Your cards</div>
