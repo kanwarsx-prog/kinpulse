@@ -445,9 +445,7 @@ serve(async (req) => {
           nextTurnSeatNo = nextSeat?.seat_no ?? hand.turn_seat_no;
 
           // Check if betting round is complete
-          // Round is complete when:
-          // 1. All active players have matched the current bet (or are all-in)
-          // 2. Action has returned to the dealer (or last raiser)
+          // Round is complete when all active players have matched the current bet (or are all-in)
           const allMatched = activeRemaining.every((s) => {
             const entryS = committed[s.id] || { amount: 0 };
             const seatChip = s.chips ?? 0;
@@ -455,13 +453,13 @@ serve(async (req) => {
             return entryS.amount >= target || seatChip === 0 || entryS.folded;
           });
 
-          // Check if action has completed a full circle
-          // For simplicity: if next player is the dealer, round is complete
-          const dealerSeat = activeSeats.find((s) => s.seat_no === hand.dealer_seat_no);
-          const actionReturned = nextTurnSeatNo === dealerSeat?.seat_no;
+          // Check if everyone has acted this street
+          // Simple approach: if all bets matched and next player would be someone who already matched, advance
+          const nextPlayerEntry = committed[nextSeat?.id || ''] || { amount: 0 };
+          const nextPlayerMatched = nextPlayerEntry.amount >= newCurrentBet || (nextSeat?.chips ?? 0) === 0;
 
-          // Advance street only if all bets matched AND action has gone full circle
-          if (allMatched && actionReturned) {
+          // Advance street if all matched AND we're about to go to someone who already acted
+          if (allMatched && nextPlayerMatched) {
             // advance street
             if (street === 'preflop') {
               street = 'flop';
