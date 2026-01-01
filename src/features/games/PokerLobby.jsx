@@ -205,12 +205,50 @@ const PokerLobby = () => {
     };
 
     const act = async (action, amount = 0) => {
-        if (!handState?.hand || !mySeat) return;
+        if (!handState?.hand || !mySeat) {
+            console.error('Cannot act - missing hand or seat:', { handState, mySeat });
+            setMessage('Cannot act - missing hand or seat');
+            return;
+        }
         setBusy(true);
-        const { error } = await supabase.functions.invoke('poker-engine', {
-            body: { op: 'act', hand_id: handState.hand.id, seat_id: mySeat.id, action, amount },
-        });
-        if (error) setMessage(error.message);
+
+        const requestBody = {
+            op: 'act',
+            hand_id: handState.hand.id,
+            seat_id: mySeat.id,
+            action,
+            amount
+        };
+
+        console.log('Poker action request:', requestBody);
+        console.log('Hand state:', handState);
+        console.log('My seat:', mySeat);
+
+        try {
+            const response = await supabase.functions.invoke('poker-engine', {
+                body: requestBody,
+            });
+
+            console.log('Full response:', response);
+            console.log('Response data:', response.data);
+            console.log('Response error:', response.error);
+
+            if (response.error) {
+                const errorMsg = response.error.message || JSON.stringify(response.error);
+                console.error('Poker action error:', errorMsg);
+                setMessage(`Error: ${errorMsg}`);
+            } else if (response.data?.error) {
+                console.error('Poker engine returned error:', response.data.error);
+                setMessage(`Poker error: ${response.data.error}`);
+            } else {
+                console.log('Action successful:', response.data);
+                setMessage('');
+            }
+        } catch (err) {
+            console.error('Exception during poker action:', err);
+            setMessage(`Exception: ${err.message}`);
+        }
+
         await fetchState(handState.hand.table_id);
         setBusy(false);
     };
