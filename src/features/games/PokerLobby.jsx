@@ -58,7 +58,7 @@ const PokerLobby = () => {
             const ids = [...new Set(data.map((s) => s.user_id))];
             const { data: profiles } = await supabase
                 .from('profiles')
-                .select('id, full_name, username, email, avatar_url')
+                .select('id, name, email')
                 .in('id', ids);
             const map = {};
             (profiles || []).forEach((p) => {
@@ -184,7 +184,7 @@ const PokerLobby = () => {
                 const ids = [...new Set(data.seats.map((s) => s.user_id))];
                 const { data: profiles } = await supabase
                     .from('profiles')
-                    .select('id, full_name, username, email, avatar_url')
+                    .select('id, name, email')
                     .in('id', ids);
                 const map = {};
                 (profiles || []).forEach((p) => { map[p.id] = p; });
@@ -331,8 +331,7 @@ const PokerLobby = () => {
                                 {seats.map((s) => {
                                     const profile = profilesMap[s.user_id];
                                     const displayName =
-                                        profile?.full_name ||
-                                        profile?.username ||
+                                        profile?.name ||
                                         profile?.email?.split('@')[0] ||
                                         `Player ${s.seat_no}`;
                                     const nameParts = displayName.split(' ').filter(Boolean);

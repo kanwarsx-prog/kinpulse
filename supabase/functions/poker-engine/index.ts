@@ -553,16 +553,23 @@ serve(async (req) => {
         if (hand_id) handQuery.eq('id', hand_id);
         else if (table_id) handQuery.eq('table_id', table_id);
 
-        const { data: hand, error } = await handQuery.single();
-        if (error || !hand) {
-          return json({ error: 'Hand not found', hand: null, seats: [] }, 200);
+        const { data: hand } = await handQuery.single();
+
+        // Always return seats if we know the table, even when no hand exists yet
+        const tableForSeats = hand?.table_id ?? table_id;
+        let seats: any[] = [];
+        if (tableForSeats) {
+          const { data: seatRows } = await supabase
+            .from('poker_seats')
+            .select('id, seat_no, user_id, chips, status')
+            .eq('table_id', tableForSeats)
+            .order('seat_no');
+          seats = seatRows ?? [];
         }
 
-        const { data: seats } = await supabase
-          .from('poker_seats')
-          .select('id, seat_no, user_id, chips, status')
-          .eq('table_id', hand.table_id)
-          .order('seat_no');
+        if (!hand) {
+          return json({ error: 'Hand not found', hand: null, hole_cards: undefined, seats }, 200);
+        }
 
         const holeForSeat = seat_id ? (hand.hole_cards ?? {})[seat_id] : undefined;
 
@@ -572,7 +579,7 @@ serve(async (req) => {
             hole_cards: undefined,
           },
           hole_cards: holeForSeat,
-          seats: seats ?? [],
+          seats,
         });
       }
 
