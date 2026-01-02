@@ -52,7 +52,7 @@ const PulseSkeleton = () => (
 
 const PulseDashboard = () => {
     const navigate = useNavigate();
-    const { supabase, user } = useSupabase();
+    const { supabase, user, currentGroup } = useSupabase();
     const toast = useToast();
     const { isOnline, onlineCount } = usePresence();
     const { getUnreadForUser, markAsRead } = useUnreadCounts();
@@ -96,10 +96,12 @@ const PulseDashboard = () => {
     const showSmartNudge = stalePulse || lowActivity;
 
     useEffect(() => {
-        fetchPulses();
-        fetchFamilyInfo();
-        fetchMyHistory();
-        fetchFitness();
+        if (currentGroup?.id) {
+            fetchPulses();
+            fetchFamilyInfo();
+            fetchMyHistory();
+            fetchFitness();
+        }
 
         const subscription = supabase
             .channel('public:pulses')
@@ -111,7 +113,7 @@ const PulseDashboard = () => {
 
         return () => supabase.removeChannel(subscription);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [hasFamily]);
+    }, [currentGroup?.id]);
 
     useEffect(() => {
         fetchMyHistory();
@@ -134,16 +136,16 @@ const PulseDashboard = () => {
     }, []);
 
     const fetchFamilyInfo = async () => {
-        if (!hasFamily) return;
+        if (!currentGroup?.id) return;
 
-        const { data: family } = await supabase
-            .from('families')
+        const { data: group } = await supabase
+            .from('groups')
             .select('*')
-            .eq('id', user.family_id)
+            .eq('id', currentGroup.id)
             .single();
 
-        if (family) {
-            setFamilyInfo(family);
+        if (group) {
+            setFamilyInfo(group);
         }
     };
 
@@ -179,15 +181,24 @@ const PulseDashboard = () => {
     };
 
     const fetchPulses = async () => {
-        if (!hasFamily) {
+        if (!currentGroup?.id) {
             setLoading(false);
             return;
         }
 
+        // Get group members
+        const { data: memberData } = await supabase
+            .from('group_members')
+            .select('user_id')
+            .eq('group_id', currentGroup.id);
+
+        const memberIds = memberData?.map(m => m.user_id) || [];
+
+        // Get profiles for group members
         const { data: profileData } = await supabase
             .from('profiles')
             .select('*')
-            .eq('family_id', user.family_id);
+            .in('id', memberIds);
 
         const profileMap = {};
         profileData?.forEach((p) => (profileMap[p.id] = p));
@@ -196,7 +207,7 @@ const PulseDashboard = () => {
         const { data } = await supabase
             .from('pulses')
             .select('*')
-            .eq('family_id', user.family_id)
+            .eq('group_id', currentGroup.id)
             .order('created_at', { ascending: false })
             .limit(20);
 
@@ -212,7 +223,7 @@ const PulseDashboard = () => {
                 return {
                     id: `placeholder-${id}`,
                     user_id: id,
-                    family_id: user.family_id,
+                    group_id: currentGroup.id,
                     state: null,
                     note: null,
                     created_at: null
@@ -391,9 +402,9 @@ const PulseDashboard = () => {
                         style={
                             isMe
                                 ? {
-                                      backgroundColor: 'var(--color-primary-soft)',
-                                      border: '2px solid var(--color-primary)'
-                                  }
+                                    backgroundColor: 'var(--color-primary-soft)',
+                                    border: '2px solid var(--color-primary)'
+                                }
                                 : {}
                         }
                     >
@@ -420,9 +431,9 @@ const PulseDashboard = () => {
                                     className="pulse-photo"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                window.open(pulse.photo_url, '_blank');
-                            }}
-                        />
+                                        window.open(pulse.photo_url, '_blank');
+                                    }}
+                                />
                             )}
                         </div>
                         <div className="pulse-card-footer">
