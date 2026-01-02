@@ -132,7 +132,7 @@ const ChessLobby = () => {
                     <option value="">Select opponent...</option>
                     {familyMembers.map((member) => (
                         <option key={member.id} value={member.id}>
-                            {member.name}
+                            {member.name || member.email || 'Unknown'}
                         </option>
                     ))}
                 </select>
