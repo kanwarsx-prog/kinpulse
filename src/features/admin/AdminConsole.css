@@ -27,6 +27,34 @@
     min-width: 240px;
 }
 
+.admin-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: var(--space-md);
+    border-bottom: 2px solid var(--color-border-light);
+}
+
+.admin-tab {
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    transition: all 0.2s ease;
+}
+
+.admin-tab:hover {
+    color: var(--color-text-primary);
+    background: var(--color-bg-secondary);
+}
+
+.admin-tab.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+}
+
 .admin-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));

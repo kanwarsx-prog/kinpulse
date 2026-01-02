@@ -3,39 +3,51 @@ import { useSupabase } from '../../contexts/SupabaseContext';
 import './AdminConsole.css';
 
 const AdminConsole = () => {
-    const { supabase } = useSupabase();
+    const { supabase, user } = useSupabase();
+    const [activeTab, setActiveTab] = useState('groups'); // 'families' or 'groups'
     const [families, setFamilies] = useState([]);
+    const [groups, setGroups] = useState([]);
     const [profiles, setProfiles] = useState([]);
+    const [groupMembers, setGroupMembers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
+    const [busy, setBusy] = useState(false);
+
+    // Family form states
     const [newFamilyName, setNewFamilyName] = useState('');
     const [newInviteCode, setNewInviteCode] = useState('');
     const [newUserName, setNewUserName] = useState('');
     const [newUserEmail, setNewUserEmail] = useState('');
     const [newUserFamily, setNewUserFamily] = useState('');
-    const [busy, setBusy] = useState(false);
+
+    // Group form states
+    const [newGroupName, setNewGroupName] = useState('');
+    const [newGroupIcon, setNewGroupIcon] = useState('👥');
+    const [selectedGroup, setSelectedGroup] = useState('');
+    const [selectedUser, setSelectedUser] = useState('');
 
     useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            const [{ data: fams }, { data: profs }] = await Promise.all([
-                supabase.from('families').select('*').order('created_at', { ascending: false }),
-                supabase.from('profiles').select('*')
-            ]);
-            setFamilies(fams || []);
-            setProfiles(profs || []);
-            setLoading(false);
-        };
         fetchData();
     }, [supabase]);
 
-    const refresh = async () => {
-        const [{ data: fams }, { data: profs }] = await Promise.all([
+    const fetchData = async () => {
+        setLoading(true);
+        const [
+            { data: fams },
+            { data: grps },
+            { data: profs },
+            { data: members }
+        ] = await Promise.all([
             supabase.from('families').select('*').order('created_at', { ascending: false }),
-            supabase.from('profiles').select('*')
+            supabase.from('groups').select('*').order('created_at', { ascending: false }),
+            supabase.from('profiles').select('*'),
+            supabase.from('group_members').select('*')
         ]);
         setFamilies(fams || []);
+        setGroups(grps || []);
         setProfiles(profs || []);
+        setGroupMembers(members || []);
+        setLoading(false);
     };
 
     const createFamily = async (e) => {
@@ -49,7 +61,65 @@ const AdminConsole = () => {
         setNewFamilyName('');
         setNewInviteCode('');
         setBusy(false);
-        refresh();
+        fetchData();
+    };
+
+    const createGroup = async (e) => {
+        e.preventDefault();
+        if (!newGroupName.trim() || !user) return;
+        setBusy(true);
+
+        // Create group
+        const { data: newGroup, error: groupError } = await supabase
+            .from('groups')
+            .insert({
+                name: newGroupName.trim(),
+                icon: newGroupIcon,
+                created_by: user.id
+            })
+            .select()
+            .single();
+
+        if (!groupError && newGroup) {
+            // Add creator as admin
+            await supabase.from('group_members').insert({
+                group_id: newGroup.id,
+                user_id: user.id,
+                role: 'admin'
+            });
+        }
+
+        setNewGroupName('');
+        setNewGroupIcon('👥');
+        setBusy(false);
+        fetchData();
+    };
+
+    const addMemberToGroup = async (e) => {
+        e.preventDefault();
+        if (!selectedGroup || !selectedUser) return;
+        setBusy(true);
+        await supabase.from('group_members').insert({
+            group_id: selectedGroup,
+            user_id: selectedUser,
+            role: 'member'
+        });
+        setSelectedGroup('');
+        setSelectedUser('');
+        setBusy(false);
+        fetchData();
+    };
+
+    const removeMemberFromGroup = async (groupId, userId) => {
+        if (!window.confirm('Remove this user from the group?')) return;
+        setBusy(true);
+        await supabase
+            .from('group_members')
+            .delete()
+            .eq('group_id', groupId)
+            .eq('user_id', userId);
+        setBusy(false);
+        fetchData();
     };
 
     const createUser = async (e) => {
@@ -65,7 +135,7 @@ const AdminConsole = () => {
         setNewUserName('');
         setNewUserFamily('');
         setBusy(false);
-        refresh();
+        fetchData();
     };
 
     const deleteFamily = async (id) => {
@@ -73,7 +143,15 @@ const AdminConsole = () => {
         setBusy(true);
         await supabase.from('families').delete().eq('id', id);
         setBusy(false);
-        refresh();
+        fetchData();
+    };
+
+    const deleteGroup = async (id) => {
+        if (!window.confirm('Delete this group and all memberships?')) return;
+        setBusy(true);
+        await supabase.from('groups').delete().eq('id', id);
+        setBusy(false);
+        fetchData();
     };
 
     const deleteUser = async (id) => {
@@ -81,7 +159,7 @@ const AdminConsole = () => {
         setBusy(true);
         await supabase.from('profiles').delete().eq('id', id);
         setBusy(false);
-        refresh();
+        fetchData();
     };
 
     const familyList = useMemo(() => {
@@ -101,101 +179,227 @@ const AdminConsole = () => {
             });
     }, [families, profiles, search]);
 
+    const groupList = useMemo(() => {
+        const term = search.trim().toLowerCase();
+        return groups
+            .map((grp) => {
+                const members = groupMembers
+                    .filter((gm) => gm.group_id === grp.id)
+                    .map((gm) => {
+                        const profile = profiles.find((p) => p.id === gm.user_id);
+                        return { ...profile, role: gm.role };
+                    })
+                    .filter(Boolean);
+                return { ...grp, members };
+            })
+            .filter((grp) => {
+                if (!term) return true;
+                return (
+                    grp.name?.toLowerCase().includes(term) ||
+                    grp.members.some((m) => (m.name || m.email || '').toLowerCase().includes(term))
+                );
+            });
+    }, [groups, groupMembers, profiles, search]);
+
     return (
         <div className="admin-console page fade-in">
             <header className="admin-header">
                 <div>
                     <p className="admin-eyebrow">Admin</p>
-                    <h1>Families & Users</h1>
+                    <h1>Management Console</h1>
                 </div>
                 <input
                     className="admin-search"
-                    placeholder="Search families or users..."
+                    placeholder="Search..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />
             </header>
 
-            <div className="admin-forms">
-                <form className="admin-form" onSubmit={createFamily}>
-                    <p className="admin-eyebrow">Add family</p>
-                    <div className="form-row">
-                        <input
-                            placeholder="Family name"
-                            value={newFamilyName}
-                            onChange={(e) => setNewFamilyName(e.target.value)}
-                        />
-                        <input
-                            placeholder="Invite code (optional)"
-                            value={newInviteCode}
-                            onChange={(e) => setNewInviteCode(e.target.value)}
-                        />
-                        <button type="submit" disabled={busy || !newFamilyName.trim()}>Add</button>
-                    </div>
-                </form>
-                <form className="admin-form" onSubmit={createUser}>
-                    <p className="admin-eyebrow">Add user</p>
-                    <div className="form-row">
-                        <input
-                            placeholder="Name"
-                            value={newUserName}
-                            onChange={(e) => setNewUserName(e.target.value)}
-                        />
-                        <input
-                            placeholder="Email"
-                            value={newUserEmail}
-                            onChange={(e) => setNewUserEmail(e.target.value)}
-                            required
-                        />
-                        <select
-                            value={newUserFamily}
-                            onChange={(e) => setNewUserFamily(e.target.value)}
-                            required
-                        >
-                            <option value="">Select family</option>
-                            {families.map((f) => (
-                                <option key={f.id} value={f.id}>{f.name || f.invite_code || f.id}</option>
-                            ))}
-                        </select>
-                        <button type="submit" disabled={busy || !newUserEmail.trim() || !newUserFamily}>Add</button>
-                    </div>
-                </form>
+            <div className="admin-tabs">
+                <button
+                    className={`admin-tab ${activeTab === 'groups' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('groups')}
+                >
+                    Groups
+                </button>
+                <button
+                    className={`admin-tab ${activeTab === 'families' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('families')}
+                >
+                    Families (Legacy)
+                </button>
             </div>
 
-            {loading ? (
-                <p className="admin-hint">Loading...</p>
-            ) : (
-                <div className="admin-grid">
-                    {familyList.map((fam) => (
-                        <div key={fam.id} className="admin-card">
-                            <div className="admin-card-header">
-                                <div>
-                                    <p className="admin-eyebrow">Family</p>
-                                    <h3>{fam.name || 'Untitled family'}</h3>
-                                    <p className="admin-sub">Invite: {fam.invite_code || 'N/A'}</p>
-                                </div>
-                                <div className="admin-actions">
-                                    <span className="admin-badge">{fam.members.length} users</span>
-                                    <button className="admin-delete" onClick={() => deleteFamily(fam.id)} disabled={busy}>Delete</button>
-                                </div>
+            {activeTab === 'groups' && (
+                <>
+                    <div className="admin-forms">
+                        <form className="admin-form" onSubmit={createGroup}>
+                            <p className="admin-eyebrow">Create Group</p>
+                            <div className="form-row">
+                                <input
+                                    placeholder="Group name"
+                                    value={newGroupName}
+                                    onChange={(e) => setNewGroupName(e.target.value)}
+                                />
+                                <input
+                                    placeholder="Icon (emoji)"
+                                    value={newGroupIcon}
+                                    onChange={(e) => setNewGroupIcon(e.target.value)}
+                                    style={{ width: '100px' }}
+                                />
+                                <button type="submit" disabled={busy || !newGroupName.trim()}>Create</button>
                             </div>
-                            <div className="admin-users">
-                                {fam.members.map((m) => (
-                                    <div key={m.id} className="admin-user">
-                                        <div className="admin-avatar">{(m.name || m.email || '?').slice(0, 2).toUpperCase()}</div>
+                        </form>
+                        <form className="admin-form" onSubmit={addMemberToGroup}>
+                            <p className="admin-eyebrow">Add Member to Group</p>
+                            <div className="form-row">
+                                <select
+                                    value={selectedGroup}
+                                    onChange={(e) => setSelectedGroup(e.target.value)}
+                                    required
+                                >
+                                    <option value="">Select group</option>
+                                    {groups.map((g) => (
+                                        <option key={g.id} value={g.id}>{g.icon} {g.name}</option>
+                                    ))}
+                                </select>
+                                <select
+                                    value={selectedUser}
+                                    onChange={(e) => setSelectedUser(e.target.value)}
+                                    required
+                                >
+                                    <option value="">Select user</option>
+                                    {profiles.map((p) => (
+                                        <option key={p.id} value={p.id}>{p.name || p.email}</option>
+                                    ))}
+                                </select>
+                                <button type="submit" disabled={busy || !selectedGroup || !selectedUser}>Add</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    {loading ? (
+                        <p className="admin-hint">Loading...</p>
+                    ) : (
+                        <div className="admin-grid">
+                            {groupList.map((grp) => (
+                                <div key={grp.id} className="admin-card">
+                                    <div className="admin-card-header">
                                         <div>
-                                            <p className="admin-user-name">{m.name || m.email}</p>
-                                            <p className="admin-user-sub">{m.email}</p>
+                                            <p className="admin-eyebrow">Group</p>
+                                            <h3>{grp.icon} {grp.name}</h3>
                                         </div>
-                                        <button className="admin-delete" onClick={() => deleteUser(m.id)} disabled={busy}>Remove</button>
+                                        <div className="admin-actions">
+                                            <span className="admin-badge">{grp.members.length} members</span>
+                                            <button className="admin-delete" onClick={() => deleteGroup(grp.id)} disabled={busy}>Delete</button>
+                                        </div>
                                     </div>
-                                ))}
-                                {fam.members.length === 0 && <p className="admin-hint">No users</p>}
-                            </div>
+                                    <div className="admin-users">
+                                        {grp.members.map((m) => (
+                                            <div key={m.id} className="admin-user">
+                                                <div className="admin-avatar">{(m.name || m.email || '?').slice(0, 2).toUpperCase()}</div>
+                                                <div>
+                                                    <p className="admin-user-name">{m.name || m.email}</p>
+                                                    <p className="admin-user-sub">{m.email} • {m.role}</p>
+                                                </div>
+                                                <button className="admin-delete" onClick={() => removeMemberFromGroup(grp.id, m.id)} disabled={busy}>Remove</button>
+                                            </div>
+                                        ))}
+                                        {grp.members.length === 0 && <p className="admin-hint">No members</p>}
+                                    </div>
+                                </div>
+                            ))}
+                            {groupList.length === 0 && <p className="admin-hint">No groups found</p>}
                         </div>
-                    ))}
-                    {familyList.length === 0 && <p className="admin-hint">No results</p>}
-                </div>
+                    )}
+                </>
+            )}
+
+            {activeTab === 'families' && (
+                <>
+                    <div className="admin-forms">
+                        <form className="admin-form" onSubmit={createFamily}>
+                            <p className="admin-eyebrow">Add family</p>
+                            <div className="form-row">
+                                <input
+                                    placeholder="Family name"
+                                    value={newFamilyName}
+                                    onChange={(e) => setNewFamilyName(e.target.value)}
+                                />
+                                <input
+                                    placeholder="Invite code (optional)"
+                                    value={newInviteCode}
+                                    onChange={(e) => setNewInviteCode(e.target.value)}
+                                />
+                                <button type="submit" disabled={busy || !newFamilyName.trim()}>Add</button>
+                            </div>
+                        </form>
+                        <form className="admin-form" onSubmit={createUser}>
+                            <p className="admin-eyebrow">Add user</p>
+                            <div className="form-row">
+                                <input
+                                    placeholder="Name"
+                                    value={newUserName}
+                                    onChange={(e) => setNewUserName(e.target.value)}
+                                />
+                                <input
+                                    placeholder="Email"
+                                    value={newUserEmail}
+                                    onChange={(e) => setNewUserEmail(e.target.value)}
+                                    required
+                                />
+                                <select
+                                    value={newUserFamily}
+                                    onChange={(e) => setNewUserFamily(e.target.value)}
+                                    required
+                                >
+                                    <option value="">Select family</option>
+                                    {families.map((f) => (
+                                        <option key={f.id} value={f.id}>{f.name || f.invite_code || f.id}</option>
+                                    ))}
+                                </select>
+                                <button type="submit" disabled={busy || !newUserEmail.trim() || !newUserFamily}>Add</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    {loading ? (
+                        <p className="admin-hint">Loading...</p>
+                    ) : (
+                        <div className="admin-grid">
+                            {familyList.map((fam) => (
+                                <div key={fam.id} className="admin-card">
+                                    <div className="admin-card-header">
+                                        <div>
+                                            <p className="admin-eyebrow">Family</p>
+                                            <h3>{fam.name || 'Untitled family'}</h3>
+                                            <p className="admin-sub">Invite: {fam.invite_code || 'N/A'}</p>
+                                        </div>
+                                        <div className="admin-actions">
+                                            <span className="admin-badge">{fam.members.length} users</span>
+                                            <button className="admin-delete" onClick={() => deleteFamily(fam.id)} disabled={busy}>Delete</button>
+                                        </div>
+                                    </div>
+                                    <div className="admin-users">
+                                        {fam.members.map((m) => (
+                                            <div key={m.id} className="admin-user">
+                                                <div className="admin-avatar">{(m.name || m.email || '?').slice(0, 2).toUpperCase()}</div>
+                                                <div>
+                                                    <p className="admin-user-name">{m.name || m.email}</p>
+                                                    <p className="admin-user-sub">{m.email}</p>
+                                                </div>
+                                                <button className="admin-delete" onClick={() => deleteUser(m.id)} disabled={busy}>Remove</button>
+                                            </div>
+                                        ))}
+                                        {fam.members.length === 0 && <p className="admin-hint">No users</p>}
+                                    </div>
+                                </div>
+                            ))}
+                            {familyList.length === 0 && <p className="admin-hint">No results</p>}
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );
