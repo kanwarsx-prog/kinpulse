@@ -139,11 +139,13 @@ const GroupSwitcher = () => {
                             {group.id === currentGroup?.id && <span className="check-icon">✓</span>}
                         </button>
                     ))}
+                    {/* Temporarily disabled - group creation page not yet implemented
                     <div className="dropdown-divider" />
                     <button className="create-group-btn" onClick={createGroup}>
                         <span className="plus-icon">➕</span>
                         <span>Create New Group</span>
                     </button>
+                    */}
                 </div>
             )}
         </div>
