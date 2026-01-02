@@ -4,22 +4,23 @@ import { useNavigate } from 'react-router-dom';
 import './ChessLobby.css';
 
 const ChessLobby = () => {
-    const { supabase, user } = useSupabase();
+    const { supabase, user, currentGroup } = useSupabase();
     const navigate = useNavigate();
     const [games, setGames] = useState([]);
-    const [familyMembers, setFamilyMembers] = useState([]);
+    const [groupMembers, setGroupMembers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [creating, setCreating] = useState(false);
     const [selectedOpponent, setSelectedOpponent] = useState(null);
 
     useEffect(() => {
-        if (user?.family_id) {
+        if (currentGroup?.id) {
             loadGames();
-            loadFamilyMembers();
+            loadGroupMembers();
         }
-    }, [user?.family_id]);
+    }, [currentGroup?.id]);
 
     const loadGames = async () => {
+        if (!currentGroup?.id) return;
         setLoading(true);
         const { data, error } = await supabase
             .from('chess_games')
@@ -28,7 +29,7 @@ const ChessLobby = () => {
                 white_player:white_player_id(name),
                 black_player:black_player_id(name)
             `)
-            .eq('family_id', user.family_id)
+            .eq('group_id', currentGroup.id)
             .in('status', ['active'])
             .order('updated_at', { ascending: false });
 
@@ -36,21 +37,47 @@ const ChessLobby = () => {
         setLoading(false);
     };
 
-    const loadFamilyMembers = async () => {
-        console.log('Loading family members for family_id:', user.family_id);
+    const loadGroupMembers = async () => {
+        if (!currentGroup?.id) return;
+        console.log('Loading group members for group_id:', currentGroup.id);
+
+        // Get user IDs from group_members
+        const { data: memberData, error: memberError } = await supabase
+            .from('group_members')
+            .select('user_id')
+            .eq('group_id', currentGroup.id)
+            .neq('user_id', user.id);
+
+        if (memberError || !memberData) {
+            console.log('Group members error:', memberError);
+            setGroupMembers([]);
+            return;
+        }
+
+        const userIds = memberData.map(m => m.user_id);
+        if (userIds.length === 0) {
+            setGroupMembers([]);
+            return;
+        }
+
+        // Get profiles for those users
         const { data, error } = await supabase
             .from('profiles')
             .select('id, name')
-            .eq('family_id', user.family_id)
-            .neq('id', user.id);
+            .in('id', userIds);
 
-        console.log('Family members result:', { data, error });
-        setFamilyMembers(data || []);
+        console.log('Group members result:', { data, error });
+        setGroupMembers(data || []);
     };
 
     const handleCreateGame = async () => {
         if (!selectedOpponent) {
             alert('Please select an opponent');
+            return;
+        }
+
+        if (!currentGroup?.id) {
+            alert('Please select a group first');
             return;
         }
 
@@ -60,7 +87,7 @@ const ChessLobby = () => {
         const { data: game, error: gameError } = await supabase
             .from('chess_games')
             .insert({
-                family_id: user.family_id,
+                group_id: currentGroup.id,
                 white_player_id: user.id,
                 black_player_id: selectedOpponent,
                 current_turn: 'white'

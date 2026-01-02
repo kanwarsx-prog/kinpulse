@@ -4,7 +4,7 @@ import './PokerLobby.css';
 import './PokerTable.css';
 
 const PokerLobby = () => {
-    const { supabase, user } = useSupabase();
+    const { supabase, user, currentGroup } = useSupabase();
     const [tables, setTables] = useState([]);
     const [loading, setLoading] = useState(true);
     const [creating, setCreating] = useState(false);
@@ -21,11 +21,11 @@ const PokerLobby = () => {
     const isMyTurn = handState?.hand && mySeat && handState.hand.turn_seat_no === mySeat.seat_no && handState.hand.status !== 'complete';
 
     useEffect(() => {
-        if (user?.family_id) {
+        if (currentGroup?.id) {
             loadTables();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.family_id]);
+    }, [currentGroup?.id]);
 
     useEffect(() => {
         if (!selected) return undefined;
@@ -37,11 +37,12 @@ const PokerLobby = () => {
     }, [selected?.id, mySeat?.id]);
 
     const loadTables = async () => {
+        if (!currentGroup?.id) return;
         setLoading(true);
         const { data, error } = await supabase
             .from('poker_tables')
             .select('*')
-            .eq('family_id', user.family_id)
+            .eq('group_id', currentGroup.id)
             .in('status', ['open', 'active'])
             .order('created_at', { ascending: false });
         if (!error) setTables(data || []);
@@ -79,19 +80,19 @@ const PokerLobby = () => {
     };
 
     const handleCreate = async () => {
-        if (!newName.trim()) return;
+        if (!newName.trim() || !currentGroup?.id) return;
         setCreating(true);
-        // Close existing open/active tables for this family
+        // Close existing open/active tables for this group
         await supabase
             .from('poker_tables')
             .update({ status: 'finished', updated_at: new Date().toISOString() })
-            .eq('family_id', user.family_id)
+            .eq('group_id', currentGroup.id)
             .neq('status', 'finished');
 
         const { data, error } = await supabase
             .from('poker_tables')
             .insert({
-                family_id: user.family_id,
+                group_id: currentGroup.id,
                 name: newName.trim(),
                 created_by: user.id,
             })
