@@ -22,7 +22,7 @@ const formatCountdown = (target) => {
 };
 
 const SplashHighlight = () => {
-  const { supabase, user } = useSupabase();
+  const { supabase, user, currentGroup } = useSupabase();
   const navigate = useNavigate();
   const [featured, setFeatured] = useState(null);
   const [countdown, setCountdown] = useState('');
@@ -42,14 +42,14 @@ const SplashHighlight = () => {
   }, [featured?.id]);
 
   useEffect(() => {
-    if (!user?.family_id) return;
+    if (!currentGroup?.id) return;
     const load = async () => {
       setLoading(true);
       try {
         const { data, error } = await supabase
           .from('events')
           .select('id,title,start_time,event_type,description,show_on_splash')
-          .eq('family_id', user.family_id)
+          .eq('group_id', currentGroup.id)
           .eq('show_on_splash', true)
           .gte('start_time', new Date().toISOString())
           .order('start_time', { ascending: true })
@@ -72,7 +72,7 @@ const SplashHighlight = () => {
     };
 
     load();
-  }, [supabase, user?.family_id]);
+  }, [supabase, currentGroup?.id]);
 
   useEffect(() => {
     if (!featured?.start_time || hidden || isDismissed) return;

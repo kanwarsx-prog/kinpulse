@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSupabase } from '../contexts/SupabaseContext';
 
 export const useCalendar = ({ startDate, endDate }) => {
-    const { supabase, user } = useSupabase();
+    const { supabase, user, currentGroup } = useSupabase();
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -23,7 +23,7 @@ export const useCalendar = ({ startDate, endDate }) => {
     }, [user?.family_id, startDate, endDate]);
 
     const fetchEvents = async () => {
-        if (!user?.family_id) return;
+        if (!currentGroup?.id) return;
 
         try {
             const startIso = toLocalISOString(startDate);
@@ -31,7 +31,7 @@ export const useCalendar = ({ startDate, endDate }) => {
             const { data, error } = await supabase
                 .from('events')
                 .select('*, created_by_profile:profiles!created_by(id, name, email)')
-                .eq('family_id', user.family_id)
+                .eq('group_id', currentGroup.id)
                 .or(
                     [
                         `and(start_time.gte.${startIso},start_time.lte.${endIso})`,
