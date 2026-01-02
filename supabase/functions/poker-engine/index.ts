@@ -174,7 +174,7 @@ const json = (data: unknown, status = 200) =>
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return json({ ok: true }, 200);
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   try {
