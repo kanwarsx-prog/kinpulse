@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.200.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
+import { Hand } from 'https://esm.sh/pokersolver@2.1.4';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
@@ -517,31 +518,56 @@ serve(async (req) => {
         };
 
         if (status === 'complete') {
+          let winningHandName = '';
+          let winningHandDescr = '';
+
           if (!winnerSeatId) {
-            // showdown: evaluate best hand among surviving non-folded seats
+            // Showdown: evaluate best hand using pokersolver
             const survivors = activeSeats.filter((s) => !(committed[s.id]?.folded));
             const board = board_cards ?? [];
-            let best: Strength | null = null;
-            winnerSeatIds = [];
-            for (const s of survivors) {
+
+            // Evaluate each player's hand
+            const playerHands = survivors.map(s => {
               const hole = (hand.hole_cards ?? {})[s.id] ?? [];
-              const strength = bestOf7([...board, ...hole]);
-              const cmp = best ? compareStrength(strength, best) : 1;
-              if (!best || cmp > 0) {
-                best = strength;
-                winnerSeatIds = [s.id];
-              } else if (cmp === 0) {
-                winnerSeatIds.push(s.id);
-              }
+              // pokersolver expects uppercase format: 'Ah', 'Kd', etc.
+              const allCards = [...hole, ...board].map(c => c[0].toUpperCase() + c[1].toLowerCase());
+              return {
+                seatId: s.id,
+                hand: Hand.solve(allCards)
+              };
+            });
+
+            // Find winner(s)
+            const hands = playerHands.map(ph => ph.hand);
+            const winningHands = Hand.winners(hands);
+
+            // Get seat IDs of winners
+            winnerSeatIds = playerHands
+              .filter(ph => winningHands.includes(ph.hand))
+              .map(ph => ph.seatId);
+
+            // Store winning hand info
+            if (winningHands.length > 0) {
+              winningHandName = winningHands[0].name;
+              winningHandDescr = winningHands[0].descr;
             }
+
             await awardChips(winnerSeatIds, newPot);
             winnerSeatId = winnerSeatIds[0];
           } else {
+            // Single winner (everyone else folded)
             winnerSeatIds = [winnerSeatId];
             await awardChips(winnerSeatIds, newPot);
           }
-          // Pot is distributed, so it becomes 0
-          // pot = 0; // This line is no longer needed as newPot is used for awardChips
+
+          // Store winning hand info in hand record
+          await supabase
+            .from('poker_hands')
+            .update({
+              winning_hand_name: winningHandName,
+              winning_hand_descr: winningHandDescr
+            })
+            .eq('id', hand_id);
         }
 
         await supabase
