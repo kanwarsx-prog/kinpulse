@@ -29,22 +29,37 @@ const GroupSwitcher = () => {
 
     const loadGroups = async () => {
         try {
-            // Get all groups user belongs to
-            const { data: memberData, error } = await supabase
+            // First, get group IDs user belongs to
+            const { data: memberData, error: memberError } = await supabase
                 .from('group_members')
-                .select('groups(*)')
+                .select('group_id')
                 .eq('user_id', user.id);
 
-            if (error) {
-                console.error('Error loading groups:', error);
+            if (memberError) {
+                console.error('Error loading group memberships:', memberError);
                 return;
             }
 
-            // Extract groups and filter out any nulls
-            const userGroups = memberData
-                ?.map(gm => gm.groups)
-                .filter(g => g && g.id) || [];
+            const groupIds = memberData?.map(gm => gm.group_id) || [];
 
+            if (groupIds.length === 0) {
+                console.log('No groups found for user');
+                setGroups([]);
+                return;
+            }
+
+            // Then, get the actual group data
+            const { data: groupsData, error: groupsError } = await supabase
+                .from('groups')
+                .select('*')
+                .in('id', groupIds);
+
+            if (groupsError) {
+                console.error('Error loading groups:', groupsError);
+                return;
+            }
+
+            const userGroups = groupsData || [];
             console.log('Loaded groups:', userGroups);
             setGroups(userGroups);
 
