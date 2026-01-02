@@ -257,7 +257,7 @@ const PokerLobby = () => {
             setMessage(`Exception: ${err.message}`);
         }
 
-        await fetchState(handState.hand.table_id);
+        await fetchState(handState.hand.table_id, mySeat.id);
         setBusy(false);
     };
 
