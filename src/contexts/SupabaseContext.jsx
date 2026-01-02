@@ -8,6 +8,7 @@ export const useSupabase = () => useContext(SupabaseContext);
 export const SupabaseProvider = ({ children }) => {
     const [session, setSession] = useState(null);
     const [user, setUser] = useState(null);
+    const [currentGroup, setCurrentGroup] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -81,6 +82,10 @@ export const SupabaseProvider = ({ children }) => {
                 }
             } else {
                 setUser(profile);
+                // Load current group
+                if (profile.current_group_id) {
+                    loadCurrentGroup(profile.current_group_id);
+                }
             }
         } catch (err) {
             console.error('Profile fetch error:', err);
@@ -99,6 +104,20 @@ export const SupabaseProvider = ({ children }) => {
     const refreshUser = async () => {
         if (session?.user) {
             await fetchUserProfile(session.user.id, session.user.email);
+        }
+    };
+
+    const loadCurrentGroup = async (groupId) => {
+        try {
+            const { data: group } = await supabase
+                .from('groups')
+                .select('*')
+                .eq('id', groupId)
+                .single();
+
+            setCurrentGroup(group);
+        } catch (error) {
+            console.error('Error loading current group:', error);
         }
     };
 
@@ -123,6 +142,8 @@ export const SupabaseProvider = ({ children }) => {
         supabase,
         session,
         user,
+        currentGroup,
+        setCurrentGroup,
         loading,
         signUp,
         signIn,
