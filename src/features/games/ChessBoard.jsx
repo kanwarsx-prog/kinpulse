@@ -257,7 +257,7 @@ const ChessBoard = () => {
                 </button>
                 <div className="game-info">
                     <h2>
-                        {game.white_player?.full_name} (White) vs {game.black_player?.full_name} (Black)
+                        {game.white_player?.name || 'White'} (White) vs {game.black_player?.name || 'Black'} (Black)
                     </h2>
                     {!gameOver && (
                         <p className="turn-indicator">
@@ -267,7 +267,7 @@ const ChessBoard = () => {
                     {gameOver && (
                         <p className="game-over">
                             Game Over - {game.status}
-                            {game.winner_id && ` - Winner: ${game.winner_id === game.white_player_id ? game.white_player?.full_name : game.black_player?.full_name}`}
+                            {game.winner_id && ` - Winner: ${game.winner_id === game.white_player_id ? (game.white_player?.name || 'White') : (game.black_player?.name || 'Black')}`}
                         </p>
                     )}
                 </div>
