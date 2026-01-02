@@ -303,6 +303,7 @@
     background: radial-gradient(circle at 50% 30%, #1e3a8a 0%, #0f172a 70%);
     border-radius: 20px;
     padding: 16px;
+    padding-bottom: 100px;
     color: white;
     position: relative;
     min-height: 320px;
@@ -335,6 +336,7 @@
 
 .my-cards {
     margin-top: 10px;
+    margin-bottom: 80px;
 }
 
 .action-bar {
