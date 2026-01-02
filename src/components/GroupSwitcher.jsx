@@ -7,13 +7,14 @@ const GroupSwitcher = () => {
     const [groups, setGroups] = useState([]);
     const [currentGroup, setCurrentGroup] = useState(null);
     const [showDropdown, setShowDropdown] = useState(false);
+    const [loading, setLoading] = useState(true);
     const dropdownRef = useRef(null);
 
     useEffect(() => {
-        if (user) {
+        if (user?.id) {
             loadGroups();
         }
-    }, [user]);
+    }, [user?.id]); // Only re-run when user.id changes
 
     useEffect(() => {
         // Close dropdown when clicking outside
@@ -62,6 +63,7 @@ const GroupSwitcher = () => {
             const userGroups = groupsData || [];
             console.log('Loaded groups:', userGroups);
             setGroups(userGroups);
+            setLoading(false);
 
             // Get current group
             const { data: profile } = await supabase
@@ -104,7 +106,11 @@ const GroupSwitcher = () => {
         window.location.href = '/groups/create';
     };
 
-    if (!user || groups.length === 0) {
+    if (!user || loading) {
+        return null;
+    }
+
+    if (groups.length === 0) {
         return null;
     }
 
