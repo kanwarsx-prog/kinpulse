@@ -157,7 +157,7 @@ const ChessLobby = () => {
                     disabled={creating}
                 >
                     <option value="">Select opponent...</option>
-                    {familyMembers.map((member) => (
+                    {groupMembers.map((member) => (
                         <option key={member.id} value={member.id}>
                             {member.name || member.email || 'Unknown'}
                         </option>
