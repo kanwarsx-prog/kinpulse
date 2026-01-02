@@ -12,7 +12,7 @@ export const useCalendar = ({ startDate, endDate }) => {
     };
 
     useEffect(() => {
-        if (!user?.family_id || !startDate || !endDate) return;
+        if (!currentGroup?.id || !startDate || !endDate) return;
 
         fetchEvents();
         subscribeToEvents();
@@ -20,7 +20,7 @@ export const useCalendar = ({ startDate, endDate }) => {
         return () => {
             // Cleanup subscription
         };
-    }, [user?.family_id, startDate, endDate]);
+    }, [currentGroup?.id, startDate, endDate]);
 
     const fetchEvents = async () => {
         if (!currentGroup?.id) return;
@@ -60,7 +60,7 @@ export const useCalendar = ({ startDate, endDate }) => {
                     event: '*',
                     schema: 'public',
                     table: 'events',
-                    filter: `family_id=eq.${user.family_id}`
+                    filter: `group_id=eq.${currentGroup.id}`
                 },
                 () => {
                     fetchEvents();
@@ -77,7 +77,7 @@ export const useCalendar = ({ startDate, endDate }) => {
                 .from('events')
                 .insert([{
                     ...eventData,
-                    family_id: user.family_id,
+                    group_id: currentGroup.id,
                     created_by: user.id
                 }])
                 .select()
