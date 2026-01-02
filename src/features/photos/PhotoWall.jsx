@@ -6,7 +6,7 @@ import Avatar from '../../components/ui/Avatar';
 import './PhotoWall.css';
 
 export default function PhotoWall() {
-    const { supabase, user } = useSupabase();
+    const { supabase, user, currentGroup } = useSupabase();
     const [photos, setPhotos] = useState([]);
     const [profiles, setProfiles] = useState({});
     const [loading, setLoading] = useState(true);
@@ -18,12 +18,23 @@ export default function PhotoWall() {
         fetchPhotos();
         fetchProfiles();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.family_id]);
+    }, [currentGroup?.id]);
 
     const fetchProfiles = async () => {
-        if (!user?.family_id) return;
+        if (!currentGroup?.id) return;
 
-        const { data } = await supabase.from('profiles').select('id, name, email').eq('family_id', user.family_id);
+        // Get group members
+        const { data: memberData } = await supabase
+            .from('group_members')
+            .select('user_id')
+            .eq('group_id', currentGroup.id);
+
+        const memberIds = memberData?.map(m => m.user_id) || [];
+
+        const { data } = await supabase
+            .from('profiles')
+            .select('id, name, email')
+            .in('id', memberIds);
 
         if (data) {
             const profileMap = {};
@@ -35,7 +46,7 @@ export default function PhotoWall() {
     };
 
     const fetchPhotos = async () => {
-        if (!user?.family_id) {
+        if (!currentGroup?.id) {
             setLoading(false);
             return;
         }
@@ -44,7 +55,7 @@ export default function PhotoWall() {
             const { data: pulsePhotos } = await supabase
                 .from('pulses')
                 .select('photo_url, created_at, user_id, id')
-                .eq('family_id', user.family_id)
+                .eq('group_id', currentGroup.id)
                 .not('photo_url', 'is', null)
                 .not('photo_url', 'eq', '')
                 .order('created_at', { ascending: false });
@@ -52,7 +63,7 @@ export default function PhotoWall() {
             const { data: chatPhotos } = await supabase
                 .from('messages')
                 .select('photo_url, created_at, user_id, id')
-                .eq('family_id', user.family_id)
+                .eq('group_id', currentGroup.id)
                 .not('photo_url', 'is', null)
                 .not('photo_url', 'eq', '')
                 .order('created_at', { ascending: false });

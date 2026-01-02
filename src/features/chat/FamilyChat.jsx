@@ -13,7 +13,7 @@ import './FamilyChat.css';
 const PAGE_SIZE = 50;
 
 const FamilyChat = () => {
-    const { supabase, user } = useSupabase();
+    const { supabase, user, currentGroup } = useSupabase();
     const { markAsRead } = useUnreadCounts();
     const [messages, setMessages] = useState([]);
     const [page, setPage] = useState(0);
@@ -55,7 +55,7 @@ const FamilyChat = () => {
     };
 
     useEffect(() => {
-        if (user?.family_id) {
+        if (currentGroup?.id) {
             fetchMessages(true);
             fetchProfiles();
             markAsRead();
@@ -166,7 +166,21 @@ const FamilyChat = () => {
     };
 
     const fetchProfiles = async () => {
-        const { data } = await supabase.from('profiles').select('*').eq('family_id', user.family_id);
+        if (!currentGroup?.id) return;
+
+        // Get group members
+        const { data: memberData } = await supabase
+            .from('group_members')
+            .select('user_id')
+            .eq('group_id', currentGroup.id);
+
+        const memberIds = memberData?.map(m => m.user_id) || [];
+
+        // Get profiles for group members
+        const { data } = await supabase
+            .from('profiles')
+            .select('*')
+            .in('id', memberIds);
 
         const profileMap = {};
         data?.forEach((p) => (profileMap[p.id] = p));
@@ -174,14 +188,16 @@ const FamilyChat = () => {
     };
 
     const fetchMessages = async (reset = false) => {
+        if (!currentGroup?.id) return;
+
         const currentPage = reset ? 0 : page;
         const { data } = await supabase
             .from('messages')
-                .select('*')
-                .eq('family_id', user.family_id)
-                .is('recipient_id', null)
-                .order('created_at', { ascending: false })
-                .range(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE - 1);
+            .select('*')
+            .eq('group_id', currentGroup.id)
+            .is('recipient_id', null)
+            .order('created_at', { ascending: false })
+            .range(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE - 1);
 
         if (data) {
             const chunk = [...data].reverse();
@@ -470,8 +486,8 @@ const FamilyChat = () => {
                         })}
                     </>
                 )}
-            <div ref={messagesEndRef} />
-        </div>
+                <div ref={messagesEndRef} />
+            </div>
 
             <form className="message-input-form" onSubmit={handleSend}>
                 {photoPreview && (
@@ -516,14 +532,14 @@ const FamilyChat = () => {
                 </div>
             </form>
 
-        {showVoiceRecorder && (
-            <div className="voice-recorder-container">
-                <VoiceRecorder onSend={handleSendVoice} onCancel={() => setShowVoiceRecorder(false)} />
-            </div>
-        )}
-        <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
-    </div>
-);
+            {showVoiceRecorder && (
+                <div className="voice-recorder-container">
+                    <VoiceRecorder onSend={handleSendVoice} onCancel={() => setShowVoiceRecorder(false)} />
+                </div>
+            )}
+            <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+        </div>
+    );
 };
 
 export default FamilyChat;
