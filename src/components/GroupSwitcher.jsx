@@ -3,9 +3,8 @@ import { useSupabase } from '../contexts/SupabaseContext';
 import './GroupSwitcher.css';
 
 const GroupSwitcher = () => {
-    const { user, supabase } = useSupabase();
+    const { user, supabase, currentGroup, setCurrentGroup } = useSupabase();
     const [groups, setGroups] = useState([]);
-    const [currentGroup, setCurrentGroup] = useState(null);
     const [showDropdown, setShowDropdown] = useState(false);
     const [loading, setLoading] = useState(true);
     const dropdownRef = useRef(null);
