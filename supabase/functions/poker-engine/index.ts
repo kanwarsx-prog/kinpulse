@@ -368,6 +368,7 @@ serve(async (req) => {
         }
 
         const committed: CommittedMap = hand.committed || {};
+        let lastAggressorSeatNo = hand.last_aggressor_seat_no ?? null;
         const entry = committed[seat_id] || { amount: 0 };
         const currentBet = hand.current_bet ?? 0;
 
@@ -433,7 +434,6 @@ serve(async (req) => {
         let winnerSeatId: string | undefined;
         let winnerSeatIds: string[] = [];
         let nextTurnSeatNo = hand.turn_seat_no;
-        let lastAggressorSeatNo = hand.last_aggressor_seat_no ?? null;
 
 
         // if only one player left, award pot
