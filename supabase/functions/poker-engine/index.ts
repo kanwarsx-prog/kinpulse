@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.200.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
-import { Hand } from 'https://esm.sh/pokersolver@2.1.4';
+import PokerSolver from 'https://esm.sh/pokersolver@2.1.4';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
@@ -533,13 +533,13 @@ serve(async (req) => {
               const allCards = [...hole, ...board].map(c => c[0].toUpperCase() + c[1].toLowerCase());
               return {
                 seatId: s.id,
-                hand: Hand.solve(allCards)
+                hand: PokerSolver.Hand.solve(allCards)
               };
             });
 
             // Find winner(s)
             const hands = playerHands.map(ph => ph.hand);
-            const winningHands = Hand.winners(hands);
+            const winningHands = PokerSolver.Hand.winners(hands);
 
             // Get seat IDs of winners
             winnerSeatIds = playerHands
