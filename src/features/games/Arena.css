@@ -33,8 +33,8 @@
 }
 
 .primary {
-    background: linear-gradient(135deg, #2563eb, #7c3aed);
-    color: white;
+    background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
+    color: white !important;
     border: none;
     padding: 10px 16px;
     border-radius: 12px;
