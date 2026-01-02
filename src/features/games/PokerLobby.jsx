@@ -15,7 +15,7 @@ const PokerLobby = () => {
     const [handState, setHandState] = useState(null);
     const [busy, setBusy] = useState(false);
     const [message, setMessage] = useState('');
-    const [fullView, setFullView] = useState(false);
+
 
     const mySeat = useMemo(() => seats.find((s) => s.user_id === user?.id), [seats, user?.id]);
     const isMyTurn = handState?.hand && mySeat && handState.hand.turn_seat_no === mySeat.seat_no && handState.hand.status !== 'complete';
@@ -291,7 +291,7 @@ const PokerLobby = () => {
     };
 
     return (
-        <div className={`poker-shell ${fullView ? 'full' : ''}`}>
+        <div className="poker-shell">
             {!selected && (
                 <section className="poker-create">
                     <input
@@ -353,7 +353,7 @@ const PokerLobby = () => {
                             <div className="card-meta">Pot {pot} • {street}</div>
                         </div>
                         <div className="panel-actions compact">
-                            <button className="ghost" onClick={() => setFullView((v) => !v)} disabled={busy}>{fullView ? 'Exit full screen' : 'Full screen'}</button>
+
                             <button onClick={startHand} disabled={busy || status === 'betting' || selected.status === 'finished'}>Start</button>
                             {selected.created_by === user.id && (
                                 <button className="ghost" onClick={handleCloseTable} disabled={busy}>Close</button>
