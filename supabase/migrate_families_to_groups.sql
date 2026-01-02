@@ -43,21 +43,31 @@ AND current_group_id IS NULL;
 
 -- 4. Backfill group_id on existing content tables
 
--- Photos
-UPDATE photos 
-SET group_id = (
-    SELECT family_id FROM profiles WHERE profiles.id = photos.user_id
-)
-WHERE group_id IS NULL 
-AND user_id IN (SELECT id FROM profiles WHERE family_id IS NOT NULL);
+-- Photos (if table exists)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'photos') THEN
+        UPDATE photos 
+        SET group_id = (
+            SELECT family_id FROM profiles WHERE profiles.id = photos.user_id
+        )
+        WHERE group_id IS NULL 
+        AND user_id IN (SELECT id FROM profiles WHERE family_id IS NOT NULL);
+    END IF;
+END $$;
 
--- Messages
-UPDATE messages 
-SET group_id = (
-    SELECT family_id FROM profiles WHERE profiles.id = messages.user_id
-)
-WHERE group_id IS NULL 
-AND user_id IN (SELECT id FROM profiles WHERE family_id IS NOT NULL);
+-- Messages (if table exists)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'messages') THEN
+        UPDATE messages 
+        SET group_id = (
+            SELECT family_id FROM profiles WHERE profiles.id = messages.user_id
+        )
+        WHERE group_id IS NULL 
+        AND user_id IN (SELECT id FROM profiles WHERE family_id IS NOT NULL);
+    END IF;
+END $$;
 
 -- Poker tables
 UPDATE poker_tables 
@@ -71,13 +81,18 @@ SET group_id = family_id
 WHERE group_id IS NULL 
 AND family_id IS NOT NULL;
 
--- Pulses
-UPDATE pulses 
-SET group_id = (
-    SELECT family_id FROM profiles WHERE profiles.id = pulses.user_id
-)
-WHERE group_id IS NULL 
-AND user_id IN (SELECT id FROM profiles WHERE family_id IS NOT NULL);
+-- Pulses (if table exists)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'pulses') THEN
+        UPDATE pulses 
+        SET group_id = (
+            SELECT family_id FROM profiles WHERE profiles.id = pulses.user_id
+        )
+        WHERE group_id IS NULL 
+        AND user_id IN (SELECT id FROM profiles WHERE family_id IS NOT NULL);
+    END IF;
+END $$;
 
 -- Calendar events (if table exists)
 DO $$
