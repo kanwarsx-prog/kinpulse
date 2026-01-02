@@ -12,7 +12,7 @@ SELECT
     '👨‍👩‍👧‍👦' as icon,
     f.created_by,
     f.created_at,
-    f.updated_at
+    f.created_at as updated_at
 FROM families f
 WHERE NOT EXISTS (SELECT 1 FROM groups WHERE groups.id = f.id);
 
