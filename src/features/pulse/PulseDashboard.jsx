@@ -150,12 +150,13 @@ const PulseDashboard = () => {
     };
 
     const fetchMyHistory = async () => {
-        if (!user?.id) return;
+        if (!user?.id || !currentGroup?.id) return;
         const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
         const { data } = await supabase
             .from('pulses')
             .select('*')
             .eq('user_id', user.id)
+            .eq('group_id', currentGroup.id)
             .gte('created_at', since)
             .order('created_at', { ascending: false })
             .limit(30);
