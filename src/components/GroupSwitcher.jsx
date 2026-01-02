@@ -30,12 +30,22 @@ const GroupSwitcher = () => {
     const loadGroups = async () => {
         try {
             // Get all groups user belongs to
-            const { data: memberData } = await supabase
+            const { data: memberData, error } = await supabase
                 .from('group_members')
                 .select('groups(*)')
                 .eq('user_id', user.id);
 
-            const userGroups = memberData?.map(gm => gm.groups) || [];
+            if (error) {
+                console.error('Error loading groups:', error);
+                return;
+            }
+
+            // Extract groups and filter out any nulls
+            const userGroups = memberData
+                ?.map(gm => gm.groups)
+                .filter(g => g && g.id) || [];
+
+            console.log('Loaded groups:', userGroups);
             setGroups(userGroups);
 
             // Get current group
