@@ -112,7 +112,31 @@ const VibeTicker = ({ pulses, profiles, onReply }) => {
           onTouchEnd={() => setPaused(false)}
         >
           <div className="vibe-marquee-track" style={{ animationDuration: `${duration}s`, ...marqueeStyle }}>
-            {vibes.map(renderCard)}
+            {vibes.map((vibe, index) => {
+              const profile = profiles?.[vibe.user_id] || {};
+              const label = profile.name || profile.email || 'Family';
+              const time = vibe.created_at ? new Date(vibe.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+              const emoji = vibe.state ? statusEmoji[vibe.state] || '🙂' : '📷';
+              const note = vibe.note || (vibe.photo_url ? 'Shared a photo' : 'Shared an update');
+              return (
+                <button
+                  key={`${vibe.id}-${index}`}
+                  className="vibe-card"
+                  onClick={() => setFocus(vibe)}
+                  aria-label={`Open ${label} update`}
+                >
+                  <div className="vibe-avatar">
+                    <Avatar name={profile.name} email={profile.email} />
+                    <span className="vibe-emoji">{emoji}</span>
+                  </div>
+                  <div className="vibe-text">
+                    <div className="vibe-name">{label}</div>
+                    <div className="vibe-note">{note}</div>
+                    <div className="vibe-time">{time}</div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
