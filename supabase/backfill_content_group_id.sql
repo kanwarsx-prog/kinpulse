@@ -1,5 +1,5 @@
 -- Backfill group_id for existing content
--- This assigns existing family content to the corresponding group
+-- This assigns existing content to each user's first group
 
 -- First, let's see what we're working with
 SELECT 
@@ -17,21 +17,30 @@ SELECT
 FROM pulses;
 
 -- Backfill messages
--- For each message with family_id but no group_id, find the corresponding group
+-- For each message without group_id, assign it to the sender's first group
 UPDATE messages m
-SET group_id = g.id
-FROM groups g
-WHERE m.family_id = g.family_id
-  AND m.group_id IS NULL
-  AND g.family_id IS NOT NULL;
+SET group_id = (
+    SELECT gm.group_id 
+    FROM group_members gm 
+    WHERE gm.user_id = m.user_id 
+    ORDER BY gm.joined_at ASC 
+    LIMIT 1
+)
+WHERE m.group_id IS NULL
+  AND m.user_id IS NOT NULL;
 
 -- Backfill pulses
+-- For each pulse without group_id, assign it to the user's first group
 UPDATE pulses p
-SET group_id = g.id
-FROM groups g
-WHERE p.family_id = g.family_id
-  AND p.group_id IS NULL
-  AND g.family_id IS NOT NULL;
+SET group_id = (
+    SELECT gm.group_id 
+    FROM group_members gm 
+    WHERE gm.user_id = p.user_id 
+    ORDER BY gm.joined_at ASC 
+    LIMIT 1
+)
+WHERE p.group_id IS NULL
+  AND p.user_id IS NOT NULL;
 
 -- Verify the backfill
 SELECT 
