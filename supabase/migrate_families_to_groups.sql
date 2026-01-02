@@ -109,5 +109,5 @@ SELECT
     (SELECT COUNT(*) FROM group_members) as total_memberships,
     (SELECT COUNT(*) FROM profiles WHERE current_group_id IS NOT NULL) as users_with_group;
 
--- Comments
-COMMENT ON SCRIPT IS 'Migrates existing family data to new multi-group structure. Run after create_groups_schema.sql.';
+-- Migration complete!
+-- This script migrates existing family data to new multi-group structure.
