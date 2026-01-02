@@ -443,6 +443,15 @@ const PokerLobby = () => {
                     )}
                     {status === 'complete' && (
                         <div className="hand-complete">
+                            {handState?.hand?.winning_hand_name && (
+                                <div className="winning-hand-display">
+                                    <div className="trophy-icon">🏆</div>
+                                    <div className="winning-hand-info">
+                                        <div className="winning-hand-name">{handState.hand.winning_hand_name}</div>
+                                        <div className="winning-hand-descr">{handState.hand.winning_hand_descr}</div>
+                                    </div>
+                                </div>
+                            )}
                             <div>Hand complete. Start the next hand.</div>
                             <button onClick={startHand} disabled={busy}>Start next hand</button>
                         </div>
