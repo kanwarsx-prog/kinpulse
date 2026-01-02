@@ -294,8 +294,41 @@
     border: 1px solid #bbf7d0;
     border-radius: 12px;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.winning-hand-display {
+    display: flex;
     align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 2px solid #f59e0b;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.trophy-icon {
+    font-size: 32px;
+    line-height: 1;
+}
+
+.winning-hand-info {
+    flex: 1;
+}
+
+.winning-hand-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #92400e;
+    margin-bottom: 4px;
+}
+
+.winning-hand-descr {
+    font-size: 14px;
+    color: #78350f;
+    font-weight: 500;
 }
 
 .table-felt {
