@@ -196,10 +196,17 @@ const ChessBoard = () => {
         const board = [];
         const squares = chess.board();
 
+        // Determine if we should flip the board (black player sees board from their perspective)
+        const isBlackPlayer = game && game.black_player_id === user.id;
+
         for (let row = 0; row < 8; row++) {
             for (let col = 0; col < 8; col++) {
-                const square = String.fromCharCode(97 + col) + (8 - row);
-                const piece = squares[row][col];
+                // Flip the board for black player
+                const displayRow = isBlackPlayer ? 7 - row : row;
+                const displayCol = isBlackPlayer ? 7 - col : col;
+
+                const square = String.fromCharCode(97 + displayCol) + (8 - displayRow);
+                const piece = squares[displayRow][displayCol];
                 const isLight = (row + col) % 2 === 0;
                 const isSelected = selectedSquare === square;
                 const isLegalMove = legalMoves.includes(square);
