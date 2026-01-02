@@ -509,6 +509,13 @@ serve(async (req) => {
               // Heads-up: non-dealer acts first on flop/turn/river
               const dealerIdx = ordered.findIndex((s) => s.seat_no === hand.dealer_seat_no);
               const nonDealerIdx = (dealerIdx + 1) % ordered.length;
+              console.log('Heads-up turn calculation:', {
+                ordered: ordered.map(s => ({ seat_no: s.seat_no, id: s.id })),
+                dealer_seat_no: hand.dealer_seat_no,
+                dealerIdx,
+                nonDealerIdx,
+                nextTurnSeatNo: ordered[nonDealerIdx]?.seat_no
+              });
               nextTurnSeatNo = ordered[nonDealerIdx]?.seat_no ?? nextTurnSeatNo;
             } else {
               // Multi-way: player after dealer acts first
