@@ -458,11 +458,18 @@ serve(async (req) => {
             return entryS.amount >= target || seatChip === 0 || entryS.folded;
           });
 
+
           // Determine if betting round is complete
           // Round ends when action returns to last aggressor (or dealer if no raises)
           let roundComplete = false;
           if (allMatched) {
-            if (lastAggressorSeatNo === null) {
+            // In heads-up (2 players), round completes after both players act
+            if (ordered.length === 2) {
+              // Both players have acted if we're back to the first player
+              const firstPlayerIdx = 0;
+              const currentPlayerIdx = ordered.findIndex((s) => s.seat_no === nextTurnSeatNo);
+              roundComplete = currentPlayerIdx === firstPlayerIdx;
+            } else if (lastAggressorSeatNo === null) {
               // No one has bet/raised this street - round ends when back to dealer
               const dealerSeat = ordered.find((s) => s.seat_no === hand.dealer_seat_no);
               roundComplete = nextTurnSeatNo === dealerSeat?.seat_no;
