@@ -122,89 +122,89 @@ const ChessLobby = () => {
         setSelectedOpponent(null);
         navigate(`/games/chess/${game.id}`);
     };
-};
 
-const handleJoinGame = (gameId) => {
-    navigate(`/games/chess/${gameId}`);
-};
 
-const getPlayerName = (game) => {
-    const isWhite = game.white_player_id === user.id;
-    const isBlack = game.black_player_id === user.id;
+    const handleJoinGame = (gameId) => {
+        navigate(`/games/chess/${gameId}`);
+    };
 
-    if (isWhite) {
-        return `vs ${game.black_player?.name || 'Opponent'}`;
-    } else if (isBlack) {
-        return `vs ${game.white_player?.name || 'Opponent'}`;
-    } else {
-        return `${game.white_player?.name} vs ${game.black_player?.name}`;
-    }
-};
+    const getPlayerName = (game) => {
+        const isWhite = game.white_player_id === user.id;
+        const isBlack = game.black_player_id === user.id;
 
-const isMyTurn = (game) => {
+        if (isWhite) {
+            return `vs ${game.black_player?.name || 'Opponent'}`;
+        } else if (isBlack) {
+            return `vs ${game.white_player?.name || 'Opponent'}`;
+        } else {
+            return `${game.white_player?.name} vs ${game.black_player?.name}`;
+        }
+    };
+
+    const isMyTurn = (game) => {
+        return (
+            (game.current_turn === 'white' && game.white_player_id === user.id) ||
+            (game.current_turn === 'black' && game.black_player_id === user.id)
+        );
+    };
+
     return (
-        (game.current_turn === 'white' && game.white_player_id === user.id) ||
-        (game.current_turn === 'black' && game.black_player_id === user.id)
-    );
-};
-
-return (
-    <div className="chess-lobby">
-        <header className="chess-header">
-            <div>
-                <p className="eyebrow">Family game</p>
-                <h1>♟️ Chess</h1>
-                <p className="subtle">Play chess with your family</p>
-            </div>
-        </header>
-
-        <section className="chess-create">
-            <h3>New Game</h3>
-            <select
-                value={selectedOpponent || ''}
-                onChange={(e) => setSelectedOpponent(e.target.value)}
-                disabled={creating}
-            >
-                <option value="">Select opponent...</option>
-                {groupMembers.map((member) => (
-                    <option key={member.id} value={member.id}>
-                        {member.name || member.email || 'Unknown'}
-                    </option>
-                ))}
-            </select>
-            <button onClick={handleCreateGame} disabled={creating || !selectedOpponent}>
-                {creating ? 'Creating...' : 'Create Game'}
-            </button>
-        </section>
-
-        <section className="chess-games">
-            <h3>Active Games</h3>
-            {loading && <div className="muted">Loading games...</div>}
-            {!loading && games.length === 0 && (
-                <div className="muted">No active games. Create one!</div>
-            )}
-            {games.map((game) => (
-                <div
-                    key={game.id}
-                    className={`chess-game-card ${isMyTurn(game) ? 'my-turn' : ''}`}
-                    onClick={() => handleJoinGame(game.id)}
-                >
-                    <div className="game-info">
-                        <div className="game-title">{getPlayerName(game)}</div>
-                        <div className="game-meta">
-                            {isMyTurn(game) ? (
-                                <span className="turn-badge">Your turn</span>
-                            ) : (
-                                <span className="muted">Waiting...</span>
-                            )}
-                        </div>
-                    </div>
-                    <div className="game-icon">♟️</div>
+        <div className="chess-lobby">
+            <header className="chess-header">
+                <div>
+                    <p className="eyebrow">Family game</p>
+                    <h1>♟️ Chess</h1>
+                    <p className="subtle">Play chess with your family</p>
                 </div>
-            ))}
-        </section>
-    </div>
-);
+            </header>
+
+            <section className="chess-create">
+                <h3>New Game</h3>
+                <select
+                    value={selectedOpponent || ''}
+                    onChange={(e) => setSelectedOpponent(e.target.value)}
+                    disabled={creating}
+                >
+                    <option value="">Select opponent...</option>
+                    {groupMembers.map((member) => (
+                        <option key={member.id} value={member.id}>
+                            {member.name || member.email || 'Unknown'}
+                        </option>
+                    ))}
+                </select>
+                <button onClick={handleCreateGame} disabled={creating || !selectedOpponent}>
+                    {creating ? 'Creating...' : 'Create Game'}
+                </button>
+            </section>
+
+            <section className="chess-games">
+                <h3>Active Games</h3>
+                {loading && <div className="muted">Loading games...</div>}
+                {!loading && games.length === 0 && (
+                    <div className="muted">No active games. Create one!</div>
+                )}
+                {games.map((game) => (
+                    <div
+                        key={game.id}
+                        className={`chess-game-card ${isMyTurn(game) ? 'my-turn' : ''}`}
+                        onClick={() => handleJoinGame(game.id)}
+                    >
+                        <div className="game-info">
+                            <div className="game-title">{getPlayerName(game)}</div>
+                            <div className="game-meta">
+                                {isMyTurn(game) ? (
+                                    <span className="turn-badge">Your turn</span>
+                                ) : (
+                                    <span className="muted">Waiting...</span>
+                                )}
+                            </div>
+                        </div>
+                        <div className="game-icon">♟️</div>
+                    </div>
+                ))}
+            </section>
+        </div>
+    );
 };
 
 export default ChessLobby;
