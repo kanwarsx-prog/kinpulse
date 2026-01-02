@@ -588,7 +588,8 @@ serve(async (req) => {
             .eq('id', hand_id);
         }
 
-        await supabase
+
+        const { error: updateError } = await supabase
           .from('poker_hands')
           .update({
             pot: newPot,
@@ -603,6 +604,19 @@ serve(async (req) => {
             updated_at: new Date().toISOString(),
           })
           .eq('id', hand_id);
+
+        if (updateError) {
+          console.error('Error updating poker hand:', updateError);
+          return json({ error: `Failed to update hand: ${updateError.message}` }, 500);
+        }
+
+        console.log('Hand updated successfully:', {
+          hand_id,
+          pot: newPot,
+          turn_seat_no: nextTurnSeatNo,
+          street,
+          status
+        });
 
         return json({
           ok: true,
