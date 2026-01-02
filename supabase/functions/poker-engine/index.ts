@@ -501,10 +501,21 @@ serve(async (req) => {
             });
             newCurrentBet = 0;
             lastAggressorSeatNo = null; // Reset for new street
-            // Start next street with player after dealer
-            const dealerIdx = ordered.findIndex((s) => s.seat_no === hand.dealer_seat_no);
-            const firstPlayer = ordered[(dealerIdx + 1) % ordered.length];
-            nextTurnSeatNo = firstPlayer?.seat_no ?? nextTurnSeatNo;
+
+            // Start next street with correct player
+            // In heads-up (2 players), small blind (dealer) acts first preflop, but last on other streets
+            // In multi-way, player after dealer acts first on all streets
+            if (ordered.length === 2) {
+              // Heads-up: non-dealer acts first on flop/turn/river
+              const dealerIdx = ordered.findIndex((s) => s.seat_no === hand.dealer_seat_no);
+              const nonDealerIdx = (dealerIdx + 1) % ordered.length;
+              nextTurnSeatNo = ordered[nonDealerIdx]?.seat_no ?? nextTurnSeatNo;
+            } else {
+              // Multi-way: player after dealer acts first
+              const dealerIdx = ordered.findIndex((s) => s.seat_no === hand.dealer_seat_no);
+              const firstPlayer = ordered[(dealerIdx + 1) % ordered.length];
+              nextTurnSeatNo = firstPlayer?.seat_no ?? nextTurnSeatNo;
+            }
           }
         }
 
