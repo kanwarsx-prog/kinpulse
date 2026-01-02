@@ -278,7 +278,7 @@ const PulseDashboard = () => {
     const handlePulseSubmit = async (pulseData) => {
         const newPulse = {
             user_id: user.id,
-            family_id: user.family_id,
+            group_id: currentGroup.id,
             state: pulseData.state,
             note: pulseData.note,
             photo_url: pulseData.photo_url,
@@ -290,7 +290,7 @@ const PulseDashboard = () => {
 
         const { error } = await supabase.from('pulses').insert({
             user_id: user.id,
-            family_id: user.family_id,
+            group_id: currentGroup.id,
             state: pulseData.state,
             note: pulseData.note,
             photo_url: pulseData.photo_url
