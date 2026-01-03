@@ -1,0 +1,203 @@
+.install-prompt-overlay {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    animation: slideUp 0.3s ease;
+}
+
+.install-prompt {
+    background: white;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    padding: 24px;
+    position: relative;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.install-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #9ca3af;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.install-close:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.install-icon {
+    font-size: 48px;
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.install-prompt h3 {
+    margin: 0 0 12px 0;
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+    color: #111827;
+}
+
+.install-content {
+    text-align: center;
+}
+
+.install-content>p {
+    color: #6b7280;
+    margin: 0 0 20px 0;
+    font-size: 15px;
+}
+
+/* iOS Instructions */
+.ios-instructions {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 20px 0;
+    text-align: left;
+}
+
+.instruction-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: #374151;
+}
+
+.instruction-step:last-child {
+    margin-bottom: 0;
+}
+
+.step-number {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.instruction-step svg {
+    vertical-align: middle;
+    margin: 0 2px;
+}
+
+/* Android Benefits */
+.install-benefits {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.benefit {
+    background: #f0fdf4;
+    color: #166534;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* Buttons */
+.install-button {
+    width: 100%;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 8px;
+}
+
+.install-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.install-dismiss {
+    width: 100%;
+    padding: 12px 24px;
+    background: none;
+    color: #6b7280;
+    border: none;
+    font-size: 15px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.install-dismiss:hover {
+    color: #374151;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .install-prompt {
+        background: #1f2937;
+    }
+
+    .install-prompt h3 {
+        color: #f9fafb;
+    }
+
+    .install-content>p {
+        color: #d1d5db;
+    }
+
+    .ios-instructions {
+        background: #374151;
+    }
+
+    .instruction-step {
+        color: #e5e7eb;
+    }
+
+    .install-close {
+        color: #9ca3af;
+    }
+
+    .install-close:hover {
+        background: #374151;
+        color: #f3f4f6;
+    }
+}

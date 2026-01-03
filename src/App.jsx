@@ -10,6 +10,7 @@ import DirectMessage from './features/chat/DirectMessage';
 import PhotoWall from './features/photos/PhotoWall';
 import Calendar from './features/calendar/Calendar';
 import JoinFamily from './features/family/JoinFamily';
+import InstallPrompt from './components/InstallPrompt';
 
 import { SupabaseProvider, useSupabase } from './contexts/SupabaseContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -72,6 +73,7 @@ function App() {
       <ToastProvider>
         <BrowserRouter>
           <AppRoutes />
+          <InstallPrompt />
         </BrowserRouter>
       </ToastProvider>
     </SupabaseProvider>
