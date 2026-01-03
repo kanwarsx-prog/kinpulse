@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSupabase } from '../../contexts/SupabaseContext';
-import './LoginScreen.css';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const LoginScreen = () => {
     const { signIn, signUp } = useSupabase();
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [mode, setMode] = useState('signin'); // 'signin' or 'signup'
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -25,6 +27,19 @@ const LoginScreen = () => {
             setMessage(error.message);
         } else if (mode === 'signup') {
             setMessage('Account created! Please check your email to confirm.');
+            // After signup, redirect to the original URL if provided
+            const redirect = searchParams.get('redirect');
+            if (redirect) {
+                setTimeout(() => {
+                    navigate(redirect);
+                }, 2000); // Give them time to see the success message
+            }
+        } else {
+            // After signin, redirect if provided
+            const redirect = searchParams.get('redirect');
+            if (redirect) {
+                navigate(redirect);
+            }
         }
     };
 
