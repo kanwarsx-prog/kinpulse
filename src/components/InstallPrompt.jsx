@@ -66,6 +66,24 @@ const InstallPrompt = () => {
             }, 3000);
         }
 
+        // Fallback: If beforeinstallprompt doesn't fire after 5 seconds (Chrome/Android),
+        // show the prompt anyway so users can see manual install instructions
+        if (!iOS && !standalone) {
+            const fallbackTimer = setTimeout(() => {
+                console.log('[InstallPrompt] beforeinstallprompt did not fire, showing fallback prompt');
+                setShowPrompt(true);
+            }, 5000);
+
+            // Clear fallback if the event fires
+            const originalHandler = handleBeforeInstallPrompt;
+            const wrappedHandler = (e) => {
+                clearTimeout(fallbackTimer);
+                originalHandler(e);
+            };
+            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+            window.addEventListener('beforeinstallprompt', wrappedHandler);
+        }
+
         return () => {
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
         };
@@ -139,9 +157,26 @@ const InstallPrompt = () => {
                             <div className="benefit">✓ Faster loading</div>
                             <div className="benefit">✓ Full screen experience</div>
                         </div>
-                        <button className="install-button" onClick={handleInstallClick}>
-                            Install App
-                        </button>
+                        {deferredPrompt ? (
+                            <button className="install-button" onClick={handleInstallClick}>
+                                Install App
+                            </button>
+                        ) : (
+                            <div className="ios-instructions">
+                                <div className="instruction-step">
+                                    <span className="step-number">1</span>
+                                    <span>Click the <strong>⋮</strong> menu (top right)</span>
+                                </div>
+                                <div className="instruction-step">
+                                    <span className="step-number">2</span>
+                                    <span>Select <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong></span>
+                                </div>
+                                <div className="instruction-step">
+                                    <span className="step-number">3</span>
+                                    <span>Tap <strong>"Install"</strong> to confirm</span>
+                                </div>
+                            </div>
+                        )}
                         <button className="install-dismiss" onClick={handleDismiss}>
                             Not Now
                         </button>
