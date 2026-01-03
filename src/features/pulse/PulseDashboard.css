@@ -252,7 +252,6 @@
     box-sizing: border-box;
     gap: 16px;
     position: relative;
-    overflow: hidden;
 }
 
 .family-card::before {

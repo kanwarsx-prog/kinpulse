@@ -85,8 +85,6 @@
     gap: 6px;
 }
 
-\n\n.message-photo-wrapper {\n    position: relative;\n    display: inline-block;\n}\n\n.photo-delete-btn {\n    position: absolute;\n    top: 6px;\n    right: 6px;\n    border: none;\n    background: rgba(0,0,0,0.65);\n    color: #fff;\n    width: 24px;\n    height: 24px;\n    border-radius: 50%;\n    cursor: pointer;\n    font-size: 14px;\n    line-height: 1;\n}\n
-
 /* Emoji reaction chips */
 .reaction-pills {
     display: flex;
@@ -140,7 +138,7 @@
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 6px;
-    z-index: 20;
+    z-index: 100;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
 }
 
@@ -152,4 +150,3 @@
     font-size: 16px;
     cursor: pointer;
 }
-
