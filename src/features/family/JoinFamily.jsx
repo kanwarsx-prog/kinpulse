@@ -40,10 +40,20 @@ export default function JoinFamily() {
                     )
                 `)
                 .eq('invite_code', inviteCode.toUpperCase())
+                .not('invite_code', 'is', null)
                 .eq('is_active', true)
                 .maybeSingle();
 
-            if (inviteError || !invite) {
+            console.log('Invite lookup result:', { invite, inviteError, inviteCode: inviteCode.toUpperCase() });
+
+            if (inviteError) {
+                console.error('Invite lookup error:', inviteError);
+                setError('Error looking up invitation code.');
+                setLoading(false);
+                return;
+            }
+
+            if (!invite) {
                 setError('Invalid or expired invitation code.');
                 setLoading(false);
                 return;
