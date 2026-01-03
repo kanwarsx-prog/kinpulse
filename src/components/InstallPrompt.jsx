@@ -8,40 +8,50 @@ const InstallPrompt = () => {
     const [isStandalone, setIsStandalone] = useState(false);
 
     useEffect(() => {
+        console.log('[InstallPrompt] Component mounted');
+
         // Check if already installed (running as standalone app)
         const standalone = window.matchMedia('(display-mode: standalone)').matches ||
             window.navigator.standalone ||
             document.referrer.includes('android-app://');
 
+        console.log('[InstallPrompt] Standalone mode:', standalone);
         setIsStandalone(standalone);
 
         // Check if iOS
         const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        console.log('[InstallPrompt] Is iOS:', iOS);
         setIsIOS(iOS);
 
         // Check if user has already dismissed the prompt
         const dismissed = localStorage.getItem('installPromptDismissed');
         const dismissedTime = localStorage.getItem('installPromptDismissedTime');
+        console.log('[InstallPrompt] Dismissed:', dismissed, 'Time:', dismissedTime);
 
         // Show again after 7 days if previously dismissed
         const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
         const shouldShowAgain = dismissedTime && parseInt(dismissedTime) < sevenDaysAgo;
+        console.log('[InstallPrompt] Should show again:', shouldShowAgain);
 
         if (standalone) {
+            console.log('[InstallPrompt] Not showing - already in standalone mode');
             return; // Already installed
         }
 
         if (dismissed && !shouldShowAgain) {
+            console.log('[InstallPrompt] Not showing - user dismissed recently');
             return; // User dismissed and 7 days haven't passed
         }
 
         // For Android/Chrome - listen for beforeinstallprompt event
         const handleBeforeInstallPrompt = (e) => {
+            console.log('[InstallPrompt] beforeinstallprompt event fired!');
             e.preventDefault();
             setDeferredPrompt(e);
 
             // Show prompt after a short delay (better UX)
             setTimeout(() => {
+                console.log('[InstallPrompt] Showing prompt (Android/Chrome)');
                 setShowPrompt(true);
             }, 3000);
         };
@@ -51,6 +61,7 @@ const InstallPrompt = () => {
         // For iOS - show manual instructions after a delay
         if (iOS && !standalone) {
             setTimeout(() => {
+                console.log('[InstallPrompt] Showing prompt (iOS)');
                 setShowPrompt(true);
             }, 3000);
         }
