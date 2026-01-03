@@ -27,20 +27,9 @@ const LoginScreen = () => {
             setMessage(error.message);
         } else if (mode === 'signup') {
             setMessage('Account created! Please check your email to confirm.');
-            // After signup, redirect to the original URL if provided
-            const redirect = searchParams.get('redirect');
-            if (redirect) {
-                setTimeout(() => {
-                    navigate(redirect);
-                }, 2000); // Give them time to see the success message
-            }
-        } else {
-            // After signin, redirect if provided
-            const redirect = searchParams.get('redirect');
-            if (redirect) {
-                navigate(redirect);
-            }
         }
+        // Note: Redirect is handled by App.jsx routing
+        // FamilyOnboarding will check searchParams for redirect and auto-join
     };
 
     return (
