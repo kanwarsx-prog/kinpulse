@@ -196,9 +196,7 @@ const GroupCreationModal = ({ isOpen, onClose, onSuccess }) => {
         contact.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    if (!isOpen) return null;
-
-    return (
+    return !isOpen ? null : (
         <div className="group-modal-overlay" onClick={handleClose}>
             <div className="group-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="group-modal-header">
