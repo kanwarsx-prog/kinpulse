@@ -1,17 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSupabase } from '../../contexts/SupabaseContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import './FamilyOnboarding.css';
 
 const FamilyOnboarding = () => {
     const { supabase, session, refreshUser } = useSupabase();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
     const [mode, setMode] = useState('menu'); // 'menu', 'create', 'join'
     const [familyName, setFamilyName] = useState('');
     const [inviteCode, setInviteCode] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // Auto-join if there's an invite code in the redirect URL
+    useEffect(() => {
+        const redirect = searchParams.get('redirect');
+        if (redirect && redirect.includes('/join/')) {
+            const code = redirect.split('/join/')[1];
+            if (code) {
+                // Auto-join with the code
+                setInviteCode(code);
+                setMode('join');
+                // Trigger auto-join
+                setTimeout(() => {
+                    handleJoin(null, code);
+                }, 100);
+            }
+        }
+    }, [searchParams]);
 
     const handleCreate = async (e) => {
         e.preventDefault();
@@ -61,8 +79,9 @@ const FamilyOnboarding = () => {
         }
     };
 
-    const handleJoin = async (e) => {
-        e.preventDefault();
+    const handleJoin = async (e, autoCode = null) => {
+        if (e) e.preventDefault();
+        const codeToUse = autoCode || inviteCode;
         setLoading(true);
         setError(null);
 
@@ -71,7 +90,7 @@ const FamilyOnboarding = () => {
             const { data: invite, error: inviteError } = await supabase
                 .from('group_invitations')
                 .select('group_id, groups(id, name)')
-                .eq('invite_code', inviteCode.toUpperCase())
+                .eq('invite_code', codeToUse.toUpperCase())
                 .not('invite_code', 'is', null)
                 .eq('is_active', true)
                 .maybeSingle();
