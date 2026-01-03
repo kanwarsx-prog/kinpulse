@@ -41,7 +41,8 @@ const InstallPrompt = () => {
             return; // Already installed
         }
 
-        if (dismissed && !shouldShowAgain) {
+        // For iOS, always show the prompt (ignore dismissal for now)
+        if (!iOS && dismissed && !shouldShowAgain) {
             console.log('[InstallPrompt] Not showing - user dismissed recently');
             return; // User dismissed and 7 days haven't passed
         }
