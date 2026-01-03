@@ -35,3 +35,10 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
     event.waitUntil(clients.claim());
 });
+
+// Add fetch handler for PWA installability
+self.addEventListener('fetch', (event) => {
+    // Let the browser handle all fetch requests normally
+    // This is required for PWA installation criteria
+    event.respondWith(fetch(event.request));
+});
