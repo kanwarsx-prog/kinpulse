@@ -89,11 +89,13 @@ const FamilyOnboarding = () => {
     const handleJoin = async (e, autoCode = null) => {
         if (e) e.preventDefault();
         const codeToUse = autoCode || inviteCode;
+        console.log('[FamilyOnboarding handleJoin] Starting with code:', codeToUse);
         setLoading(true);
         setError(null);
 
         try {
             // 1. Find Group by Invite Code
+            console.log('[FamilyOnboarding handleJoin] Querying for code:', codeToUse.toUpperCase());
             const { data: invite, error: inviteError } = await supabase
                 .from('group_invitations')
                 .select('group_id, groups(id, name)')
@@ -102,7 +104,19 @@ const FamilyOnboarding = () => {
                 .eq('is_active', true)
                 .maybeSingle();
 
-            if (inviteError || !invite) throw new Error("Invalid invite code");
+            console.log('[FamilyOnboarding handleJoin] Query result:', {
+                invite,
+                inviteError,
+                hasInvite: !!invite,
+                groupId: invite?.group_id
+            });
+
+            if (inviteError || !invite) {
+                console.error('[FamilyOnboarding handleJoin] Error or no invite:', inviteError);
+                throw new Error("Invalid invite code");
+            }
+
+            console.log('[FamilyOnboarding handleJoin] Adding user to group:', invite.group_id);
 
             // 2. Add user to group_members
             const { error: memberError } = await supabase
@@ -113,7 +127,10 @@ const FamilyOnboarding = () => {
                     role: 'member'
                 });
 
-            if (memberError) throw memberError;
+            if (memberError) {
+                console.error('[FamilyOnboarding handleJoin] Member insert error:', memberError);
+                throw memberError;
+            }
 
             // 3. Update profile's current_group_id
             const { error: profileError } = await supabase
@@ -121,8 +138,12 @@ const FamilyOnboarding = () => {
                 .update({ current_group_id: invite.group_id })
                 .eq('id', session.user.id);
 
-            if (profileError) throw profileError;
+            if (profileError) {
+                console.error('[FamilyOnboarding handleJoin] Profile update error:', profileError);
+                throw profileError;
+            }
 
+            console.log('[FamilyOnboarding handleJoin] Success! Reloading...');
             window.location.reload();
 
         } catch (err) {
