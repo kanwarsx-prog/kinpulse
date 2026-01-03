@@ -31,6 +31,35 @@ const AppRoutes = () => {
     return <LoadingSpinner size="lg" message="Loading KinPulse..." />;
   }
 
+  // Track app installation status
+  React.useEffect(() => {
+    if (!user) return;
+
+    const checkInstallationStatus = async () => {
+      // Check if running in standalone mode (PWA installed)
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true;
+
+      const status = isStandalone ? 'standalone' : 'browser';
+
+      // Only update if different from what's currently in user profile
+      // (assuming we fetched this, or just update occasionally)
+      if (user.installation_status !== status) {
+        console.log('[App] Updating installation status:', status);
+        const { error } = await window.supabase
+          .from('profiles')
+          .update({ installation_status: status })
+          .eq('id', user.id);
+
+        if (error) {
+          console.error('[App] Failed to update installation status:', error);
+        }
+      }
+    };
+
+    checkInstallationStatus();
+  }, [user]);
+
   // Allow access to join page without authentication
   return (
     <Routes>
