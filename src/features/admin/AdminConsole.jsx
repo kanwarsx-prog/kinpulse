@@ -25,6 +25,9 @@ const AdminConsole = () => {
     const [newGroupIcon, setNewGroupIcon] = useState('👥');
     const [selectedGroup, setSelectedGroup] = useState('');
     const [selectedUser, setSelectedUser] = useState('');
+    const [editingGroupId, setEditingGroupId] = useState(null);
+    const [editGroupName, setEditGroupName] = useState('');
+    const [editGroupIcon, setEditGroupIcon] = useState('');
 
     useEffect(() => {
         fetchData();
@@ -151,6 +154,35 @@ const AdminConsole = () => {
         setBusy(true);
         await supabase.from('groups').delete().eq('id', id);
         setBusy(false);
+        fetchData();
+    };
+
+    const startEditGroup = (group) => {
+        setEditingGroupId(group.id);
+        setEditGroupName(group.name);
+        setEditGroupIcon(group.icon);
+    };
+
+    const cancelEditGroup = () => {
+        setEditingGroupId(null);
+        setEditGroupName('');
+        setEditGroupIcon('');
+    };
+
+    const saveGroupEdit = async (groupId) => {
+        if (!editGroupName.trim()) return;
+        setBusy(true);
+        await supabase
+            .from('groups')
+            .update({
+                name: editGroupName.trim(),
+                icon: editGroupIcon
+            })
+            .eq('id', groupId);
+        setBusy(false);
+        setEditingGroupId(null);
+        setEditGroupName('');
+        setEditGroupIcon('');
         fetchData();
     };
 
@@ -288,11 +320,40 @@ const AdminConsole = () => {
                                     <div className="admin-card-header">
                                         <div>
                                             <p className="admin-eyebrow">Group</p>
-                                            <h3>{grp.icon} {grp.name}</h3>
+                                            {editingGroupId === grp.id ? (
+                                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                    <input
+                                                        type="text"
+                                                        value={editGroupIcon}
+                                                        onChange={(e) => setEditGroupIcon(e.target.value)}
+                                                        style={{ width: '40px', fontSize: '20px' }}
+                                                        maxLength={2}
+                                                    />
+                                                    <input
+                                                        type="text"
+                                                        value={editGroupName}
+                                                        onChange={(e) => setEditGroupName(e.target.value)}
+                                                        style={{ flex: 1 }}
+                                                        autoFocus
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <h3>{grp.icon} {grp.name}</h3>
+                                            )}
                                         </div>
                                         <div className="admin-actions">
                                             <span className="admin-badge">{grp.members.length} members</span>
-                                            <button className="admin-delete" onClick={() => deleteGroup(grp.id)} disabled={busy}>Delete</button>
+                                            {editingGroupId === grp.id ? (
+                                                <>
+                                                    <button onClick={() => saveGroupEdit(grp.id)} disabled={busy || !editGroupName.trim()}>Save</button>
+                                                    <button onClick={cancelEditGroup} disabled={busy}>Cancel</button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <button onClick={() => startEditGroup(grp)} disabled={busy}>Rename</button>
+                                                    <button className="admin-delete" onClick={() => deleteGroup(grp.id)} disabled={busy}>Delete</button>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="admin-users">
