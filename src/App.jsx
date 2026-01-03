@@ -46,24 +46,28 @@ const AppRoutes = () => {
 
 const AuthenticatedRoutes = () => {
   return (
-    <Routes>
-      <Route path="/" element={<MobileLayout />}>
-        <Route index element={<PulseDashboard />} />
-        <Route path="pulse-history" element={<PulseHistory />} />
-        <Route path="rituals" element={<RitualsList />} />
-        <Route path="rituals/:id" element={<RitualDetail />} />
-        <Route path="chat" element={<FamilyChat />} />
-        <Route path="chat/:userId" element={<DirectMessage />} />
-        <Route path="photos" element={<PhotoWall />} />
-        <Route path="calendar" element={<Calendar />} />
-        <Route path="vault" element={<VaultHome />} />
-        <Route path="admin" element={<AdminConsole />} />
-        <Route path="poker" element={<PokerLobby />} />
-        <Route path="arena" element={<Arena />} />
-        <Route path="games/chess" element={<ChessLobby />} />
-        <Route path="games/chess/:gameId" element={<ChessBoard />} />
-      </Route>
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/" element={<MobileLayout />}>
+          <Route index element={<PulseDashboard />} />
+          <Route path="pulse-history" element={<PulseHistory />} />
+          <Route path="rituals" element={<RitualsList />} />
+          <Route path="rituals/:id" element={<RitualDetail />} />
+          <Route path="chat" element={<FamilyChat />} />
+          <Route path="chat/:userId" element={<DirectMessage />} />
+          <Route path="photos" element={<PhotoWall />} />
+          <Route path="calendar" element={<Calendar />} />
+          <Route path="vault" element={<VaultHome />} />
+          <Route path="admin" element={<AdminConsole />} />
+          <Route path="poker" element={<PokerLobby />} />
+          <Route path="arena" element={<Arena />} />
+          <Route path="games/chess" element={<ChessLobby />} />
+          <Route path="games/chess/:gameId" element={<ChessBoard />} />
+        </Route>
+
+      </Routes >
+      <InstallPrompt />
+    </>
   );
 };
 
@@ -73,7 +77,6 @@ function App() {
       <ToastProvider>
         <BrowserRouter>
           <AppRoutes />
-          <InstallPrompt />
         </BrowserRouter>
       </ToastProvider>
     </SupabaseProvider>
