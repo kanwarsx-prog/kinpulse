@@ -118,18 +118,30 @@ const FamilyOnboarding = () => {
 
             console.log('[FamilyOnboarding handleJoin] Adding user to group:', invite.group_id);
 
-            // 2. Add user to group_members
-            const { error: memberError } = await supabase
+            // Check if user is already a member
+            const { data: existingMember } = await supabase
                 .from('group_members')
-                .insert({
-                    group_id: invite.group_id,
-                    user_id: session.user.id,
-                    role: 'member'
-                });
+                .select('id')
+                .eq('group_id', invite.group_id)
+                .eq('user_id', session.user.id)
+                .maybeSingle();
 
-            if (memberError) {
-                console.error('[FamilyOnboarding handleJoin] Member insert error:', memberError);
-                throw memberError;
+            if (existingMember) {
+                console.log('[FamilyOnboarding handleJoin] User already a member, skipping insert');
+            } else {
+                // 2. Add user to group_members
+                const { error: memberError } = await supabase
+                    .from('group_members')
+                    .insert({
+                        group_id: invite.group_id,
+                        user_id: session.user.id,
+                        role: 'member'
+                    });
+
+                if (memberError) {
+                    console.error('[FamilyOnboarding handleJoin] Member insert error:', memberError);
+                    throw memberError;
+                }
             }
 
             // 3. Update profile's current_group_id
