@@ -18,9 +18,12 @@ const InstallPrompt = () => {
         console.log('[InstallPrompt] Standalone mode:', standalone);
         setIsStandalone(standalone);
 
-        // Check if iOS
-        const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        console.log('[InstallPrompt] Is iOS:', iOS);
+        // Check if iOS - improved detection for modern Safari
+        const iOS = (
+            (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) ||
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) // iPad on iOS 13+
+        );
+        console.log('[InstallPrompt] Is iOS:', iOS, 'UserAgent:', navigator.userAgent);
         setIsIOS(iOS);
 
         // Check if user has already dismissed the prompt
