@@ -114,9 +114,6 @@ const TopBar = () => {
                             )}
                         </div>
                     )}
-                    <div className="avatar" title={user?.email || 'User'}>
-                        {initials}
-                    </div>
                 </div>
             </div>
         </div>
