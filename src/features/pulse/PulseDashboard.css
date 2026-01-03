@@ -274,6 +274,7 @@
     transform: translateY(-4px) scale(1.01);
     box-shadow: var(--shadow-lg), var(--shadow-glow);
     border-color: var(--color-primary);
+    z-index: 20;
 }
 
 .family-card.clickable:hover::before {
@@ -282,6 +283,11 @@
 
 .family-card.clickable:active {
     transform: translateY(-2px) scale(0.99);
+}
+
+/* Elevate card when reaction picker is open */
+.family-card:has(.reaction-picker) {
+    z-index: 50;
 }
 
 .pulse-card-badge {
@@ -301,6 +307,8 @@
     gap: 8px;
     margin-top: 4px;
     flex-wrap: wrap;
+    position: relative;
+    z-index: 10;
 }
 
 .history-btn {
