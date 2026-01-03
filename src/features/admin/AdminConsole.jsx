@@ -219,7 +219,11 @@ const AdminConsole = () => {
                     .filter((gm) => gm.group_id === grp.id)
                     .map((gm) => {
                         const profile = profiles.find((p) => p.id === gm.user_id);
-                        return { ...profile, role: gm.role };
+                        return {
+                            ...profile,
+                            role: gm.role,
+                            installation_status: profile?.installation_status
+                        };
                     })
                     .filter(Boolean);
                 return { ...grp, members };
@@ -447,7 +451,11 @@ const AdminConsole = () => {
                                             <div key={m.id} className="admin-user">
                                                 <div className="admin-avatar">{(m.name || m.email || '?').slice(0, 2).toUpperCase()}</div>
                                                 <div>
-                                                    <p className="admin-user-name">{m.name || m.email}</p>
+                                                    <p className="admin-user-name">
+                                                        {m.name || m.email}
+                                                        {m.installation_status === 'standalone' && <span title="App Installed">📱</span>}
+                                                        {m.installation_status === 'browser' && <span title="Browser">🌐</span>}
+                                                    </p>
                                                     <p className="admin-user-sub">{m.email}</p>
                                                 </div>
                                                 <button className="admin-delete" onClick={() => deleteUser(m.id)} disabled={busy}>Remove</button>
