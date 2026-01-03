@@ -8,6 +8,11 @@ export const useReactions = ({ messageId, pulseId }) => {
 
     useEffect(() => {
         if (!messageId && !pulseId) return;
+        // Don't fetch reactions for temporary message IDs
+        if (messageId && messageId.toString().startsWith('temp-')) {
+            setLoading(false);
+            return;
+        }
 
         fetchReactions();
         const unsubscribe = subscribeToReactions();
