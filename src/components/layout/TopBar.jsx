@@ -41,18 +41,13 @@ const TopBar = () => {
     return (
         <div className="top-bar">
             <div className="top-bar-inner">
-                <div className="brand" onClick={() => navigate('/')}>
-                    <div className="brand-mark">KP</div>
-                    <span className="brand-name">KinPulse</span>
-                </div>
-                {user?.family_id && <GroupSwitcher />}
-                {user?.family_id && familyInfo?.invite_code && (
-                    <div className="top-bar-info">
-                        <div className="invite-code">
-                            Invite Code: <strong>{familyInfo.invite_code}</strong>
-                        </div>
+                <div className="top-bar-left">
+                    <div className="brand" onClick={() => navigate('/')}>
+                        <div className="brand-mark">KP</div>
+                        <span className="brand-name">KinPulse</span>
                     </div>
-                )}
+                    {user?.family_id && <GroupSwitcher />}
+                </div>
                 <div className="top-bar-actions">
                     {user?.family_id && (
                         <>
