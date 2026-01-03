@@ -5,7 +5,7 @@ import './GroupCreationModal.css';
 const EMOJIS = ['👥', '👨‍👩‍👧‍👦', '🏠', '💼', '🎮', '⚽', '🎨', '🎵', '📚', '🍕', '✈️', '🎯', '💪', '🧘', '🎓', '🏆'];
 
 const GroupCreationModal = ({ isOpen, onClose, onSuccess }) => {
-    const { supabase, user, setCurrentGroup } = useSupabase();
+    const { supabase, user, loadCurrentGroup } = useSupabase();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
 
@@ -178,7 +178,7 @@ const GroupCreationModal = ({ isOpen, onClose, onSuccess }) => {
             }
 
             // Switch to the new group
-            setCurrentGroup(newGroup);
+            await loadCurrentGroup(newGroup.id);
 
             // Reset and close
             handleClose();

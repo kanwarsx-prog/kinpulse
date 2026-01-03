@@ -144,6 +144,7 @@ export const SupabaseProvider = ({ children }) => {
         user,
         currentGroup,
         setCurrentGroup,
+        loadCurrentGroup,
         loading,
         signUp,
         signIn,
