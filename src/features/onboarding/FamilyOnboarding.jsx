@@ -163,8 +163,8 @@ const FamilyOnboarding = () => {
                 throw profileError;
             }
 
-            console.log('[FamilyOnboarding handleJoin] Success! Reloading...');
-            window.location.reload();
+            console.log('[FamilyOnboarding handleJoin] Success! Navigating to home...');
+            navigate('/');
 
         } catch (err) {
             console.error('Group join error:', err);
