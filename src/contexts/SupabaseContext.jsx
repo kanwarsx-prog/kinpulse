@@ -165,6 +165,27 @@ export const SupabaseProvider = ({ children }) => {
         if (error) throw error;
     };
 
+    const switchGroup = async (groupId) => {
+        try {
+            // Update user's current_group_id in the database
+            const { error } = await supabase
+                .from('profiles')
+                .update({ current_group_id: groupId })
+                .eq('id', user.id);
+
+            if (error) throw error;
+
+            // Load the new group
+            await loadCurrentGroup(groupId);
+
+            // Refresh user profile to get updated current_group_id
+            await refreshUser();
+        } catch (error) {
+            console.error('[SupabaseContext] Error switching group:', error);
+            throw error;
+        }
+    };
+
     return (
         <SupabaseContext.Provider value={{
             supabase,
