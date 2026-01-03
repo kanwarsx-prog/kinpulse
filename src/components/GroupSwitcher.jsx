@@ -4,7 +4,7 @@ import GroupCreationModal from './GroupCreationModal';
 import './GroupSwitcher.css';
 
 const GroupSwitcher = () => {
-    const { user, supabase, currentGroup, setCurrentGroup } = useSupabase();
+    const { user, supabase, currentGroup, switchGroup: switchGroupContext } = useSupabase();
     const [groups, setGroups] = useState([]);
     const [showDropdown, setShowDropdown] = useState(false);
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -74,11 +74,11 @@ const GroupSwitcher = () => {
                 .single();
 
             if (profile?.current_group_id) {
-                const current = userGroups.find(g => g.id === profile.current_group_id);
-                setCurrentGroup(current);
+                // Current group is already set in context via loadCurrentGroup
+                // No need to do anything here
             } else if (userGroups.length > 0) {
                 // Set first group as current if none set
-                await switchGroup(userGroups[0]);
+                await switchGroupContext(userGroups[0].id);
             }
         } catch (error) {
             console.error('Error loading groups:', error);
@@ -87,12 +87,7 @@ const GroupSwitcher = () => {
 
     const switchGroup = async (group) => {
         try {
-            await supabase
-                .from('profiles')
-                .update({ current_group_id: group.id })
-                .eq('id', user.id);
-
-            setCurrentGroup(group);
+            await switchGroupContext(group.id);
             setShowDropdown(false);
 
             // Reload page to refresh all data with new group context
