@@ -37,6 +37,7 @@ export const SupabaseProvider = ({ children }) => {
     }, []);
 
     const fetchUserProfile = async (userId, userEmail) => {
+        console.log('[SupabaseContext] Fetching user profile for:', userId);
         try {
             const { data: profile, error } = await supabase
                 .from('profiles')
@@ -45,7 +46,7 @@ export const SupabaseProvider = ({ children }) => {
                 .maybeSingle();
 
             if (error) {
-                console.error('Profile query error:', error);
+                console.error('[SupabaseContext] Profile query error:', error);
                 // If query fails, create a minimal user object
                 setUser({
                     id: userId,
@@ -58,6 +59,7 @@ export const SupabaseProvider = ({ children }) => {
             }
 
             if (!profile) {
+                console.log('[SupabaseContext] Profile not found, creating new profile');
                 // Profile doesn't exist, create it
                 const { data: newProfile, error: insertError } = await supabase
                     .from('profiles')
@@ -69,7 +71,7 @@ export const SupabaseProvider = ({ children }) => {
                     .maybeSingle();
 
                 if (insertError) {
-                    console.error('Profile creation error:', insertError);
+                    console.error('[SupabaseContext] Profile creation error:', insertError);
                     // Fallback to minimal user
                     setUser({
                         id: userId,
@@ -78,17 +80,22 @@ export const SupabaseProvider = ({ children }) => {
                         family_id: null
                     });
                 } else {
+                    console.log('[SupabaseContext] New profile created:', newProfile);
                     setUser(newProfile);
                 }
             } else {
+                console.log('[SupabaseContext] Profile loaded:', profile);
                 setUser(profile);
                 // Load current group
                 if (profile.current_group_id) {
+                    console.log('[SupabaseContext] Loading current group:', profile.current_group_id);
                     loadCurrentGroup(profile.current_group_id);
+                } else {
+                    console.log('[SupabaseContext] No current_group_id set');
                 }
             }
         } catch (err) {
-            console.error('Profile fetch error:', err);
+            console.error('[SupabaseContext] Profile fetch error:', err);
             // Fallback to minimal user object
             setUser({
                 id: userId,
@@ -97,6 +104,7 @@ export const SupabaseProvider = ({ children }) => {
                 family_id: null
             });
         } finally {
+            console.log('[SupabaseContext] Setting loading to false');
             setLoading(false);
         }
     };
