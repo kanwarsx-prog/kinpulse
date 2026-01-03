@@ -37,7 +37,7 @@ const AppRoutes = () => {
       <Route path="/join/:inviteCode" element={<JoinFamily />} />
       <Route path="/*" element={
         !session ? <LoginScreen /> :
-          !user?.family_id ? <FamilyOnboarding /> :
+          !user?.current_group_id ? <FamilyOnboarding /> :
             <AuthenticatedRoutes />
       } />
     </Routes>
