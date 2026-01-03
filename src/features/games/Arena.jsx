@@ -5,7 +5,7 @@ import './Arena.css';
 
 const Arena = () => {
   const navigate = useNavigate();
-  const { supabase, user } = useSupabase();
+  const { supabase, user, currentGroup } = useSupabase();
   const [pokerTables, setPokerTables] = useState([]);
   const [loadingPoker, setLoadingPoker] = useState(true);
   const [creatingPoker, setCreatingPoker] = useState(false);
