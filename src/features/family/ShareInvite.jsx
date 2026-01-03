@@ -39,11 +39,12 @@ export default function ShareInvite({ isOpen, onClose }) {
                 .select('invite_code')
                 .eq('group_id', currentGroup.id)
                 .eq('is_active', true)
+                .not('invite_code', 'is', null)
                 .order('created_at', { ascending: false })
                 .limit(1)
                 .maybeSingle();
 
-            if (existingInvite) {
+            if (existingInvite && existingInvite.invite_code) {
                 setInviteCode(existingInvite.invite_code);
             } else {
                 // Create new invitation
