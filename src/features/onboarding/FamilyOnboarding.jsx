@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './FamilyOnboarding.css';
@@ -13,9 +13,16 @@ const FamilyOnboarding = () => {
     const [inviteCode, setInviteCode] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const autoJoinAttempted = useRef(false);
 
     // Auto-join if there's an invite code in the redirect URL
     useEffect(() => {
+        // Only run once
+        if (autoJoinAttempted.current) {
+            console.log('[FamilyOnboarding] Auto-join already attempted, skipping');
+            return;
+        }
+
         console.log('[FamilyOnboarding] Checking for redirect parameter');
         const redirect = searchParams.get('redirect');
         console.log('[FamilyOnboarding] Redirect value:', redirect);
@@ -23,6 +30,7 @@ const FamilyOnboarding = () => {
             const code = redirect.split('/join/')[1];
             console.log('[FamilyOnboarding] Extracted invite code:', code);
             if (code) {
+                autoJoinAttempted.current = true; // Mark as attempted
                 // Auto-join with the code
                 setInviteCode(code);
                 setMode('join');
@@ -36,7 +44,7 @@ const FamilyOnboarding = () => {
         } else {
             console.log('[FamilyOnboarding] No redirect or no invite code in redirect');
         }
-    }, [searchParams]);
+    }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleCreate = async (e) => {
         e.preventDefault();
