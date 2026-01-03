@@ -67,19 +67,32 @@ const FamilyOnboarding = () => {
         setError(null);
 
         try {
-            // 1. Find Family by Code
-            const { data: family, error: famError } = await supabase
-                .from('families')
-                .select('id, name')
+            // 1. Find Group by Invite Code
+            const { data: invite, error: inviteError } = await supabase
+                .from('group_invitations')
+                .select('group_id, groups(id, name)')
                 .eq('invite_code', inviteCode.toUpperCase())
-                .single();
+                .not('invite_code', 'is', null)
+                .eq('is_active', true)
+                .maybeSingle();
 
-            if (famError || !family) throw new Error("Invalid invite code");
+            if (inviteError || !invite) throw new Error("Invalid invite code");
 
-            // 2. Update Profile
+            // 2. Add user to group_members
+            const { error: memberError } = await supabase
+                .from('group_members')
+                .insert({
+                    group_id: invite.group_id,
+                    user_id: session.user.id,
+                    role: 'member'
+                });
+
+            if (memberError) throw memberError;
+
+            // 3. Update profile's current_group_id
             const { error: profileError } = await supabase
                 .from('profiles')
-                .update({ family_id: family.id })
+                .update({ current_group_id: invite.group_id })
                 .eq('id', session.user.id);
 
             if (profileError) throw profileError;
@@ -87,7 +100,7 @@ const FamilyOnboarding = () => {
             window.location.reload();
 
         } catch (err) {
-            console.error('Family join error:', err);
+            console.error('Group join error:', err);
             setError(err.message);
             setLoading(false);
         }
