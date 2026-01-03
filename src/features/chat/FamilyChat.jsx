@@ -409,7 +409,7 @@ const FamilyChat = () => {
     return (
         <div className="family-chat page fade-in">
             <header className="chat-header">
-                <h1 className="page-title">Family Chat</h1>
+                <h1 className="page-title">{currentGroup?.name || 'Group Chat'}</h1>
                 <p className="subtitle">Stay connected</p>
             </header>
 
