@@ -29,10 +29,6 @@ import ChessBoard from './features/games/ChessBoard';
 const AppRoutes = () => {
   const { session, user, loading } = useSupabase();
 
-  if (loading) {
-    return <LoadingSpinner size="lg" message="Loading KinPulse..." />;
-  }
-
   // Track app installation status
   React.useEffect(() => {
     if (!user) return;
@@ -61,6 +57,10 @@ const AppRoutes = () => {
 
     checkInstallationStatus();
   }, [user]);
+
+  if (loading) {
+    return <LoadingSpinner size="lg" message="Loading KinPulse..." />;
+  }
 
   // Allow access to join page without authentication
   return (
