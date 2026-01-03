@@ -42,30 +42,42 @@ const GroupCreationModal = ({ isOpen, onClose, onSuccess }) => {
             if (error) {
                 console.error('Error fetching contacts:', error);
                 // Fallback to manual query if RPC doesn't exist
-                const { data: members } = await supabase
+                // First, get all groups the user belongs to
+                const { data: userGroups } = await supabase
                     .from('group_members')
-                    .select('user_id, groups!inner(id, name)')
-                    .in('group_id',
-                        supabase
-                            .from('group_members')
-                            .select('group_id')
-                            .eq('user_id', user.id)
-                    );
+                    .select('group_id')
+                    .eq('user_id', user.id);
 
-                if (members) {
-                    const userIds = [...new Set(members.map(m => m.user_id))].filter(id => id !== user.id);
-                    const { data: profiles } = await supabase
-                        .from('profiles')
-                        .select('id, name, avatar_url')
-                        .in('id', userIds);
+                if (userGroups && userGroups.length > 0) {
+                    const groupIds = userGroups.map(g => g.group_id);
 
-                    setExistingContacts(profiles || []);
+                    // Then get all members from those groups
+                    const { data: members } = await supabase
+                        .from('group_members')
+                        .select('user_id')
+                        .in('group_id', groupIds)
+                        .neq('user_id', user.id);
+
+                    if (members && members.length > 0) {
+                        const userIds = [...new Set(members.map(m => m.user_id))];
+                        const { data: profiles } = await supabase
+                            .from('profiles')
+                            .select('id, name, avatar_url')
+                            .in('id', userIds);
+
+                        setExistingContacts(profiles || []);
+                    } else {
+                        setExistingContacts([]);
+                    }
+                } else {
+                    setExistingContacts([]);
                 }
             } else {
                 setExistingContacts(data || []);
             }
         } catch (err) {
             console.error('Error fetching contacts:', err);
+            setExistingContacts([]);
         }
     };
 
