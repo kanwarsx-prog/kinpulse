@@ -16,18 +16,25 @@ const FamilyOnboarding = () => {
 
     // Auto-join if there's an invite code in the redirect URL
     useEffect(() => {
+        console.log('[FamilyOnboarding] Checking for redirect parameter');
         const redirect = searchParams.get('redirect');
+        console.log('[FamilyOnboarding] Redirect value:', redirect);
         if (redirect && redirect.includes('/join/')) {
             const code = redirect.split('/join/')[1];
+            console.log('[FamilyOnboarding] Extracted invite code:', code);
             if (code) {
                 // Auto-join with the code
                 setInviteCode(code);
                 setMode('join');
+                console.log('[FamilyOnboarding] Triggering auto-join in 100ms');
                 // Trigger auto-join
                 setTimeout(() => {
+                    console.log('[FamilyOnboarding] Executing auto-join');
                     handleJoin(null, code);
                 }, 100);
             }
+        } else {
+            console.log('[FamilyOnboarding] No redirect or no invite code in redirect');
         }
     }, [searchParams]);
 

@@ -18,17 +18,21 @@ export default function JoinFamily() {
     }, [inviteCode]);
 
     const validateInvitation = async () => {
+        console.log('[JoinFamily] Starting validation for code:', inviteCode);
         setLoading(true);
         setError('');
 
         try {
             const { data: { user } } = await supabase.auth.getUser();
+            console.log('[JoinFamily] User check:', user ? 'Logged in' : 'Not logged in');
             if (!user) {
+                console.log('[JoinFamily] Redirecting to auth with code:', inviteCode);
                 navigate(`/auth?redirect=/join/${inviteCode}`);
                 return;
             }
 
             // Get the invitation
+            console.log('[JoinFamily] Querying group_invitations for code:', inviteCode.toUpperCase());
             const { data: invite, error: inviteError } = await supabase
                 .from('group_invitations')
                 .select(`
@@ -44,16 +48,23 @@ export default function JoinFamily() {
                 .eq('is_active', true)
                 .maybeSingle();
 
-            console.log('Invite lookup result:', { invite, inviteError, inviteCode: inviteCode.toUpperCase() });
+            console.log('[JoinFamily] Query result:', {
+                invite,
+                inviteError,
+                hasInvite: !!invite,
+                inviteGroupId: invite?.group_id,
+                inviteGroupName: invite?.groups?.name
+            });
 
             if (inviteError) {
-                console.error('Invite lookup error:', inviteError);
+                console.error('[JoinFamily] Database error:', inviteError);
                 setError('Error looking up invitation code.');
                 setLoading(false);
                 return;
             }
 
             if (!invite) {
+                console.error('[JoinFamily] No invitation found for code:', inviteCode.toUpperCase());
                 setError('Invalid or expired invitation code.');
                 setLoading(false);
                 return;
