@@ -11,6 +11,8 @@ import PhotoWall from './features/photos/PhotoWall';
 import Calendar from './features/calendar/Calendar';
 import JoinFamily from './features/family/JoinFamily';
 import InstallPrompt from './components/InstallPrompt';
+import ForgotPassword from './features/auth/ForgotPassword';
+import ResetPassword from './features/auth/ResetPassword';
 
 import { SupabaseProvider, useSupabase } from './contexts/SupabaseContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -64,6 +66,8 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/join/:inviteCode" element={<JoinFamily />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/*" element={
         !session ? <LoginScreen /> :
           !user?.current_group_id ? <FamilyOnboarding /> :

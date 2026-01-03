@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSupabase } from '../../contexts/SupabaseContext';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 
 const LoginScreen = () => {
     const { signIn, signUp } = useSupabase();
@@ -54,9 +54,17 @@ const LoginScreen = () => {
                         required
                         minLength={6}
                     />
-                    <button type="submit" disabled={loading}>
-                        {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Sign Up'}
+                    <button type="submit" className="auth-button" disabled={loading}>
+                        {loading ? 'Loading...' : mode === 'signin' ? 'Sign In' : 'Sign Up'}
                     </button>
+
+                    {mode === 'signin' && (
+                        <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                            <Link to="/forgot-password" style={{ color: '#667eea', fontSize: '14px', textDecoration: 'none' }}>
+                                Forgot Password?
+                            </Link>
+                        </div>
+                    )}
                 </form>
 
                 {message && <p className="message">{message}</p>}

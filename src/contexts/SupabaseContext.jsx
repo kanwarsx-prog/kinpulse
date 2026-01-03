@@ -144,24 +144,42 @@ export const SupabaseProvider = ({ children }) => {
         return await supabase.auth.signInWithPassword({ email, password });
     };
 
-    const signOut = () => supabase.auth.signOut();
+    const signOut = async () => {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+        setUser(null);
+        setCurrentGroup(null);
+    };
 
-    const value = {
-        supabase,
-        session,
-        user,
-        currentGroup,
-        setCurrentGroup,
-        loadCurrentGroup,
-        loading,
-        signUp,
-        signIn,
-        signOut,
-        refreshUser,
+    const resetPassword = async (email) => {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+    };
+
+    const updatePassword = async (newPassword) => {
+        const { error } = await supabase.auth.updateUser({
+            password: newPassword
+        });
+        if (error) throw error;
     };
 
     return (
-        <SupabaseContext.Provider value={value}>
+        <SupabaseContext.Provider value={{
+            supabase,
+            session,
+            user,
+            currentGroup,
+            loading,
+            signUp,
+            signIn,
+            signOut,
+            refreshUser,
+            switchGroup,
+            resetPassword,
+            updatePassword
+        }}>
             {children}
         </SupabaseContext.Provider>
     );
