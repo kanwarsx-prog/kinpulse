@@ -163,6 +163,9 @@ const FamilyOnboarding = () => {
                 throw profileError;
             }
 
+            // Refresh user context to get updated profile with current_group_id
+            await refreshUser();
+
             console.log('[FamilyOnboarding handleJoin] Success! Navigating to home...');
             navigate('/');
 
