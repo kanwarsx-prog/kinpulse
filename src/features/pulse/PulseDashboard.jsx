@@ -527,12 +527,6 @@ const PulseDashboard = () => {
                             </svg>
                             Request
                         </button>
-                        <button className="request-pulse-btn" onClick={() => setShowInvite(true)}>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M8.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM20 8v6M23 11h-6" />
-                            </svg>
-                            Invite
-                        </button>
                     </div>
                 </div>
                 <PulseInsights history={myPulseHistory} />
