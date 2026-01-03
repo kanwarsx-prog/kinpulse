@@ -9,7 +9,7 @@ export default function JoinFamily() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [invitation, setInvitation] = useState(null);
-    const [familyName, setFamilyName] = useState('');
+    const [groupName, setGroupName] = useState('');
     const [joining, setJoining] = useState(false);
 
     useEffect(() => {
@@ -28,28 +28,20 @@ export default function JoinFamily() {
                 return;
             }
 
-            const { data: profile } = await supabase.from('profiles').select('family_id').eq('id', user.id).single();
-
-            if (profile?.family_id) {
-                setError('You are already part of a family. Please leave your current family first.');
-                setLoading(false);
-                return;
-            }
-
+            // Get the invitation
             const { data: invite, error: inviteError } = await supabase
-                .from('family_invitations')
-                .select(
-                    `
-          *,
-          families (
-            id,
-            name
-          )
-        `
-                )
+                .from('group_invitations')
+                .select(`
+                    *,
+                    groups (
+                        id,
+                        name,
+                        icon
+                    )
+                `)
                 .eq('invite_code', inviteCode.toUpperCase())
                 .eq('is_active', true)
-                .single();
+                .maybeSingle();
 
             if (inviteError || !invite) {
                 setError('Invalid or expired invitation code.');
@@ -57,12 +49,28 @@ export default function JoinFamily() {
                 return;
             }
 
+            // Check if user is already a member of this specific group
+            const { data: existingMembership } = await supabase
+                .from('group_members')
+                .select('id')
+                .eq('group_id', invite.group_id)
+                .eq('user_id', user.id)
+                .maybeSingle();
+
+            if (existingMembership) {
+                setError('You are already a member of this group.');
+                setLoading(false);
+                return;
+            }
+
+            // Check expiration
             if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
                 setError('This invitation has expired.');
                 setLoading(false);
                 return;
             }
 
+            // Check max uses
             if (invite.max_uses && invite.use_count >= invite.max_uses) {
                 setError('This invitation has reached its maximum number of uses.');
                 setLoading(false);
@@ -70,7 +78,7 @@ export default function JoinFamily() {
             }
 
             setInvitation(invite);
-            setFamilyName(invite.families?.name || 'this family');
+            setGroupName(invite.groups?.name || 'this group');
             setLoading(false);
         } catch (err) {
             console.error('Error validating invitation:', err);
@@ -79,7 +87,7 @@ export default function JoinFamily() {
         }
     };
 
-    const handleJoinFamily = async () => {
+    const handleJoinGroup = async () => {
         setJoining(true);
         setError('');
 
@@ -87,21 +95,31 @@ export default function JoinFamily() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('Not authenticated');
 
-            const { error: updateError } = await supabase.from('profiles').update({ family_id: invitation.family_id }).eq('id', user.id);
+            // Add user to group_members
+            const { error: memberError } = await supabase
+                .from('group_members')
+                .insert({
+                    group_id: invitation.group_id,
+                    user_id: user.id,
+                    role: 'member'
+                });
 
-            if (updateError) throw updateError;
+            if (memberError) throw memberError;
 
-            const { error: incrementError } = await supabase
-                .from('family_invitations')
-                .update({ use_count: invitation.use_count + 1 })
-                .eq('id', invitation.id);
+            // Increment use count if it exists
+            if (invitation.use_count !== undefined) {
+                const { error: incrementError } = await supabase
+                    .from('group_invitations')
+                    .update({ use_count: invitation.use_count + 1 })
+                    .eq('id', invitation.id);
 
-            if (incrementError) console.error('Error updating use count:', incrementError);
+                if (incrementError) console.error('Error updating use count:', incrementError);
+            }
 
             navigate('/');
         } catch (err) {
-            console.error('Error joining family:', err);
-            setError('Failed to join family. Please try again.');
+            console.error('Error joining group:', err);
+            setError('Failed to join group. Please try again.');
             setJoining(false);
         }
     };
@@ -140,23 +158,23 @@ export default function JoinFamily() {
         <div className="join-family-container">
             <div className="join-family-card">
                 <div className="join-family-content">
-                    <div className="welcome-icon">🎉</div>
+                    <div className="welcome-icon">{invitation.groups?.icon || '🎉'}</div>
                     <h1>You're Invited!</h1>
                     <p className="join-description">
-                        You've been invited to join <strong>{familyName}</strong> on KinPulse.
+                        You've been invited to join <strong>{groupName}</strong> on KinPulse.
                     </p>
 
                     <div className="join-info">
                         <p>By joining, you'll be able to:</p>
                         <ul>
-                            <li>Share daily pulses with your family</li>
+                            <li>Share daily pulses with the group</li>
                             <li>Chat and share photos</li>
                             <li>Stay connected in real-time</li>
                         </ul>
                     </div>
 
-                    <button className="join-button" onClick={handleJoinFamily} disabled={joining}>
-                        {joining ? 'Joining...' : 'Join Family'}
+                    <button className="join-button" onClick={handleJoinGroup} disabled={joining}>
+                        {joining ? 'Joining...' : 'Join Group'}
                     </button>
 
                     <button className="cancel-button" onClick={() => navigate('/')} disabled={joining}>
@@ -167,3 +185,4 @@ export default function JoinFamily() {
         </div>
     );
 }
+
