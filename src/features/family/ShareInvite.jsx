@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { useSupabase } from '../../contexts/SupabaseContext';
 import './ShareInvite.css';
 
 export default function ShareInvite({ isOpen, onClose }) {
+    const { supabase, user, currentGroup } = useSupabase();
     const [inviteCode, setInviteCode] = useState('');
     const [loading, setLoading] = useState(false);
     const [copied, setCopied] = useState(false);
     const [error, setError] = useState('');
 
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && currentGroup?.id) {
             loadOrCreateInvite();
         }
-    }, [isOpen]);
+    }, [isOpen, currentGroup?.id]);
 
     const generateInviteCode = () => {
         // Generate a random 8-character code
@@ -29,26 +30,18 @@ export default function ShareInvite({ isOpen, onClose }) {
         setError('');
 
         try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error('Not authenticated');
+            if (!user?.id) throw new Error('Not authenticated');
+            if (!currentGroup?.id) throw new Error('No group selected');
 
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('family_id')
-                .eq('id', user.id)
-                .single();
-
-            if (!profile?.family_id) throw new Error('No family found');
-
-            // Check for existing active invitation
+            // Check for existing active invitation for this group
             const { data: existingInvite } = await supabase
-                .from('family_invitations')
+                .from('group_invitations')
                 .select('invite_code')
-                .eq('family_id', profile.family_id)
+                .eq('group_id', currentGroup.id)
                 .eq('is_active', true)
                 .order('created_at', { ascending: false })
                 .limit(1)
-                .single();
+                .maybeSingle();
 
             if (existingInvite) {
                 setInviteCode(existingInvite.invite_code);
@@ -56,11 +49,11 @@ export default function ShareInvite({ isOpen, onClose }) {
                 // Create new invitation
                 const newCode = generateInviteCode();
                 const { error: insertError } = await supabase
-                    .from('family_invitations')
+                    .from('group_invitations')
                     .insert({
-                        family_id: profile.family_id,
+                        group_id: currentGroup.id,
                         invite_code: newCode,
-                        created_by: user.id,
+                        inviter_id: user.id,
                         expires_at: null, // No expiration
                         max_uses: null, // Unlimited uses
                         is_active: true
@@ -93,34 +86,35 @@ export default function ShareInvite({ isOpen, onClose }) {
     };
 
     const shareViaWhatsApp = () => {
+        const groupName = currentGroup?.name || 'our group';
         const message = encodeURIComponent(
-            `Join our family on KinPulse! ${getInviteLink()}`
+            `Join ${groupName} on KinPulse! ${getInviteLink()}`
         );
         window.open(`https://wa.me/?text=${message}`, '_blank');
     };
 
     const shareViaSMS = () => {
+        const groupName = currentGroup?.name || 'our group';
         const message = encodeURIComponent(
-            `Join our family on KinPulse! ${getInviteLink()}`
+            `Join ${groupName} on KinPulse! ${getInviteLink()}`
         );
         window.location.href = `sms:?body=${message}`;
     };
 
     const shareViaEmail = () => {
-        const subject = encodeURIComponent('Join our family on KinPulse');
+        const groupName = currentGroup?.name || 'our group';
+        const subject = encodeURIComponent(`Join ${groupName} on KinPulse`);
         const body = encodeURIComponent(
-            `You've been invited to join our family on KinPulse!\n\nClick this link to join: ${getInviteLink()}`
+            `You've been invited to join ${groupName} on KinPulse!\n\nClick this link to join: ${getInviteLink()}`
         );
         window.location.href = `mailto:?subject=${subject}&body=${body}`;
     };
 
-    if (!isOpen) return null;
-
-    return (
+    return !isOpen ? null : (
         <div className="share-invite-overlay" onClick={onClose}>
             <div className="share-invite-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="share-invite-header">
-                    <h2>Invite Family Members</h2>
+                    <h2>Invite to {currentGroup?.icon} {currentGroup?.name || 'Group'}</h2>
                     <button className="close-button" onClick={onClose}>×</button>
                 </div>
 
@@ -131,7 +125,7 @@ export default function ShareInvite({ isOpen, onClose }) {
                 ) : (
                     <div className="share-invite-content">
                         <p className="share-invite-description">
-                            Share this link with family members to invite them to join your family on KinPulse.
+                            Share this link to invite people to join {currentGroup?.name || 'this group'} on KinPulse.
                         </p>
 
                         <div className="invite-code-display">
@@ -169,3 +163,4 @@ export default function ShareInvite({ isOpen, onClose }) {
         </div>
     );
 }
+
