@@ -17,7 +17,7 @@ const PAGE_SIZE = 50;
 const DirectMessage = () => {
     const { userId } = useParams();
     const navigate = useNavigate();
-    const { supabase, user } = useSupabase();
+    const { supabase, user, currentGroup } = useSupabase();
     const { isOnline } = usePresence();
     const { markAsRead: markAsReadInHook } = useUnreadCounts();
     const [messages, setMessages] = useState([]);
@@ -137,6 +137,8 @@ const DirectMessage = () => {
     };
 
     const handleTyping = () => {
+        if (!user || !userId || !currentGroup) return;
+
         if (typingTimeoutRef.current) {
             clearTimeout(typingTimeoutRef.current);
         }
@@ -215,6 +217,8 @@ const DirectMessage = () => {
     };
 
     const handleSendVoice = async (audioBlob, duration) => {
+        if (!audioBlob || !user || !userId || !currentGroup) return;
+
         try {
             const fileName = `${user.id}/${Date.now()}.webm`;
             const { error: uploadError } = await supabase.storage.from('pulse-photos').upload(fileName, audioBlob, {
@@ -256,6 +260,10 @@ const DirectMessage = () => {
     const handleSend = async (e) => {
         e.preventDefault();
         if (!newMessage.trim() && !photo) return;
+        if (!currentGroup) {
+            console.error('Cannot send message: currentGroup is not defined');
+            return;
+        }
 
         const messageContent = newMessage.trim();
         const tempId = 'temp-' + Date.now();

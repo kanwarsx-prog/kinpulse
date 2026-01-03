@@ -448,39 +448,44 @@ const FamilyChat = () => {
 
                             return (
                                 <div key={message.id} className={`message ${isMe ? 'message-me' : 'message-other'}`}>
-                                    {!isMe && <div className="message-sender">{profile?.name || profile?.email?.split('@')[0] || 'Family'}</div>}
-                                    <div className="message-bubble">
-                                        {message.content && <p className="message-content">{message.content}</p>}
-                                        {message.photo_url && (
-                                            <div className="message-photo-wrapper">
-                                                <img
-                                                    src={message.photo_url}
-                                                    alt="Shared"
-                                                    className="message-photo"
-                                                    onClick={() => setLightboxSrc(message.photo_url)}
-                                                />
-                                                {isMe && (
-                                                    <button
-                                                        type="button"
-                                                        className="photo-delete-btn"
-                                                        onClick={() => handleRemovePhoto(message)}
-                                                        aria-label="Delete photo"
-                                                    >
-                                                        ×
-                                                    </button>
-                                                )}
-                                            </div>
-                                        )}
-                                        <span className="message-time">{formatTime(message.created_at)}</span>
-                                        {isMe && message.content && message.content !== '[deleted]' && (
-                                            <div className="message-actions">
-                                                <button type="button" onClick={() => handleEditMessage(message)}>Edit</button>
-                                                <button type="button" onClick={() => handleDeleteMessage(message)}>Delete</button>
-                                            </div>
+                                    <div className="message-content-wrapper">
+                                        {!isMe && <div className="message-sender">{profile?.name || profile?.email?.split('@')[0] || 'Family'}</div>}
+                                        <div className="message-bubble">
+                                            {message.content && <p className="message-content">{message.content}</p>}
+                                            {message.photo_url && (
+                                                <div className="message-photo-wrapper">
+                                                    <img
+                                                        src={message.photo_url}
+                                                        alt="Shared"
+                                                        className="message-photo"
+                                                        onClick={() => setLightboxSrc(message.photo_url)}
+                                                    />
+                                                    {isMe && (
+                                                        <button
+                                                            type="button"
+                                                            className="photo-delete-btn"
+                                                            onClick={() => handleRemovePhoto(message)}
+                                                            aria-label="Delete photo"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+                                            <span className="message-time">{formatTime(message.created_at)}</span>
+                                            {isMe && message.content && message.content !== '[deleted]' && (
+                                                <div className="message-actions">
+                                                    <button type="button" onClick={() => handleEditMessage(message)}>Edit</button>
+                                                    <button type="button" onClick={() => handleDeleteMessage(message)}>Delete</button>
+                                                </div>
+                                            )}
+                                        </div>
+                                        {message.audio_url && <VoicePlayer audioUrl={message.audio_url} duration={message.audio_duration} />}
+
+                                        {!message.id.toString().startsWith('temp-') && (
+                                            <MessageReaction messageId={message.id} />
                                         )}
                                     </div>
-                                    {message.audio_url && <VoicePlayer audioUrl={message.audio_url} duration={message.audio_duration} />}
-                                    <MessageReaction messageId={message.id} />
                                 </div>
                             );
                         })}
@@ -532,11 +537,13 @@ const FamilyChat = () => {
                 </div>
             </form>
 
-            {showVoiceRecorder && (
-                <div className="voice-recorder-container">
-                    <VoiceRecorder onSend={handleSendVoice} onCancel={() => setShowVoiceRecorder(false)} />
-                </div>
-            )}
+            {
+                showVoiceRecorder && (
+                    <div className="voice-recorder-container">
+                        <VoiceRecorder onSend={handleSendVoice} onCancel={() => setShowVoiceRecorder(false)} />
+                    </div>
+                )
+            }
             <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
         </div>
     );
