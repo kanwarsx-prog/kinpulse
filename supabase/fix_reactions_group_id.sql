@@ -5,25 +5,34 @@
 ALTER TABLE reactions 
 ADD COLUMN IF NOT EXISTS group_id UUID;
 
--- Backfill group_id from family_id
--- Map family_id to the corresponding group_id
+-- Backfill group_id from user's first group
+-- Since we don't have a direct family_id to group_id mapping,
+-- we'll assign reactions to the user's first group
 UPDATE reactions r
-SET group_id = g.id
-FROM groups g
-WHERE r.family_id = g.family_id
-AND r.group_id IS NULL;
+SET group_id = (
+    SELECT gm.group_id 
+    FROM group_members gm 
+    WHERE gm.user_id = r.user_id 
+    ORDER BY gm.joined_at ASC 
+    LIMIT 1
+)
+WHERE r.group_id IS NULL;
 
 -- Make group_id NOT NULL after backfill
 ALTER TABLE reactions 
 ALTER COLUMN group_id SET NOT NULL;
 
+-- Drop old policies that depend on family_id
+DROP POLICY IF EXISTS "Users can view family reactions" ON reactions;
+DROP POLICY IF EXISTS "Users can create own reactions" ON reactions;
+DROP POLICY IF EXISTS "reactions_select" ON reactions;
+DROP POLICY IF EXISTS "reactions_write" ON reactions;
+
 -- Drop family_id column
 ALTER TABLE reactions 
 DROP COLUMN IF EXISTS family_id;
 
--- Update RLS policies to use group_id
-DROP POLICY IF EXISTS "reactions_select" ON reactions;
-DROP POLICY IF EXISTS "reactions_write" ON reactions;
+-- Create new RLS policies using group_id
 
 CREATE POLICY "reactions_select" ON reactions
 FOR SELECT USING (
