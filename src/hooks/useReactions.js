@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSupabase } from '../contexts/SupabaseContext';
 
 export const useReactions = ({ messageId, pulseId }) => {
-    const { supabase, user } = useSupabase();
+    const { supabase, user, currentGroup } = useSupabase();
     const [reactions, setReactions] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -60,7 +60,7 @@ export const useReactions = ({ messageId, pulseId }) => {
     };
 
     const toggleReaction = async (reactionType = '❤️') => {
-        if (!user) return;
+        if (!user || !currentGroup?.id) return;
 
         const existing = reactions.find((r) => r.user_id === user.id);
 
@@ -76,7 +76,7 @@ export const useReactions = ({ messageId, pulseId }) => {
                 await supabase.from('reactions').insert([
                     {
                         user_id: user.id,
-                        family_id: user.family_id,
+                        group_id: currentGroup.id,
                         message_id: messageId || null,
                         pulse_id: pulseId || null,
                         reaction_type: reactionType
