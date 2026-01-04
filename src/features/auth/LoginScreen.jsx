@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSupabase } from '../../contexts/SupabaseContext';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import './LoginScreen.css';
 
 const LoginScreen = () => {
     const { signIn, signUp } = useSupabase();
