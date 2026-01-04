@@ -217,7 +217,7 @@ const GroupCreationModal = ({ isOpen, onClose, onSuccess }) => {
     };
 
     const filteredContacts = existingContacts.filter(contact =>
-        contact.name.toLowerCase().includes(searchQuery.toLowerCase())
+        contact.name && contact.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return !isOpen ? null : (
