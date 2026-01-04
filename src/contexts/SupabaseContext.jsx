@@ -198,6 +198,7 @@ export const SupabaseProvider = ({ children }) => {
             signOut,
             refreshUser,
             switchGroup,
+            loadCurrentGroup,
             resetPassword,
             updatePassword
         }}>
