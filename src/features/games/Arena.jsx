@@ -50,12 +50,12 @@ const Arena = () => {
 
   useEffect(() => {
     const loadPoker = async () => {
-      if (!user?.family_id) return;
+      if (!currentGroup?.id) return;
       setLoadingPoker(true);
       const { data, error } = await supabase
         .from('poker_tables')
         .select('id, name, status, created_at')
-        .eq('family_id', user.family_id)
+        .eq('group_id', currentGroup.id)
         .in('status', ['open', 'active'])
         .order('created_at', { ascending: false });
       if (!error) setPokerTables(data || []);
@@ -63,12 +63,12 @@ const Arena = () => {
     };
 
     const loadChess = async () => {
-      if (!user?.family_id) return;
+      if (!currentGroup?.id) return;
       setLoadingChess(true);
       const { data, error } = await supabase
         .from('chess_games')
         .select('id, white_player_id, black_player_id, status, created_at')
-        .eq('family_id', user.family_id)
+        .eq('group_id', currentGroup.id)
         .in('status', ['active'])
         .order('created_at', { ascending: false });
       if (!error) setChessGames(data || []);
@@ -77,7 +77,7 @@ const Arena = () => {
 
     loadPoker();
     loadChess();
-  }, [supabase, user?.family_id]);
+  }, [supabase, currentGroup?.id]);
 
   const ongoingPoker = pokerTables.slice(0, 6).map((t) => ({
     title: t.name,
@@ -88,19 +88,19 @@ const Arena = () => {
   }));
 
   const handleQuickPoker = async () => {
-    if (!user?.family_id || creatingPoker) return;
+    if (!currentGroup?.id || creatingPoker) return;
     setCreatingPoker(true);
-    // Close any existing open/active tables for this family
+    // Close any existing open/active tables for this group
     await supabase
       .from('poker_tables')
       .update({ status: 'finished', updated_at: new Date().toISOString() })
-      .eq('family_id', user.family_id)
+      .eq('group_id', currentGroup.id)
       .neq('status', 'finished');
 
     await supabase
       .from('poker_tables')
       .insert({
-        family_id: user.family_id,
+        group_id: currentGroup.id,
         name: newPokerName || 'Poker night',
         variant: 'holdem',
         small_blind: 10,
@@ -112,7 +112,7 @@ const Arena = () => {
     const { data } = await supabase
       .from('poker_tables')
       .select('id, name, status, created_at')
-      .eq('family_id', user.family_id)
+      .eq('group_id', currentGroup.id)
       .order('created_at', { ascending: false });
     setPokerTables(data || []);
   };
