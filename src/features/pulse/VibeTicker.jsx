@@ -22,9 +22,9 @@ const VibeTicker = ({ pulses, profiles, onReply }) => {
     return [...base, ...base]; // duplicate for seamless loop
   }, [pulses]);
 
-  if (!vibes.length) return null;
-
   const [paused, setPaused] = useState(false);
+
+  if (!vibes.length) return null;
   const duration = Math.max(12, vibes.length * 2);
 
   const renderCard = (vibe) => {
