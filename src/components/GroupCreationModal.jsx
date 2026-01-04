@@ -377,14 +377,12 @@ const GroupCreationModal = ({ isOpen, onClose, onSuccess }) => {
                                 >
                                     Email
                                 </button>
-                                {isContactPickerSupported && (
-                                    <button
-                                        className={`tab ${activeTab === 'phone' ? 'active' : ''}`}
-                                        onClick={() => setActiveTab('phone')}
-                                    >
-                                        Phone contacts
-                                    </button>
-                                )}
+                                <button // Always display Phone tab
+                                    className={`tab ${activeTab === 'phone' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('phone')}
+                                >
+                                    Phone
+                                </button>
                             </div>
 
                             {activeTab === 'contacts' && (
@@ -471,15 +469,61 @@ const GroupCreationModal = ({ isOpen, onClose, onSuccess }) => {
 
                             {activeTab === 'phone' && (
                                 <div className="phone-tab">
-                                    <div className="phone-actions">
-                                        <button className="import-contacts-btn" onClick={handleImportContacts}>
-                                            <span className="icon">📱</span> Select from Contact List
-                                        </button>
-                                    </div>
+                                    {isContactPickerSupported && (
+                                        <div className="phone-actions">
+                                            <button className="import-contacts-btn" onClick={handleImportContacts}>
+                                                <span className="icon">📱</span> Select from Contact List
+                                            </button>
+                                            <div className="divider-text">or enter manually</div>
+                                        </div>
+                                    )}
 
-                                    <p className="helper-text">
-                                        Select contacts from your phone. You'll be able to send them invites after creating the group.
-                                    </p>
+                                    {!isContactPickerSupported && (
+                                        <p className="helper-text">
+                                            Enter name and phone number to send an SMS invite.
+                                        </p>
+                                    )}
+
+                                    <div className="manual-phone-form">
+                                        <input
+                                            type="text"
+                                            placeholder="Name (e.g. Mom)"
+                                            id="manual-name"
+                                            className="manual-input"
+                                        />
+                                        <div className="phone-input-group">
+                                            <input
+                                                type="tel"
+                                                placeholder="Phone Number"
+                                                id="manual-phone"
+                                                className="manual-input"
+                                            />
+                                            <button
+                                                className="add-btn"
+                                                onClick={() => {
+                                                    const nameInput = document.getElementById('manual-name');
+                                                    const phoneInput = document.getElementById('manual-phone');
+                                                    const name = nameInput.value.trim();
+                                                    const tel = phoneInput.value.trim();
+
+                                                    if (name && tel) {
+                                                        if (!phoneInvites.some(p => p.tel === tel)) {
+                                                            setPhoneInvites([...phoneInvites, { name, tel }]);
+                                                            nameInput.value = '';
+                                                            phoneInput.value = '';
+                                                            nameInput.focus();
+                                                        } else {
+                                                            alert('This number is already added');
+                                                        }
+                                                    } else {
+                                                        alert('Please enter both name and phone number');
+                                                    }
+                                                }}
+                                            >
+                                                Add
+                                            </button>
+                                        </div>
+                                    </div>
 
                                     {phoneInvites.length > 0 && (
                                         <div className="phone-list">
