@@ -3,7 +3,7 @@ import { useSupabase } from '../../contexts/SupabaseContext';
 import './CreateRitualForm.css';
 
 const CreateRitualForm = ({ onClose, onCreated, initialName = '', initialPrompt = '' }) => {
-    const { supabase, user } = useSupabase();
+    const { supabase, user, currentGroup } = useSupabase();
     const [name, setName] = useState(initialName);
     const [prompt, setPrompt] = useState(initialPrompt);
     const [loading, setLoading] = useState(false);
@@ -14,11 +14,17 @@ const CreateRitualForm = ({ onClose, onCreated, initialName = '', initialPrompt 
         setLoading(true);
         setError(null);
 
+        if (!currentGroup?.id) {
+            setError('No group selected');
+            setLoading(false);
+            return;
+        }
+
         try {
             const { data, error: ritualError } = await supabase
                 .from('rituals')
                 .insert([{
-                    family_id: user.family_id,
+                    family_id: currentGroup.id,
                     name,
                     prompt,
                     created_by: user.id,
@@ -31,11 +37,16 @@ const CreateRitualForm = ({ onClose, onCreated, initialName = '', initialPrompt 
 
             // Notify family about new goal
             try {
-                const { data: familyProfiles } = await supabase
-                    .from('profiles')
-                    .select('id,name')
-                    .eq('family_id', user.family_id);
-                const targets = (familyProfiles || []).filter((p) => p.id !== user.id).map((p) => p.id);
+                // Get all members of the current group
+                const { data: members } = await supabase
+                    .from('group_members')
+                    .select('user_id')
+                    .eq('group_id', currentGroup.id);
+
+                const targets = (members || [])
+                    .map(m => m.user_id)
+                    .filter(uid => uid !== user.id);
+
                 const title = name || 'New family goal';
                 const body = prompt ? prompt.slice(0, 80) : 'Tap to join';
                 await Promise.allSettled(

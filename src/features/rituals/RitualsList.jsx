@@ -5,7 +5,7 @@ import RitualCard from './RitualCard';
 import CreateRitualForm from './CreateRitualForm';
 
 const RitualsList = () => {
-    const { supabase, user } = useSupabase();
+    const { supabase, user, currentGroup } = useSupabase();
     const navigate = useNavigate();
     const [rituals, setRituals] = useState([]);
     const [showCreateForm, setShowCreateForm] = useState(false);
@@ -15,27 +15,33 @@ const RitualsList = () => {
     const [familyCount, setFamilyCount] = useState(0);
 
     useEffect(() => {
-        fetchRituals();
-    }, [user?.family_id]);
+        if (currentGroup?.id) {
+            fetchRituals();
+        } else {
+            setRituals([]);
+        }
+    }, [currentGroup?.id]);
 
     const fetchRituals = async () => {
-        if (!user?.family_id) return;
+        if (!currentGroup?.id) return;
 
         const { data } = await supabase
             .from('rituals')
             .select('*')
-            .eq('family_id', user.family_id)
+            .eq('family_id', currentGroup.id)
             .order('created_at', { ascending: false });
 
         if (data) {
             setRituals(data);
         }
 
-        const { data: profileData } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('family_id', user.family_id);
-        setFamilyCount(profileData?.length || 0);
+        // Get member count for the current group
+        const { count } = await supabase
+            .from('group_members')
+            .select('*', { count: 'exact', head: true })
+            .eq('group_id', currentGroup.id);
+
+        setFamilyCount(count || 0);
 
         const { data: responses } = await supabase
             .from('ritual_responses')
