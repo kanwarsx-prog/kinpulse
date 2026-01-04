@@ -89,9 +89,7 @@ const GroupSwitcher = () => {
         try {
             await switchGroupContext(group.id);
             setShowDropdown(false);
-
-            // Reload page to refresh all data with new group context
-            window.location.reload();
+            // State updates in context will trigger re-renders in other components
         } catch (error) {
             console.error('Error switching group:', error);
         }
