@@ -34,47 +34,59 @@ const GroupCreationModal = ({ isOpen, onClose, onSuccess }) => {
         if (!user?.id) return;
 
         try {
-            // Get all users from groups the current user belongs to
-            const { data, error } = await supabase.rpc('get_group_contacts', {
-                p_user_id: user.id
-            });
+            // Get all groups the user belongs to
+            const { data: userGroups, error: groupsError } = await supabase
+                .from('group_members')
+                .select('group_id')
+                .eq('user_id', user.id);
 
-            if (error) {
-                console.error('Error fetching contacts:', error);
-                // Fallback to manual query if RPC doesn't exist
-                // First, get all groups the user belongs to
-                const { data: userGroups } = await supabase
-                    .from('group_members')
-                    .select('group_id')
-                    .eq('user_id', user.id);
-
-                if (userGroups && userGroups.length > 0) {
-                    const groupIds = userGroups.map(g => g.group_id);
-
-                    // Then get all members from those groups
-                    const { data: members } = await supabase
-                        .from('group_members')
-                        .select('user_id')
-                        .in('group_id', groupIds)
-                        .neq('user_id', user.id);
-
-                    if (members && members.length > 0) {
-                        const userIds = [...new Set(members.map(m => m.user_id))];
-                        const { data: profiles } = await supabase
-                            .from('profiles')
-                            .select('id, name, avatar_url')
-                            .in('id', userIds);
-
-                        setExistingContacts(profiles || []);
-                    } else {
-                        setExistingContacts([]);
-                    }
-                } else {
-                    setExistingContacts([]);
-                }
-            } else {
-                setExistingContacts(data || []);
+            if (groupsError) {
+                console.error('Error fetching user groups:', groupsError);
+                setExistingContacts([]);
+                return;
             }
+
+            if (!userGroups || userGroups.length === 0) {
+                setExistingContacts([]);
+                return;
+            }
+
+            const groupIds = userGroups.map(g => g.group_id);
+
+            // Get all members from those groups (excluding current user)
+            const { data: members, error: membersError } = await supabase
+                .from('group_members')
+                .select('user_id')
+                .in('group_id', groupIds)
+                .neq('user_id', user.id);
+
+            if (membersError) {
+                console.error('Error fetching members:', membersError);
+                setExistingContacts([]);
+                return;
+            }
+
+            if (!members || members.length === 0) {
+                setExistingContacts([]);
+                return;
+            }
+
+            // Get unique user IDs
+            const userIds = [...new Set(members.map(m => m.user_id))];
+
+            // Fetch profiles for these users
+            const { data: profiles, error: profilesError } = await supabase
+                .from('profiles')
+                .select('id, name, email, avatar_url')
+                .in('id', userIds);
+
+            if (profilesError) {
+                console.error('Error fetching profiles:', profilesError);
+                setExistingContacts([]);
+                return;
+            }
+
+            setExistingContacts(profiles || []);
         } catch (err) {
             console.error('Error fetching contacts:', err);
             setExistingContacts([]);
