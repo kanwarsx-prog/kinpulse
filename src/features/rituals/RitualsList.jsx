@@ -80,6 +80,22 @@ const RitualsList = () => {
         }
     };
 
+    const handleDelete = async (ritualId) => {
+        if (!window.confirm('Are you sure you want to delete this goal?')) return;
+
+        const { error } = await supabase
+            .from('rituals')
+            .delete()
+            .eq('id', ritualId);
+
+        if (!error) {
+            setRituals(rituals.filter(r => r.id !== ritualId));
+        } else {
+            console.error('Error deleting ritual:', error);
+            alert('Failed to delete goal');
+        }
+    };
+
     const templates = [
         { name: 'Fitness together', prompt: 'Hit 5k steps per day for 5 days this week. Share your best walk pic.' },
         { name: 'Reunion countdown', prompt: 'Prep for the reunion: travel booked? gifts? Share one thing you’re bringing.' },
@@ -169,6 +185,8 @@ const RitualsList = () => {
                         joined={joinedIds.has(ritual.id)}
                         onClick={handleRitualClick}
                         onJoin={handleJoin}
+                        isOwner={ritual.created_by === user.id}
+                        onDelete={handleDelete}
                     />
                 ))}
                 {rituals.length === 0 && (

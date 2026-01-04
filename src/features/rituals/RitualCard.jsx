@@ -1,6 +1,7 @@
 ﻿import React from 'react';
 
-const RitualCard = ({ ritual, onClick, participants = 0, familyCount = 0, joined = false, onJoin }) => {
+const RitualCard = ({ ritual, onClick, participants = 0, familyCount = 0, joined = false, onJoin, isOwner = false, onDelete }) => {
+    // ... formatDate logic same as before ...
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         const now = new Date();
@@ -49,6 +50,26 @@ const RitualCard = ({ ritual, onClick, participants = 0, familyCount = 0, joined
                     {familyCount ? ` / ${familyCount}` : ''} joined
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
+                    {isOwner && (
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onDelete?.(ritual.id);
+                            }}
+                            style={{
+                                padding: '6px 10px',
+                                borderRadius: '10px',
+                                border: '1px solid #fee2e2',
+                                background: '#fef2f2',
+                                color: '#dc2626',
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Delete
+                        </button>
+                    )}
                     <button
                         type="button"
                         onClick={(e) => {
