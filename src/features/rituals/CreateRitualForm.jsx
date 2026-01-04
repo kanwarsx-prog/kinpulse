@@ -24,7 +24,7 @@ const CreateRitualForm = ({ onClose, onCreated, initialName = '', initialPrompt 
             const { data, error: ritualError } = await supabase
                 .from('rituals')
                 .insert([{
-                    family_id: currentGroup.id,
+                    group_id: currentGroup.id,
                     name,
                     prompt,
                     created_by: user.id,

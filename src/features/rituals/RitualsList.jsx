@@ -28,7 +28,7 @@ const RitualsList = () => {
         const { data } = await supabase
             .from('rituals')
             .select('*')
-            .eq('family_id', currentGroup.id)
+            .eq('group_id', currentGroup.id)
             .order('created_at', { ascending: false });
 
         if (data) {
