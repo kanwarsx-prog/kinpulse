@@ -16,13 +16,19 @@ const GroupCreationModal = ({ isOpen, onClose, onSuccess }) => {
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
     // Step 2: Members
-    const [activeTab, setActiveTab] = useState('contacts'); // 'contacts' or 'email'
+    const [activeTab, setActiveTab] = useState('contacts'); // 'contacts', 'email', or 'phone'
     const [existingContacts, setExistingContacts] = useState([]);
     const [selectedMembers, setSelectedMembers] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [emailInput, setEmailInput] = useState('');
     const [emailInvites, setEmailInvites] = useState([]);
+    const [phoneInvites, setPhoneInvites] = useState([]); // [{ name, tel }]
     const [emailError, setEmailError] = useState('');
+    const [isContactPickerSupported, setIsContactPickerSupported] = useState(false);
+
+    useEffect(() => {
+        setIsContactPickerSupported('contacts' in navigator && 'ContactsManager' in window);
+    }, []);
 
     useEffect(() => {
         if (isOpen && step === 2) {
@@ -123,6 +129,36 @@ const GroupCreationModal = ({ isOpen, onClose, onSuccess }) => {
         setEmailInvites(emailInvites.filter(e => e !== email));
     };
 
+    const handleImportContacts = async () => {
+        try {
+            const props = ['name', 'tel'];
+            const opts = { multiple: true };
+            const contacts = await navigator.contacts.select(props, opts);
+
+            if (contacts.length > 0) {
+                const newPhoneInvites = [...phoneInvites];
+
+                contacts.forEach(contact => {
+                    const name = contact.name?.[0] || 'Unknown';
+                    const tel = contact.tel?.[0];
+
+                    if (tel && !newPhoneInvites.some(p => p.tel === tel)) {
+                        newPhoneInvites.push({ name, tel });
+                    }
+                });
+
+                setPhoneInvites(newPhoneInvites);
+            }
+        } catch (err) {
+            console.error('Error selecting contacts:', err);
+            // Fallback or error message could go here
+        }
+    };
+
+    const handleRemovePhone = (tel) => {
+        setPhoneInvites(phoneInvites.filter(p => p.tel !== tel));
+    };
+
     const toggleMemberSelection = (memberId) => {
         if (selectedMembers.includes(memberId)) {
             setSelectedMembers(selectedMembers.filter(id => id !== memberId));
@@ -192,15 +228,35 @@ const GroupCreationModal = ({ isOpen, onClose, onSuccess }) => {
             // Switch to the new group
             await loadCurrentGroup(newGroup.id);
 
-            // Reset and close
+            // If we have phone invites, go to step 3 (Send Invites)
+            if (phoneInvites.length > 0) {
+                setLoading(false);
+                setStep(3);
+                return;
+            }
+
+            // Otherwise, reset and close
             handleClose();
             if (onSuccess) onSuccess(newGroup);
         } catch (error) {
             console.error('Error creating group:', error);
             alert('Failed to create group. Please try again.');
         } finally {
-            setLoading(false);
+            if (step !== 3) {
+                setLoading(false);
+            }
         }
+    };
+
+    const sendSmsInvite = (phone, name) => {
+        const message = `Join me in our new '${groupName}' group on KinPulse! Use code: DEFAULT`;
+        const url = `sms:${phone}?body=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
+    };
+
+    const handleFinish = () => {
+        handleClose();
+        if (onSuccess) onSuccess();
     };
 
     const handleClose = () => {
@@ -210,6 +266,7 @@ const GroupCreationModal = ({ isOpen, onClose, onSuccess }) => {
         setGroupDescription('');
         setSelectedMembers([]);
         setEmailInvites([]);
+        setPhoneInvites([]);
         setSearchQuery('');
         setEmailInput('');
         setEmailError('');
@@ -224,7 +281,7 @@ const GroupCreationModal = ({ isOpen, onClose, onSuccess }) => {
         <div className="group-modal-overlay" onClick={handleClose}>
             <div className="group-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="group-modal-header">
-                    <h2>Create New Group</h2>
+                    <h2>{step === 3 ? 'Send Invites' : 'Create New Group'}</h2>
                     <button className="close-btn" onClick={handleClose}>×</button>
                 </div>
 
@@ -238,6 +295,15 @@ const GroupCreationModal = ({ isOpen, onClose, onSuccess }) => {
                         <div className="progress-circle">2</div>
                         <span>Members</span>
                     </div>
+                    {step === 3 && (
+                        <>
+                            <div className="progress-line"></div>
+                            <div className={`progress-step active`}>
+                                <div className="progress-circle">3</div>
+                                <span>Invite</span>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 <div className="group-modal-body">
@@ -303,14 +369,22 @@ const GroupCreationModal = ({ isOpen, onClose, onSuccess }) => {
                                     className={`tab ${activeTab === 'contacts' ? 'active' : ''}`}
                                     onClick={() => setActiveTab('contacts')}
                                 >
-                                    Existing Contacts ({existingContacts.length})
+                                    App Contacts ({existingContacts.length})
                                 </button>
                                 <button
                                     className={`tab ${activeTab === 'email' ? 'active' : ''}`}
                                     onClick={() => setActiveTab('email')}
                                 >
-                                    Invite by Email ({emailInvites.length})
+                                    Email
                                 </button>
+                                {isContactPickerSupported && (
+                                    <button
+                                        className={`tab ${activeTab === 'phone' ? 'active' : ''}`}
+                                        onClick={() => setActiveTab('phone')}
+                                    >
+                                        Phone contacts
+                                    </button>
+                                )}
                             </div>
 
                             {activeTab === 'contacts' && (
@@ -361,7 +435,7 @@ const GroupCreationModal = ({ isOpen, onClose, onSuccess }) => {
                             {activeTab === 'email' && (
                                 <div className="email-tab">
                                     <p className="helper-text">
-                                        Invite friends, family, or colleagues who aren't on KinPulse yet
+                                        Invite friends, family, or colleagues by email
                                     </p>
 
                                     <div className="email-input-group">
@@ -394,6 +468,58 @@ const GroupCreationModal = ({ isOpen, onClose, onSuccess }) => {
                                     )}
                                 </div>
                             )}
+
+                            {activeTab === 'phone' && (
+                                <div className="phone-tab">
+                                    <div className="phone-actions">
+                                        <button className="import-contacts-btn" onClick={handleImportContacts}>
+                                            <span className="icon">📱</span> Select from Contact List
+                                        </button>
+                                    </div>
+
+                                    <p className="helper-text">
+                                        Select contacts from your phone. You'll be able to send them invites after creating the group.
+                                    </p>
+
+                                    {phoneInvites.length > 0 && (
+                                        <div className="phone-list">
+                                            {phoneInvites.map((contact, index) => (
+                                                <div key={index} className="phone-chip">
+                                                    <span className="contact-name">{contact.name}</span>
+                                                    <span className="contact-tel">{contact.tel}</span>
+                                                    <button onClick={() => handleRemovePhone(contact.tel)}>×</button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {step === 3 && (
+                        <div className="step-content fade-in">
+                            <h3>Send Invites</h3>
+                            <p className="helper-text">
+                                Your group is created! Now send invites to the contacts you selected.
+                            </p>
+
+                            <div className="invite-list">
+                                {phoneInvites.map((contact, index) => (
+                                    <div key={index} className="invite-item">
+                                        <div className="invite-info">
+                                            <div className="contact-name">{contact.name}</div>
+                                            <div className="contact-tel">{contact.tel}</div>
+                                        </div>
+                                        <button
+                                            className="send-invite-btn"
+                                            onClick={() => sendSmsInvite(contact.tel, contact.name)}
+                                        >
+                                            Send SMS
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>
@@ -412,7 +538,7 @@ const GroupCreationModal = ({ isOpen, onClose, onSuccess }) => {
                                 Next: Add Members
                             </button>
                         </>
-                    ) : (
+                    ) : step === 2 ? (
                         <>
                             <button className="btn-secondary" onClick={() => setStep(1)}>
                                 Back
@@ -425,6 +551,10 @@ const GroupCreationModal = ({ isOpen, onClose, onSuccess }) => {
                                 {loading ? 'Creating...' : 'Create Group'}
                             </button>
                         </>
+                    ) : (
+                        <button className="btn-primary full-width" onClick={handleFinish}>
+                            Done
+                        </button>
                     )}
                 </div>
             </div>

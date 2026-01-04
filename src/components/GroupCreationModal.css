@@ -470,3 +470,109 @@
 .fade-in {
     animation: fadeIn 0.3s ease;
 }
+
+/* Phone Contacts Styles */
+.phone-actions {
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.import-contacts-btn {
+    width: 100%;
+    padding: 16px;
+    background: #f3f4f6;
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #4b5563;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.import-contacts-btn:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+    color: #374151;
+}
+
+.import-contacts-btn .icon {
+    font-size: 20px;
+}
+
+.phone-list,
+.invite-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.phone-chip,
+.invite-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #f9fafb;
+    border-radius: 12px;
+    transition: all 0.2s;
+}
+
+.invite-item {
+    background: white;
+    border: 1px solid #e5e7eb;
+}
+
+.invite-info {
+    flex: 1;
+}
+
+.contact-tel {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.phone-chip button {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.phone-chip button:hover {
+    background: #e5e7eb;
+    color: #ef4444;
+}
+
+.send-invite-btn {
+    padding: 8px 16px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.send-invite-btn:hover {
+    background: #5a67d8;
+    transform: translateY(-1px);
+}
+
+.full-width {
+    width: 100%;
+}
