@@ -77,7 +77,7 @@ const GroupCreationModal = ({ isOpen, onClose, onSuccess }) => {
             // Fetch profiles for these users
             const { data: profiles, error: profilesError } = await supabase
                 .from('profiles')
-                .select('id, name, email, avatar_url')
+                .select('id, name, email')
                 .in('id', userIds);
 
             if (profilesError) {
