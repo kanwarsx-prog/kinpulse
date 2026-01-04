@@ -101,6 +101,42 @@ const PokerLobby = () => {
         if (!error && data) {
             setTables([data, ...tables]);
             setNewName('Poker night');
+
+            // Send push notifications to all group members
+            try {
+                const { data: memberData } = await supabase
+                    .from('group_members')
+                    .select('user_id')
+                    .eq('group_id', currentGroup.id)
+                    .neq('user_id', user.id);
+
+                const targetIds = memberData?.map(m => m.user_id) || [];
+
+                if (targetIds.length > 0) {
+                    const { data: profileData } = await supabase
+                        .from('profiles')
+                        .select('name')
+                        .eq('id', user.id)
+                        .single();
+
+                    const creatorName = profileData?.name || 'Someone';
+
+                    await Promise.allSettled(
+                        targetIds.map((uid) =>
+                            supabase.functions.invoke('send-push-notification', {
+                                body: {
+                                    user_id: uid,
+                                    title: '🃏 New Poker Table!',
+                                    body: `${creatorName} started "${newName.trim()}" - Join now!`,
+                                    url: '/arena'
+                                }
+                            }).catch((err) => console.error('Push notification error:', err))
+                        )
+                    );
+                }
+            } catch (notifError) {
+                console.error('Error sending poker notifications:', notifError);
+            }
         } else {
             setMessage(error?.message || 'Could not create table');
         }

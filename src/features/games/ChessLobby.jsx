@@ -118,6 +118,28 @@ const ChessLobby = () => {
             return;
         }
 
+        // Send push notification to opponent
+        try {
+            const { data: profileData } = await supabase
+                .from('profiles')
+                .select('name')
+                .eq('id', user.id)
+                .single();
+
+            const creatorName = profileData?.name || 'Someone';
+
+            await supabase.functions.invoke('send-push-notification', {
+                body: {
+                    user_id: selectedOpponent,
+                    title: '♟️ Chess Challenge!',
+                    body: `${creatorName} challenged you to a chess game`,
+                    url: `/games/chess/${game.id}`
+                }
+            }).catch((err) => console.error('Push notification error:', err));
+        } catch (notifError) {
+            console.error('Error sending chess notification:', notifError);
+        }
+
         setCreating(false);
         setSelectedOpponent(null);
         navigate(`/games/chess/${game.id}`);
