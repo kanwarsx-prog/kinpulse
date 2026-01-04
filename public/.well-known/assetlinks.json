@@ -1,0 +1,14 @@
+[
+    {
+        "relation": [
+            "delegate_permission/common.handle_all_urls"
+        ],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "com.kinpulse.app",
+            "sha256_cert_fingerprints": [
+                "8524BC1B330E223624C60581D9B8982F7388D8F91AA9EB97B9F17546CB051C97"
+            ]
+        }
+    }
+]
