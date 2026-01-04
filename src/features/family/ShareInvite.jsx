@@ -111,6 +111,52 @@ export default function ShareInvite({ isOpen, onClose }) {
         window.location.href = `mailto:?subject=${subject}&body=${body}`;
     };
 
+    // Web Share API for native sharing
+    const handleNativeShare = async () => {
+        const groupName = currentGroup?.name || 'our group';
+        const shareData = {
+            title: `Join ${groupName} on KinPulse`,
+            text: `You've been invited to join ${groupName} on KinPulse!`,
+            url: getInviteLink()
+        };
+
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else {
+                // Fallback to copy
+                copyToClipboard();
+            }
+        } catch (err) {
+            if (err.name !== 'AbortError') {
+                console.error('Error sharing:', err);
+            }
+        }
+    };
+
+    // Phone number invite
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [showPhoneInput, setShowPhoneInput] = useState(false);
+
+    const sendSMSToPhone = () => {
+        if (!phoneNumber) return;
+
+        const groupName = currentGroup?.name || 'our group';
+        const message = encodeURIComponent(
+            `Join ${groupName} on KinPulse! ${getInviteLink()}`
+        );
+
+        // Format phone number (remove non-digits)
+        const cleanPhone = phoneNumber.replace(/\D/g, '');
+
+        // Open SMS with pre-filled message
+        window.location.href = `sms:${cleanPhone}?body=${message}`;
+
+        // Reset
+        setPhoneNumber('');
+        setShowPhoneInput(false);
+    };
+
     return !isOpen ? null : (
         <div className="share-invite-overlay" onClick={onClose}>
             <div className="share-invite-modal" onClick={(e) => e.stopPropagation()}>
@@ -141,8 +187,19 @@ export default function ShareInvite({ isOpen, onClose }) {
                             {copied ? '✓ Copied!' : 'Copy Link'}
                         </button>
 
+                        {/* Native Share Button (appears on mobile) */}
+                        {navigator.share && (
+                            <button
+                                className="native-share-button"
+                                onClick={handleNativeShare}
+                            >
+                                <span className="share-icon">📤</span>
+                                Share via Contacts
+                            </button>
+                        )}
+
                         <div className="share-options">
-                            <p className="share-label">Share via:</p>
+                            <p className="share-label">Or share via:</p>
                             <div className="share-buttons">
                                 <button className="share-button whatsapp" onClick={shareViaWhatsApp}>
                                     <span className="share-icon">💬</span>
@@ -157,6 +214,46 @@ export default function ShareInvite({ isOpen, onClose }) {
                                     Email
                                 </button>
                             </div>
+                        </div>
+
+                        {/* Phone Number Input */}
+                        <div className="phone-invite-section">
+                            {!showPhoneInput ? (
+                                <button
+                                    className="show-phone-button"
+                                    onClick={() => setShowPhoneInput(true)}
+                                >
+                                    <span className="share-icon">📞</span>
+                                    Invite by Phone Number
+                                </button>
+                            ) : (
+                                <div className="phone-input-container">
+                                    <input
+                                        type="tel"
+                                        className="phone-input"
+                                        placeholder="Enter phone number"
+                                        value={phoneNumber}
+                                        onChange={(e) => setPhoneNumber(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && sendSMSToPhone()}
+                                    />
+                                    <button
+                                        className="send-sms-button"
+                                        onClick={sendSMSToPhone}
+                                        disabled={!phoneNumber}
+                                    >
+                                        Send SMS
+                                    </button>
+                                    <button
+                                        className="cancel-phone-button"
+                                        onClick={() => {
+                                            setShowPhoneInput(false);
+                                            setPhoneNumber('');
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
