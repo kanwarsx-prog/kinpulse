@@ -1,92 +1,116 @@
 .onboarding-screen {
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: var(--space-lg);
-    background: var(--color-bg-primary);
+    background: var(--gradient-primary);
 }
 
 .onboarding-card {
     width: 100%;
-    max-width: 400px;
-    background: white;
-    padding: var(--space-xl);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
+    max-width: 450px;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    padding: var(--space-xxl);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--glass-border);
     text-align: center;
+    animation: fadeInUp 0.5s ease-out;
 }
 
 .onboarding-card h1 {
-    font-size: 1.75rem;
-    color: hsl(var(--color-text-primary));
+    font-size: 2rem;
+    font-weight: 800;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin-bottom: var(--space-xs);
 }
 
-.onboarding-card .subtitle {
-    color: hsl(var(--color-text-secondary));
-    margin-bottom: var(--space-xl);
+.onboarding-card h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-md);
 }
 
-.menu-options {
+.onboarding-card p {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-xl);
+    font-size: 1rem;
+}
+
+.onboarding-card form {
     display: flex;
     flex-direction: column;
     gap: var(--space-md);
 }
 
-.primary-btn {
-    background-color: hsl(var(--color-accent));
+.onboarding-card input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.onboarding-card input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.onboarding-card button {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.onboarding-card button[type="submit"] {
+    background: var(--gradient-primary);
     color: white;
-    padding: 14px;
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    width: 100%;
-    font-size: 1rem;
+    box-shadow: var(--shadow-md);
 }
 
-.secondary-btn {
-    background-color: transparent;
-    color: hsl(var(--color-text-primary));
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    padding: 14px;
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    width: 100%;
-    font-size: 1rem;
+.onboarding-card button[type="submit"]:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
 }
 
-.text-btn {
-    color: hsl(var(--color-text-secondary));
-    font-weight: 500;
-    padding: 10px;
+.onboarding-card button[type="button"] {
+    background: transparent;
+    color: var(--color-text-secondary);
+    border: 2px solid var(--color-border);
 }
 
-.divider {
-    color: hsl(var(--color-text-secondary));
-    font-size: 0.875rem;
-    margin: var(--space-xs) 0;
+.onboarding-card button[type="button"]:hover:not(:disabled) {
+    background: var(--color-bg-tertiary);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
-.actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: var(--space-lg);
+.onboarding-card button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
-input {
-    width: 100%;
+.error {
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
     padding: 12px;
-    border: 1px solid #ddd;
     border-radius: var(--radius-md);
-    font-size: 1rem;
-}
-
-.error-message {
-    background: hsl(0, 80%, 95%);
-    color: hsl(0, 80%, 40%);
-    padding: 10px;
-    border-radius: var(--radius-md);
-    margin-bottom: var(--space-md);
+    margin-top: var(--space-md);
     font-size: 0.9rem;
+    font-weight: 500;
 }

@@ -504,6 +504,28 @@ const PulseDashboard = () => {
                 </div>
             )}
 
+            {/* First Pulse Welcome for New Users */}
+            {myPulseHistory.length === 0 && !showSmartNudge && !showPulseReminder && (
+                <div className="first-pulse-welcome">
+                    <div className="welcome-content">
+                        <span className="welcome-emoji">👋</span>
+                        <div>
+                            <p className="welcome-title">Welcome to your family!</p>
+                            <p className="welcome-text">Share your first pulse to let everyone know how you're doing</p>
+                        </div>
+                    </div>
+                    <button
+                        className="welcome-btn"
+                        onClick={() => {
+                            setShowPulseForm(true);
+                            setTimeout(() => pulseFormRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+                        }}
+                    >
+                        Share First Pulse
+                    </button>
+                </div>
+            )}
+
             <VibeTicker pulses={pulses} profiles={profiles} onReply={(uid) => navigate(`/chat/${uid}`)} />
 
             <section className="family-stream">

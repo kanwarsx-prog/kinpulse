@@ -4,32 +4,42 @@
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--gradient-primary);
     padding: 24px;
+    animation: fadeIn 0.5s ease-out;
 }
 
 .login-card {
-    background: white;
-    padding: 32px;
-    border-radius: 16px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    max-width: 400px;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    padding: 40px;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--glass-border);
+    max-width: 420px;
     width: 100%;
+    animation: fadeInUp 0.6s ease-out;
 }
 
 .login-card h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #1a1a1a;
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin-bottom: 8px;
     text-align: center;
+    letter-spacing: -0.02em;
 }
 
 .login-card .tagline {
-    color: #6b7280;
+    color: var(--color-text-secondary);
     text-align: center;
     margin-bottom: 32px;
-    font-size: 1rem;
+    font-size: 1.1rem;
+    font-weight: 500;
 }
 
 .login-card form {
@@ -40,39 +50,50 @@
 
 .login-card input {
     width: 100%;
-    padding: 12px 16px;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
+    padding: 14px 16px;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
     font-size: 16px;
     box-sizing: border-box;
+    background: white;
+    transition: all 0.2s ease;
 }
 
 .login-card input:focus {
     outline: none;
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
 }
 
-.login-card button[type="submit"] {
+.login-card button[type="submit"],
+.auth-button {
     width: 100%;
     padding: 14px 16px;
-    background: #6366f1;
+    background: var(--gradient-primary);
     color: white;
     border: none;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
+    box-shadow: var(--shadow-md);
 }
 
-.login-card button[type="submit"]:hover:not(:disabled) {
-    background: #4f46e5;
-    transform: translateY(-1px);
+.login-card button[type="submit"]:hover:not(:disabled),
+.auth-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
 }
 
-.login-card button[type="submit"]:disabled {
-    opacity: 0.5;
+.login-card button[type="submit"]:active:not(:disabled),
+.auth-button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.login-card button[type="submit"]:disabled,
+.auth-button:disabled {
+    opacity: 0.6;
     cursor: not-allowed;
 }
 
@@ -80,24 +101,27 @@
     width: 100%;
     padding: 12px;
     background: transparent;
-    color: #6366f1;
+    color: var(--color-primary);
     border: none;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
+    font-weight: 600;
     cursor: pointer;
-    text-decoration: underline;
     margin-top: 16px;
+    transition: all 0.2s ease;
 }
 
 .toggle-mode:hover {
-    color: #4f46e5;
+    color: var(--color-primary-strong);
+    transform: translateY(-1px);
 }
 
 .message {
-    color: #6b7280;
+    color: var(--color-text-secondary);
     font-size: 0.875rem;
     text-align: center;
     margin-top: 16px;
     padding: 12px;
-    background: #f3f4f6;
-    border-radius: 8px;
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
 }
